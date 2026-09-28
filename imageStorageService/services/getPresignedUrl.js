@@ -25,7 +25,8 @@ async function getPresignedUrlHost(userId, projectId, stage, imageName) {
 
   try {
     const url = await s3_host.getSignedUrlPromise("getObject", params);
-    return url.replace("http://minio:9000", process.env.FRONTEND_URL + '/minio');
+    const internal = `http://${process.env.S3_ENDPOINT || "seaweedfs:9000"}`;
+    return url.replace(internal, process.env.FRONTEND_URL + '/s3');
   } catch (error) {
     console.error("Erro ao gerar URL presignada:", error.message);
     throw error;

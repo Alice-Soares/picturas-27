@@ -43,7 +43,7 @@ const {
   post_image,
   delete_image,
   copy_image,
-} = require("../utils/minio");
+} = require("../utils/imageStorage");
 
 const {
   checkSharePermission,
@@ -66,7 +66,6 @@ const httpsAgent = new https.Agent({
 });
 
 const users_ms = "https://users:10001/";
-const minio_domain = process.env.MINIO_DOMAIN;
 
 const enforcePresenceLimit = require("../middleware/enforcePresenceLimit");
 
@@ -2015,14 +2014,14 @@ router.post(
       const project = await Project.getOne(ownerId, projectId);
       if (!project) return res.status(404).jsonp("Project not found");
 
-      // 1) apagar resultados (DB + MinIO out)
+      // 1) apagar resultados (DB + object storage out)
       const prev_results = await Result.getAll(ownerId, projectId);
       for (const r of prev_results) {
         await delete_image(ownerId, projectId, "out", r.img_key);
         await Result.delete(r.user_id, r.project_id, r.img_id);
       }
 
-      // 2) apagar previews (DB + MinIO preview)
+      // 2) apagar previews (DB + object storage preview)
       const prev_preview = await Preview.getAll(ownerId, projectId);
       for (const p of prev_preview) {
         await delete_image(ownerId, projectId, "preview", p.img_key);
@@ -2397,7 +2396,7 @@ router.post(
         (imgId && project.imgs.find((i) => String(i._id) === String(imgId))) ||
         project.imgs[0];
 
-      // 2) obter url do minio e fazer download para buffer
+      // 2) obter url do image storage e fazer download para buffer
       const resp = await get_image_docker(ownerId, req.params.project, "src", img.og_img_key);
       const url = resp.data.url;
 
