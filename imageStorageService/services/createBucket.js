@@ -1,4 +1,4 @@
-const s3 = require("./s3ClientDocker");
+const s3 = require("./s3Client");
 
 async function createBucket(bucketName) {
   try {

@@ -1,4 +1,4 @@
-const s3 = require("./s3ClientDocker");
+const s3 = require("./s3Client");
 const createBucket = require("./createBucket");
 const { v4: uuidv4 } = require("uuid");
 

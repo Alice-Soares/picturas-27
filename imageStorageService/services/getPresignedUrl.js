@@ -1,5 +1,4 @@
-const s3_docker = require("./s3ClientDocker");
-const s3_host = require("./s3ClientHost");
+const s3 = require("./s3Client");
 
 async function getPresignedUrlDocker(userId, projectId, stage, imageName) {
   const params = {
@@ -9,7 +8,7 @@ async function getPresignedUrlDocker(userId, projectId, stage, imageName) {
   };
 
   try {
-    return await s3_docker.getSignedUrlPromise("getObject", params);
+    return await s3.getSignedUrlPromise("getObject", params);
   } catch (error) {
     console.error("Erro ao gerar URL presignada:", error.message);
     throw error;
@@ -24,7 +23,7 @@ async function getPresignedUrlHost(userId, projectId, stage, imageName) {
   };
 
   try {
-    const url = await s3_host.getSignedUrlPromise("getObject", params);
+    const url = await s3.getSignedUrlPromise("getObject", params);
     const internal = `http://${process.env.S3_ENDPOINT || "seaweedfs:9000"}`;
     return url.replace(internal, process.env.FRONTEND_URL + '/s3');
   } catch (error) {
