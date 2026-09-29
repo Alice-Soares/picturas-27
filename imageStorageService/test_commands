@@ -1,4 +1,0 @@
-curl -X POST -F "image=@img.jpeg" localhost:3001
-curl -X POST -F "image=@img.jpeg" "http://localhost:3000/?filename=my_custom_name"
-
-wget localhost:3000/img.jpeg

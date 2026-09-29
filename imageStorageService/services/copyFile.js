@@ -1,4 +1,4 @@
-const s3 = require("./s3ClientDocker");
+const s3 = require("./s3Client");
 
 async function copyFile(userId, projectId, fromStage, toStage, fileName) {
   const bucketName = `user-${userId}`;

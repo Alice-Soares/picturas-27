@@ -54,7 +54,7 @@ PictuRAS is a web-based image editing platform that combines traditional image p
 - **Subscription Plans**: free and premium tiers with different daily usage limits
 - **Project Management**: organise images and editing pipelines into projects
 - **Real-time Processing**: WebSocket-based progress updates while tools run
-- **Encrypted object storage**: MinIO with server-side encryption at rest (KMS auto-encryption)
+- **Encrypted object storage**: SeaweedFS S3 with encryption at rest
 - **Automated backups**: periodic `mongodump` of all three databases
 
 ---
@@ -73,10 +73,10 @@ are **not** published to the host unless noted otherwise — they talk to each o
                            └────────┬────────┘
               ┌─────────────┬───────┴───────┬────────────────┐
               │             │               │                │
-        / (frontend)  /api-gateway/     /socket.io     /minio[-console]/
+        / (frontend)  /api-gateway/     /socket.io       /s3[-console]/
               │             │               │                │
          ┌────▼────┐   ┌────▼────┐     ┌────▼────┐      ┌─────▼─────┐
-         │ Next.js │   │   API   │     │   WS    │      │   MinIO   │
+         │ Next.js │   │   API   │     │   WS    │      │ SeaweedFS │
          │  :3000  │   │ Gateway │     │ Gateway │      │   :9000   │
          └─────────┘   │  :8000  │     │  :4000  │      └───────────┘
                        └────┬────┘     └────▲────┘
@@ -118,7 +118,7 @@ has no link to any other microservice. Note that **`subscriptions` means paid me
 | **User Service**          | 10001          | Registration, authentication, user profile      |
 | **Project Service**       | 9001           | Projects, image pipelines, tool orchestration   |
 | **Subscription Service**  | 11001          | Plans, payments (mock), usage limits            |
-| **Image Storage Service** | 11000          | Upload/download façade in front of MinIO        |
+| **Image Storage Service** | 11000          | Upload/download façade in front of SeaweedFS    |
 | **WebSocket Gateway**     | 4000           | Real-time progress events to the browser        |
 
 ### Processing Tools
@@ -139,7 +139,14 @@ exchange:
 
 - **Message Queue**: RabbitMQ (asynchronous tool invocation)
 - **Databases**: three independent MongoDB 4.4 instances (users, projects, subscriptions)
-- **Object Storage**: MinIO with encryption at rest
+- **Object Storage**: SeaweedFS (S3-compatible) with encryption at rest
+
+> **Why SeaweedFS?** The project originally used MinIO, whose container images were withdrawn
+> from Docker Hub and quay.io in 2026, breaking every fresh build. SeaweedFS is S3-compatible,
+> so only the endpoint and credentials changed — the application code still speaks plain S3 via
+> `aws-sdk`. Encryption at rest is preserved through `-s3.encryptVolumeData`, which replaces
+> MinIO's `MINIO_KMS_AUTO_ENCRYPTION`.
+
 - **Reverse Proxy / TLS termination**: Nginx
 - **Backups**: `mongo-backup` sidecar running `mongodump` every 24h into `./backups/mongo`
 - **Monitoring**: ELK stack (Elasticsearch, Logstash, Kibana) — present but **commented out**
@@ -197,7 +204,7 @@ OOM-killed.
 
    ```bash
    docker compose down          # stop and remove containers
-   docker compose down -v       # ...and wipe all data (databases, images, MinIO)
+   docker compose down -v       # ...and wipe all data (databases, images, objects)
    ```
 
 ### First Steps
@@ -217,21 +224,21 @@ ports are published only for **development and debugging**.
 
 ### Through the reverse proxy (HTTPS)
 
-| URL                                     | Target                 |
-| --------------------------------------- | ---------------------- |
-| `https://localhost:8080/`               | Frontend (Next.js)     |
-| `https://localhost:8080/api-gateway/`   | REST API (API Gateway) |
-| `https://localhost:8080/socket.io`      | WebSocket Gateway      |
-| `https://localhost:8080/minio/`         | MinIO S3 API           |
-| `https://localhost:8080/minio-console/` | MinIO web console      |
+| URL                                   | Target                  |
+| ------------------------------------- | ----------------------- |
+| `https://localhost:8080/`             | Frontend (Next.js)      |
+| `https://localhost:8080/api-gateway/` | REST API (API Gateway)  |
+| `https://localhost:8080/socket.io`    | WebSocket Gateway       |
+| `https://localhost:8080/s3/`          | Object storage (S3 API) |
+| `https://localhost:8080/s3-console/`  | SeaweedFS filer web UI  |
 
 ### Published directly on the host
 
 | Port    | Service              | URL / Credentials                               |
 | ------- | -------------------- | ----------------------------------------------- |
 | `8080`  | Nginx (HTTPS)        | <https://localhost:8080>                        |
-| `9000`  | MinIO S3 API         | <http://localhost:9000>                         |
-| `9090`  | MinIO Console        | <http://localhost:9090> — `admin` / `admin123`  |
+| `9000`  | SeaweedFS S3 API     | <http://localhost:9000> — `admin` / `admin123`  |
+| `9090`  | SeaweedFS filer UI   | <http://localhost:9090>                         |
 | `11000` | Image Storage        | <http://localhost:11000>                        |
 | `15672` | RabbitMQ Management  | <http://localhost:15672> — `user` / `password`  |
 | `5672`  | RabbitMQ AMQP        | broker endpoint used by the tools               |
@@ -257,9 +264,9 @@ certs/selfsigned.crt      # used by Nginx — the only certificate the browser s
 certs/selfsigned.key
 ```
 
-Seven further self-signed pairs are committed under `apiGateway/`, `users/`, `projects/`,
-`subscriptions/`, `minio/`, `frontend/` and `imageStorageService/`. The internal services use
-them to speak HTTPS to each other (`https://users:10001`, `https://projects:9001`, ...).
+Five further self-signed pairs are committed under `apiGateway/`, `users/`, `projects/`,
+`subscriptions/` and `frontend/`. The internal services use them to speak HTTPS to each other
+(`https://users:10001`, `https://projects:9001`, ...).
 
 The bundled certificate is issued to `CN=localhost` and is valid until **14 September 2027**, so
 it covers the whole academic year. To regenerate it (for a different hostname, or after it
@@ -277,7 +284,7 @@ docker compose restart nginx
 ```
 
 > ⚠️ **The internal certificates are expired, and that is why nothing breaks.**
-> All seven service-to-service pairs expired in **January 2026**. The stack keeps working
+> All five service-to-service pairs expired in **January 2026**. The stack keeps working
 > because every client is built as `https.Agent({ rejectUnauthorized: false })`, so expiry —
 > and in fact the whole certificate chain — is never checked. Internal traffic is encrypted
 > but **not authenticated**, and the client certificates passed to those agents are never
@@ -288,6 +295,15 @@ docker compose restart nginx
 **Why HTTPS matters here:** the browser refuses to open a secure WebSocket (`wss://`) from a
 page served over plain HTTP, and several browser APIs used by the editor require a secure
 context. Always use `https://localhost:8080` — **not** `http://`, and **not** `localhost:3000`.
+
+**Overriding with a `.env` file.** The object-storage variables are read from the environment,
+with the defaults above applied when unset, so the stack runs with no setup. To use your own
+credentials, copy `.env.example` to `.env` and edit it — `.env` is git-ignored, and a single
+entry there updates both the storage server and the client that talks to it:
+
+```bash
+cp .env.example .env     # then edit, and: docker compose up -d
+```
 
 > 🔎 **Committed secrets are a known issue.** Private keys, JWT secrets and database passwords
 > are hard-coded in this repository for convenience. That is acceptable for a local
@@ -300,20 +316,20 @@ context. Always use `https://localhost:8080` — **not** `http://`, and **not** 
 
 All configuration currently lives as `environment:` entries in `docker-compose.yaml`.
 
-| Variable                                      | Default                       | Service(s)          | Purpose                                     |
-| --------------------------------------------- | ----------------------------- | ------------------- | ------------------------------------------- |
-| `JWT_SECRET_KEY`                              | `lisan_al_gaib`               | users, gateway, ws  | JWT signing key — **must match everywhere** |
-| `FIELD_ENCRYPTION_KEY`                        | `uma-frase-secreta-...`       | users               | Key for field-level encryption in MongoDB   |
-| `FREE_DAILY_OP`                               | `5`                           | users               | Daily operation limit for free accounts     |
-| `SECRET_KEY`                                  | `card_secret_key`             | subscriptions       | Payment-data encryption key                 |
-| `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD`     | `admin` / `admin123`          | minio, img_storage  | MinIO credentials                           |
-| `MINIO_KMS_SECRET_KEY`                        | `picturas-key:...`            | minio               | Key used for encryption at rest             |
-| `MINIO_KMS_AUTO_ENCRYPTION`                   | `on`                          | minio               | Encrypt every object automatically          |
-| `RABBITMQ_DEFAULT_USER` / `_PASS`             | `user` / `password`           | rabbitmq            | Broker credentials                          |
-| `RABBITMQ_HOST` / `_PORT` / `_USER` / `_PASS` | `rabbitmq` / `5672` / ...     | tools, projects, ws | Broker connection                           |
-| `FRONTEND_URL`                                | `https://localhost:8080`      | img_storage         | CORS / redirect origin                      |
-| `NEXT_PUBLIC_API_BASE_URL`                    | `/api-gateway/`               | frontend            | Relative API base (keep it relative!)       |
-| `GEN_EXPAND_URL`                              | `http://generative-mock:7860` | expand_ai           | Generative image API endpoint               |
+| Variable                                      | Default                       | Service(s)             | Purpose                                      |
+| --------------------------------------------- | ----------------------------- | ---------------------- | -------------------------------------------- |
+| `JWT_SECRET_KEY`                              | `lisan_al_gaib`               | users, gateway, ws     | JWT signing key — **must match everywhere**  |
+| `FIELD_ENCRYPTION_KEY`                        | `uma-frase-secreta-...`       | users                  | Key for field-level encryption in MongoDB    |
+| `FREE_DAILY_OP`                               | `5`                           | users                  | Daily operation limit for free accounts      |
+| `SECRET_KEY`                                  | `card_secret_key`             | subscriptions          | Payment-data encryption key                  |
+| `S3_ENDPOINT`                                 | `seaweedfs:9000`              | img_storage            | Object storage endpoint                      |
+| `S3_ACCESS_KEY` / `S3_SECRET_KEY`             | `admin` / `admin123`          | seaweedfs, img_storage | Object storage credentials                   |
+| `S3_KEK_PASSPHRASE`                           | `picturas-kek-...`            | seaweedfs              | Protects the key used for encryption at rest |
+| `RABBITMQ_DEFAULT_USER` / `_PASS`             | `user` / `password`           | rabbitmq               | Broker credentials                           |
+| `RABBITMQ_HOST` / `_PORT` / `_USER` / `_PASS` | `rabbitmq` / `5672` / ...     | tools, projects, ws    | Broker connection                            |
+| `FRONTEND_URL`                                | `https://localhost:8080`      | img_storage            | CORS / redirect origin                       |
+| `NEXT_PUBLIC_API_BASE_URL`                    | `/api-gateway/`               | frontend               | Relative API base (keep it relative!)        |
+| `GEN_EXPAND_URL`                              | `http://generative-mock:7860` | expand_ai              | Generative image API endpoint                |
 
 ⚠️ If you change `JWT_SECRET_KEY`, change it in **all three** services (`users`, `api_gateway`,
 `ws_gateway`) or authentication silently breaks.
@@ -321,7 +337,7 @@ All configuration currently lives as `environment:` entries in `docker-compose.y
 ### Persistent data
 
 Named Docker volumes: `user_data`, `project_data`, `subscription_data`, `image_data`,
-`minio_data`, `rabbitmq_data`. Database dumps are written to the host at `./backups/mongo`
+`seaweedfs_data`, `rabbitmq_data`. Database dumps are written to the host at `./backups/mongo`
 (git-ignored). `docker compose down -v` deletes every volume — the dumps survive.
 
 ### Scaling
@@ -351,8 +367,7 @@ picturas-27/
 ├── users/                    # User management service (Express + MongoDB)
 ├── projects/                 # Project & pipeline orchestration service
 ├── subscriptions/            # Subscription / payment service
-├── imageStorageService/      # Image storage service (legacy/reference)
-├── minio/                    # Image storage façade in front of MinIO
+├── imageStorageService/      # Image storage service: S3 façade in front of SeaweedFS
 ├── wsGateway/                # WebSocket gateway (Socket.IO)
 ├── generative-mock/          # Mock of the Stable Diffusion WebUI API (for expand_ai)
 ├── Tools/                    # Image processing microservices
@@ -421,7 +436,7 @@ docker compose exec users_mongoDB mongo --port 27019
 docker compose exec projects_mongoDB mongo --port 27018
 ```
 
-MinIO buckets: <http://localhost:9090> (`admin` / `admin123`).
+Stored objects: <http://localhost:9090> (SeaweedFS filer UI).
 Queues and message rates: <http://localhost:15672> (`user` / `password`).
 
 ---
@@ -443,8 +458,9 @@ The browser blocks mixed content and insecure WebSockets. Make sure every reques
 
 **`Bind for 0.0.0.0:8080 failed: port is already allocated`**
 Another process holds the port. Find it with `lsof -i :8080` (macOS/Linux) or
-`netstat -ano | findstr :8080` (Windows), then stop it or remap the port in
-`docker-compose.yaml` (`"8081:443"` → browse to `https://localhost:8081`).
+`netstat -ano | findstr :8080` (Windows) and stop it. Do not remap Nginx to another host
+port: `FRONTEND_URL` and the frontend's WebSocket URL both assume `8080`, so the page would
+load while presigned image URLs and live updates kept pointing at the old port.
 
 **A tool container keeps restarting**
 Check `docker compose logs <tool>_tool`. The usual causes are RabbitMQ not being healthy yet
