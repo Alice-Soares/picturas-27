@@ -6,7 +6,7 @@
 
 | **Campo** | **Valor** |
 |-----------|-----------|
-| **Grupo / Equipa** | Grupo 27 |
+| **Grupo / Equipa** | Grupo 5 - PL3 |
 | **Autores** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Faria [pg63920], Samuel|
 | **Data** | 2026-10-14 |
 | **Versão do documento** | v1.0 |
@@ -91,7 +91,7 @@ A concatenação permite unir múltiplos vídeos ou excertos recortados previame
 | RN3 | Os vídeos de origem nunca são alterados ou eliminados durante a concatenação. |
 | RN4 | Cada concatenação concluída com sucesso desconta | **Valor** |
 |-----------|-----------|
-| **Grupo / Equipa** | Grupo 27 |
+| **Grupo / Equipa** | Grupo 5 - PL3 |
 | **Autores** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Faria [pg63920], Samuel|
 | **Data** | 2026-10-14 |
 | **Versão do documento** | v1.0 |
