@@ -7,7 +7,7 @@
 | **Campo** | **Valor** |
 |-----------|-----------|
 | **Grupo / Equipa** | Grupo 5 - PL3 |
-| **Autores** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Faria [pg63920], Samuel|
+| **Autores** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Soares [pg63920], Samuel|
 | **Data** | 2026-10-14 |
 | **Versão do documento** | v1.0 |
 | **Unidade Curricular** | Requisitos e Arquiteturas de Software — MEI, Universidade do Minho |
@@ -35,7 +35,7 @@ A extração de fotogramas liga o domínio do vídeo ao domínio da imagem e per
 | **ID do Caso de Uso** | UC-VID-005 |
 | **Nome** | Extrair sequência de fotogramas de um vídeo |
 | **Versão** | v1.0 |
-| **Autor** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Faria [pg63920], Samuel |
+| **Autor** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Soares [pg63920], Samuel |
 | **Data** | 2026-10-14 |
 | **Objetivo** | Permitir ao utilizador extrair fotogramas de um vídeo e armazená-los como imagens do projeto para processamento posterior. |
 | **Âmbito** | Módulo de vídeo do PictuRAS e integração com a biblioteca de imagens |

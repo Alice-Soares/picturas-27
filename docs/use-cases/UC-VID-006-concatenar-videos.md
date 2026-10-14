@@ -7,7 +7,7 @@
 | **Campo** | **Valor** |
 |-----------|-----------|
 | **Grupo / Equipa** | Grupo 5 - PL3 |
-| **Autores** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Faria [pg63920], Samuel|
+| **Autores** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Soares [pg63920], Samuel|
 | **Data** | 2026-10-14 |
 | **Versão do documento** | v1.0 |
 | **Unidade Curricular** | Requisitos e Arquiteturas de Software — MEI, Universidade do Minho |
@@ -35,7 +35,7 @@ A concatenação permite unir múltiplos vídeos ou excertos recortados previame
 | **ID do Caso de Uso** | UC-VID-006 |
 | **Nome** | Concatenar Múltiplos Vídeos (*Merge*) |
 | **Versão** | v1.0 |
-| **Autor** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Faria [pg63920], Samuel |
+| **Autor** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Soares [pg63920], Samuel |
 | **Data** | 2026-10-14 |
 | **Objetivo** | Permitir ao utilizador selecionar dois ou mais vídeos da biblioteca, ordenar a sequência e uni-los num único vídeo de saída. |
 | **Âmbito** | Módulo de processamento de vídeo do PictuRAS e gestão de projetos |
@@ -92,7 +92,7 @@ A concatenação permite unir múltiplos vídeos ou excertos recortados previame
 | RN4 | Cada concatenação concluída com sucesso desconta | **Valor** |
 |-----------|-----------|
 | **Grupo / Equipa** | Grupo 5 - PL3 |
-| **Autores** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Faria [pg63920], Samuel|
+| **Autores** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Soares [pg63920], Samuel|
 | **Data** | 2026-10-14 |
 | **Versão do documento** | v1.0 |
 | **Unidade Curricular** | Requisitos e Arquiteturas de Software — MEI, Universidade do Minho |
@@ -120,7 +120,7 @@ A concatenação permite unir múltiplos vídeos ou excertos recortados previame
 | **ID do Caso de Uso** | UC-VID-006 |
 | **Nome** | Concatenar Múltiplos Vídeos (*Merge*) |
 | **Versão** | v1.0 |
-| **Autor** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Faria [pg63920], Samuel |
+| **Autor** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Soares [pg63920], Samuel |
 | **Data** | 2026-10-14 |
 | **Objetivo** | Permitir ao utilizador selecionar dois ou mais vídeos da biblioteca, ordenar a sequência e uni-los num único vídeo de saída. |
 | **Âmbito** | Módulo de processamento de vídeo do PictuRAS e gestão de projetos |

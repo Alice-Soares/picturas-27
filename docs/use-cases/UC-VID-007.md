@@ -7,7 +7,7 @@
 | **Campo**               | **Valor**                                                          |
 | ----------------------- | ------------------------------------------------------------------ |
 | **Grupo / Equipa**      | Grupo 5 - PL3                                                      |
-| **Autores**             | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Faria [pg63920], Samuel |
+| **Autores**             | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Soares [pg63920], Samuel |
 | **Data**                | 2026-10-14                                                         |
 | **Versão do documento** | v1.0                                                               |
 | **Unidade Curricular**  | Requisitos e Arquiteturas de Software — MEI, Universidade do Minho |
