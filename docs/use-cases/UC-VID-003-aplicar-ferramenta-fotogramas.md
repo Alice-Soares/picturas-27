@@ -7,7 +7,7 @@
 | **Campo** | **Valor** |
 |-----------|-----------|
 | **Grupo / Equipa** | Grupo 27 |
-| **Autores** | Equipa do Grupo 27 |
+| **Autores** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Faria [pg63920], Samuel|
 | **Data** | 2026-10-14 |
 | **Versão do documento** | v1.0 |
 | **Unidade Curricular** | Requisitos e Arquiteturas de Software — MEI, Universidade do Minho |
@@ -36,7 +36,7 @@ Esta funcionalidade valida a extensão do conjunto de ferramentas de imagem para
 | **ID do Caso de Uso** | UC-VID-003 |
 | **Nome** | Aplicar ferramenta existente a todos os fotogramas de um vídeo |
 | **Versão** | v1.0 |
-| **Autor** | Equipa Grupo 27 |
+| **Autor** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Faria [pg63920], Samuel |
 | **Data** | 2026-10-14 |
 | **Objetivo** | Permitir ao utilizador aplicar uma ferramenta de processamento de imagem a todos os fotogramas de um vídeo e obter um vídeo final processado. |
 | **Âmbito** | Módulo de vídeo do PictuRAS, decomposição em fotogramas, processamento por ferramenta e recomposição do vídeo |

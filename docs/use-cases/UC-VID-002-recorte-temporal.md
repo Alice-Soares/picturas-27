@@ -7,7 +7,7 @@
 | **Campo** | **Valor** |
 |-----------|-----------|
 | **Grupo / Equipa** | Grupo 27 |
-| **Autores** | Equipa do Grupo 27 |
+| **Autores** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Faria [pg63920], Samuel|
 | **Data** | 2026-10-14 |
 | **Versão do documento** | v1.0 |
 | **Unidade Curricular** | Requisitos e Arquiteturas de Software — MEI, Universidade do Minho |
@@ -35,7 +35,7 @@ O recorte temporal é uma operação central de edição de vídeo e permite tra
 | **ID do Caso de Uso** | UC-VID-002 |
 | **Nome** | Recorte Temporal de Vídeo (Trim) |
 | **Versão** | v1.0 |
-| **Autor** | Equipa Grupo 27 |
+| **Autor** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Faria [pg63920], Samuel |
 | **Data** | 2026-10-14 |
 | **Objetivo** | Permitir ao utilizador selecionar um intervalo temporal de um vídeo e gerar um novo ficheiro com apenas esse segmento. |
 | **Âmbito** | Módulo de processamento de vídeo do PictuRAS |

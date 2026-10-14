@@ -7,7 +7,7 @@
 | **Campo** | **Valor** |
 |-----------|-----------|
 | **Grupo / Equipa** | Grupo 27 |
-| **Autores** | Equipa do Grupo 27 |
+| **Autores** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Faria [pg63920], Samuel|
 | **Data** | 2026-10-14 |
 | **Versão do documento** | v1.0 |
 | **Unidade Curricular** | Requisitos e Arquiteturas de Software — MEI, Universidade do Minho |
@@ -35,7 +35,7 @@ Esta funcionalidade é a base de todo o suporte a vídeo no PictuRAS, porque sem
 | **ID do Caso de Uso** | UC-VID-001 |
 | **Nome** | Submeter Vídeo para Processamento |
 | **Versão** | v1.0 |
-| **Autor** | Equipa Grupo 27 |
+| **Autor** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Faria [pg63920], Samuel |
 | **Data** | 2026-10-14 |
 | **Objetivo** | Permitir ao utilizador carregar um vídeo válido para o projeto e torná-lo disponível para processamento posterior. |
 | **Âmbito** | Módulo de gestão de conteúdos multimédia do PictuRAS |
