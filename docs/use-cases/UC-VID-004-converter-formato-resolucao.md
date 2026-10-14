@@ -7,8 +7,8 @@
 
 | **Campo** | **Valor** |
 |-----------|-----------|
-| **Grupo / Equipa** | 27 |
-| **Autores** | Alice Soares (PG12345); João Silva (PG12346); Maria Costa (PG12347); Pedro Santos (PG12348); Ana Oliveira (PG12349) |
+| **Grupo / Equipa** |  |
+| **Autores** |  |
 | **Data** | 2026-10-14 |
 | **Versão do documento** | v1.1 |
 | **Unidade Curricular** | Requisitos e Arquiteturas de Software — MEI, Universidade do Minho |

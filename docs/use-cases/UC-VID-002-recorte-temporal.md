@@ -7,8 +7,8 @@
 | **Módulo**           | Processamento de Vídeo                                                    |
 | **Prioridade**       | Alta                                                                      |
 | **Complexidade**     | Complexa                                                                  |
-| **Autores**          | Alice Soares (PG12345); João Silva (PG12346); Maria Costa (PG12347); Pedro Santos (PG12348); Ana Oliveira (PG12349) |
-| **Grupo**            | 27                                                                        |
+| **Autores**          |  |
+| **Grupo**            |                                                                         |
 | **Data**             | 2026-10-14                                                                |
 | **Versão**           | 1.0                                                                       |
 
