@@ -7,7 +7,7 @@
 | **Campo** | **Valor** |
 |-----------|-----------|
 | **Grupo / Equipa** | Grupo 5 - PL3 |
-| **Autores** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Soares [pg63920], Samuel|
+| **Autores** | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Soares [pg63920], Samuel [número mecanográfico por confirmar] |
 | **Data** | 2026-10-14 |
 | **Versão do documento** | v1.0 |
 | **Unidade Curricular** | Requisitos e Arquiteturas de Software — MEI, Universidade do Minho |
@@ -19,7 +19,7 @@
 | **Campo** | **Valor** |
 |-----------|-----------|
 | **Funcionalidade** | Extrair sequência de fotogramas de um vídeo |
-| **Perfil(s) de utilizador abrangido(s)** | Anónimo / registado / premium — cada perfil tem limites diferentes de número de fotogramas e formato de saída. |
+| **Perfil(s) de utilizador abrangido(s)** | Registado e premium. O perfil anónimo fica fora desta funcionalidade até existir uma regra de vídeo aprovada. |
 
 **Justificação no contexto do MVP** *(2–3 linhas)*
 A extração de fotogramas liga o domínio do vídeo ao domínio da imagem e permite reutilizar ferramentas já validadas no sistema sem criar novas soluções para cada caso. É uma funcionalidade essencial para análise visual, edição e preparação de conteúdos para processamento posterior. Sem ela, o suporte a vídeo fica incompleto e pouco útil no contexto do PictuRAS.
@@ -39,7 +39,7 @@ A extração de fotogramas liga o domínio do vídeo ao domínio da imagem e per
 | **Data** | 2026-10-14 |
 | **Objetivo** | Permitir ao utilizador extrair fotogramas de um vídeo e armazená-los como imagens do projeto para processamento posterior. |
 | **Âmbito** | Módulo de vídeo do PictuRAS e integração com a biblioteca de imagens |
-| **Ator Principal** | Utilizador anónimo, registado ou premium |
+| **Ator Principal** | Utilizador registado ou premium |
 | **Stakeholders e Interesses** | - **Utilizador**: pretende obter imagens a partir de um vídeo para análise, edição ou processamento posterior<br>- **Proprietário do Sistema**: deseja reutilizar as ferramentas de imagem existentes sobre conteúdo extraído de vídeo<br>- **Equipa de Desenvolvimento**: valida a integração entre extração, filas e armazenamento |
 | **Pré-condições** | - O utilizador tem acesso a um projeto com um vídeo carregado e válido<br>- O ficheiro de vídeo está acessível ao sistema e no formato suportado<br>- O serviço de extração de fotogramas está disponível |
 | **Trigger** | O utilizador seleciona um vídeo e escolhe a opção de extração de fotogramas. |
@@ -66,7 +66,7 @@ A extração de fotogramas liga o domínio do vídeo ao domínio da imagem e per
 | **Fluxo** | **Descrição** |
 |-----------|---------------|
 | FA1 – Extração parcial | Se o utilizador definir um intervalo temporal, o sistema extrai apenas os fotogramas desse intervalo e ignora o restante conteúdo. |
-| FA2 – Cancelamento da extração | Durante a execução, o utilizador pode cancelar a operação; o sistema mantém os fotogramas já extraídos e termina o job em estado cancelado. |
+| FA2 – Cancelamento da extração | Durante a execução, o utilizador pode cancelar a operação; o sistema elimina os fotogramas temporários e termina o job em estado cancelado. |
 | FA3 – Novo projeto para os fotogramas | Se o utilizador optar por receber os fotogramas num projeto novo, o sistema cria esse projeto e organiza os ficheiros nesse contexto. |
 
 ### 2.4 Exceções
@@ -76,22 +76,22 @@ A extração de fotogramas liga o domínio do vídeo ao domínio da imagem e per
 | Codec do vídeo não suportado | O sistema rejeita a operação e informa o utilizador dos codecs aceitáveis. |
 | Número de fotogramas excede o limite do perfil | O sistema bloqueia a extração e pede que o utilizador reduza o intervalo ou o volume. |
 | Espaço de armazenamento insuficiente | O sistema informa que não há espaço suficiente e não inicia o processamento. |
-| Falha a meio do processamento | O sistema preserva os fotogramas já extraídos, marca o job como falhado e notifica o utilizador. |
+| Falha a meio do processamento | O sistema elimina os fotogramas temporários, marca o job como falhado, devolve qualquer quota reservada e notifica o utilizador. |
 
 ### 2.5 Pós-condições
 
 | **Tipo** | **Resultado** |
 |----------|---------------|
 | Garantia de Sucesso | Os fotogramas ficam armazenados como imagens do projeto e o vídeo original permanece inalterado. |
-| Garantia Mínima | O vídeo original continua acessível e os fotogramas já extraídos permanecem disponíveis, com o estado do job devidamente registado. |
+| Garantia Mínima | O vídeo original continua acessível, os fotogramas temporários são eliminados e o estado falhado ou cancelado fica registado. |
 
 ### 2.6 Regras de Negócio e Restrições
 
 | **ID** | **Regra** |
 |--------|-----------|
-| RN1 | Anónimos estão limitados a um número inferior de fotogramas por extração. |
-| RN2 | Registados têm um limite superior e premium um limite mais alto. |
-| RN3 | Cada extração conta como uma operação na quota diária do utilizador. |
+| RN1 | O perfil anónimo não tem acesso a esta funcionalidade até existir uma regra de vídeo aprovada. |
+| RN2 | O limite é de 1000 fotogramas por job para registados e 5000 para premium; os fotogramas são guardados em JPEG. |
+| RN3 | Cada job de extração aceite conta como uma operação avançada; utilizadores premium não têm limite diário. |
 | RN4 | Os fotogramas extraídos devem ser armazenados como imagens normais do projeto. |
 | RN5 | O vídeo original não pode ser alterado por esta funcionalidade. |
 
@@ -134,35 +134,3 @@ A extração de fotogramas liga o domínio do vídeo ao domínio da imagem e per
 
 ---
 ---
-
-## 4. Esboço de requisitos derivados
-
-### 4.1 Requisitos de Sistema
-
-| **ID** | **Requisito** | **Tipo** | **Prioridade** | **Novo/Alt** | **Origem** | **Como verificar** |
-|--------|---------------|----------|----------------|--------------|------------|--------------------|
-| REQ-VID-EXTR-001 | O sistema deve apresentar as propriedades do vídeo selecionado e as opções de extração disponíveis antes de iniciar o processamento. | F | Deve ter | Novo | UC-VID-005, passo 3 | Verificar que a interface mostra duração, resolução, fps, codec e o modo de extração disponível. |
-| REQ-VID-EXTR-002 | O sistema deve calcular e mostrar uma estimativa do número de fotogramas que serão gerados, consoante o intervalo, a contagem ou a seleção do utilizador. | F | Deve ter | Novo | UC-VID-005, passos 4–5 | Validar que, ao alterar parâmetros, a estimativa atualiza imediatamente na UI. |
-| REQ-VID-EXTR-003 | O sistema deve validar o limite de fotogramas por perfil, o espaço disponível e a conformidade do vídeo antes de criar o job de extração. | F | Deve ter | Novo | UC-VID-005, passo 7; RN1–RN5 | Confirmar que a operação é rejeitada quando o vídeo ou o perfil não respeita os limites. |
-| REQ-VID-EXTR-004 | O sistema deve criar um job de extração na fila de processamento, manter o estado do job e reportar progresso em tempo real via WebSocket. | F | Deve ter | Novo | UC-VID-005, passos 8–10 | Verificar a criação do job, a atualização do estado e o recebimento de mensagens de progresso. |
-| REQ-VID-EXTR-005 | O sistema deve armazenar os fotogramas extraídos como imagens do projeto, preservando o vídeo original e mantendo o resultado disponível para processamento posterior. | F | Deve ter | Novo | UC-VID-005, passos 10–12; pós-condições | Validar que as imagens aparecem na biblioteca do projeto e que o ficheiro original permanece intacto. |
-
-### 4.2 Impacto no sistema existente
-
-| **Elemento existente afetado** | **Impacto (Manter / Estender / Alterar)** | **Descrição do impacto** | **Requisitos relacionados** |
-|--------------------------------|-------------------------------------------|--------------------------|------------------------------|
-| Fila RabbitMQ | Estender | É necessário criar uma fila dedicada para jobs de extração de fotogramas e garantir o processamento assíncrono. | REQ-VID-EXTR-004 |
-| Armazenamento SeaweedFS | Estender | Os fotogramas extraídos passam a gerar múltiplos ficheiros de imagem e exigem controlo de espaço e organização por projeto. | REQ-VID-EXTR-003, REQ-VID-EXTR-005 |
-| WebSocket / frontend | Estender | A interface precisa de mostrar progresso, confirmar conclusão e refletir os resultados na biblioteca de imagens. | REQ-VID-EXTR-002, REQ-VID-EXTR-004 |
-| Modelo de imagens e gestão de projetos | Estender | Os fotogramas extraídos devem entrar no mesmo fluxo de processamento e organização das imagens já existentes. | REQ-VID-EXTR-005 |
-| Sistema de perfis e quotas | Alterar | As regras de limite de fotogramas por perfil e a contagem de operações têm de ser reconhecidas na validação do job. | REQ-VID-EXTR-003 |
-
-### 4.3 Matriz de Rastreabilidade
-
-| **Elemento do Caso de Uso** | **Descrição abreviada** | **Requisito(s) de Sistema** |
-|------------------------------|-------------------------|------------------------------|
-| Passo 3 | Apresentação das propriedades do vídeo e opções de extração | REQ-VID-EXTR-001 |
-| Passos 4–5 | Definição dos parâmetros e cálculo da estimativa | REQ-VID-EXTR-002 |
-| Passo 7 | Validação de limites, quota e espaço disponível | REQ-VID-EXTR-003 |
-| Passos 8–10 | Criação do job, processamento e progresso em tempo real | REQ-VID-EXTR-004 |
-| Passos 10–12 | Armazenamento dos fotogramas e preservação do vídeo original | REQ-VID-EXTR-005 |
