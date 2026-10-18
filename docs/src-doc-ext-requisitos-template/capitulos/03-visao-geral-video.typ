@@ -60,16 +60,28 @@ A extensão de vídeo nesta fase compreende sete funcionalidades, escolhidas de 
 ]
 
 #figure(
-  image("../images/baseline/diagrama_casos_uso_base.png", width: 85%),
-  caption: [Diagrama de casos de uso da solução de base — *a substituir*],
-)
-
-#figure(kind: image,
-  figura-pendente[diagrama de casos de uso atualizado com as funcionalidades de vídeo (`images/diagrama_casos_uso.png`)],
+  image("../images/diagrama_casos_uso.png", width: 85%),
   caption: [Diagrama de casos de uso atualizado (Fase 1 — vídeo)],
 )
 
-#preencher[Texto que explique o diagrama: novos casos de uso, relações e decisões de modelação.]
+O diagrama de casos de uso foi atualizado para refletir a extensão do sistema com as novas funcionalidades de processamento e manipulação de vídeo (incremento do MVP de Vídeo). Para facilitar a leitura e manter a coerência visual e contextual em relação ao sistema base, os casos de uso legados (relativos à edição de imagem e autenticação) foram mantidos a cinzento, enquanto os novos casos de uso de vídeo são destacados a azul.
+
+=== Hierarquia de Atores e Regras de Acesso
+
+A modelação da hierarquia de atores foi reformulada para garantir o cumprimento estrito das regras de negócio relativamente às permissões de cada perfil:
+
+- *Utilizador:* Representa a entidade base de interação com o sistema. Agrupa a funcionalidade de Login e o conjunto de ferramentas essenciais de manipulação de imagem.
+- *Utilizador Anónimo:* Herda diretamente do *Utilizador*, tendo acesso às operações base de imagem, e estende-o ao adicionar o caso de uso Registo. Esta estruturação garante que o caso de uso *Registo* permanece exclusivo de utilizadores não autenticados.
+- *Utilizador Registado:* Herda do *Utilizador* (mantendo acesso às funcionalidades de imagem e autenticação) e adiciona o acesso exclusivo ao processamento de vídeo. É o ponto de entrada para todas as funcionalidades de vídeo do MVP (`UC-VID-001` a `UC-VID-007`).
+- *Utilizador Convidado:* Herda as permissões do *Utilizador Registado*, permitindo que um utilizador que aceda a um projeto via link de partilha com permissões de edição possa manipular tanto conteúdos de imagem como de vídeo no âmbito desse projeto.
+- *Premium:* Especialização do *Utilizador Registado* que herda todas as capacidades de imagem e vídeo, acrescentando o acesso a ferramentas avançadas como o *Assistente IA na edição*.
+
+
+Os novos casos de uso introduzidos cobrem o ciclo de vida e manipulação de ficheiros de vídeo no sistema, estando todos associados ao *Utilizador Registado* (e, por herança, aos perfis *Utilizador Convidado* e *Premium*):
+
+=== Decisões de Modelação
+
+A principal decisão de desenho consistiu na introdução do nó *Utilizador Registado* como intermédio na hierarquia de herança de atores. Esta escolha isola explicitamente os recursos computacionalmente pesados (como o processamento de vídeo) dos acessos anónimos, garantindo que o *Utilizador Anónimo* consiga experimentar as ferramentas de imagem sem ter permissão para sobrecarregar a infraestrutura de vídeo antes de efetuar o registo na plataforma.
 
 == Modelo de domínio (atualizado)
 
