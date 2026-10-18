@@ -27,9 +27,9 @@ A @tab-perfis-video sintetiza as condições de acesso estabelecidas para o MVP,
   tabela(
     colunas: (2.6cm, 4.0cm, 1fr, 2.8cm),
     [Perfil], [Situação na _baseline_], [Alteração introduzida para vídeo], [Regras / requisitos],
-    [Anónimo], [Operações limitadas, imagens pequenas, sem autenticação], [Sem acesso a submissão ou processamento de vídeo no MVP; mantém apenas operações em imagens.], [UC-VID-001/RN1 \ UC-VID-002/RN4 \ UC-VID-003/RN1 \ UC-VID-007/RN1 \ RNG-02],
-    [Registado], [Gratuito, até 5 operações/dia, projetos persistentes], [Vídeos até 100 MB, 5 min, 1080p e 60 fps. Submissão não gasta quota; cada processamento consome 1 operação diária (quota de 5 ops/dia), com estorno em caso de falha ou cancelamento.], [UC-VID-001/RN2,RN5,RN6 \ UC-VID-002/RN3,RN7 \ UC-VID-003/RN2,RN3 \ UC-VID-004/RN2,RN3 \ UC-VID-005/RN2,RN3 \ UC-VID-006/RN1,RN2,RN4 \ UC-VID-007/RN2,RN4 \ RNG-03, RNG-04],
-    [Premium], [Pago, uso ilimitado, acesso a ferramentas avançadas/IA], [Acesso ilimitado a todas as ferramentas de vídeo sem consumo de quota. Vídeos até 1 GB, 30 min, 4K (3840×2160) e 60 fps. Concatenação até 15 vídeos e extração até 5000 fotogramas.], [UC-VID-001/RN3 \ UC-VID-003/RN3 \ UC-VID-004/RN2 \ UC-VID-005/RN2 \ UC-VID-006/RN1,RN2 \ RNG-03, RNG-04],
+    [Utilizador Anónimo], [Operações limitadas, imagens pequenas, sem autenticação], [Sem acesso a submissão ou processamento de vídeo no MVP; mantém apenas operações em imagens.], [UC-VID-001/RN1 \ UC-VID-002/RN4 \ UC-VID-003/RN1 \ UC-VID-007/RN1 \ RNG-02],
+    [Utilizador Registado], [Gratuito, até 5 operações/dia, projetos persistentes], [Vídeos até 100 MB, 5 min, 1080p e 60 fps. Submissão não gasta quota; cada processamento consome 1 operação diária (quota de 5 ops/dia), com estorno em caso de falha ou cancelamento.], [UC-VID-001/RN2,RN5,RN6 \ UC-VID-002/RN3,RN7 \ UC-VID-003/RN2,RN3 \ UC-VID-004/RN2,RN3 \ UC-VID-005/RN2,RN3 \ UC-VID-006/RN1,RN2,RN4 \ UC-VID-007/RN2,RN4 \ RNG-03, RNG-04],
+    [Utilizador Premium], [Pago, uso ilimitado, acesso a ferramentas avançadas/IA], [Acesso ilimitado a todas as ferramentas de vídeo sem consumo de quota. Vídeos até 1 GB, 30 min, 4K (3840×2160) e 60 fps. Concatenação até 15 vídeos e extração até 5000 fotogramas.], [UC-VID-001/RN3 \ UC-VID-003/RN3 \ UC-VID-004/RN2 \ UC-VID-005/RN2 \ UC-VID-006/RN1,RN2 \ RNG-03, RNG-04],
   ),
 ) <tab-perfis-video>
 
