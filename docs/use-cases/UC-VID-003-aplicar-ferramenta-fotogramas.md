@@ -1,4 +1,4 @@
-# UC-VID-003 — Aplicar Ferramenta Existente a Todos os Fotogramas de um Vídeo
+# UC-VID-003 — Aplicar Ferramenta Existente aos Fotogramas de um Vídeo
 
 ---
 

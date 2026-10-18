@@ -39,6 +39,9 @@
 #set page(numbering: "1", number-align: center)
 #counter(page).update(1)
 
+// TODO: REVER ISTO DE QUEBRAR AS TABELAS FUI EU QUE ADICIONEI PORQUE ALGUMAS FICAVAM DESFORMATADAS MAS CONTINUAM ESTRANHAS, VER SE CONSEGUIMOS FAZER MELHOR
+#show figure: set block(breakable: true)
+
 // Parte I — Enquadramento e visão transversal
 #include "capitulos/01-introducao.typ"
 #include "capitulos/02-contexto-stakeholders.typ"

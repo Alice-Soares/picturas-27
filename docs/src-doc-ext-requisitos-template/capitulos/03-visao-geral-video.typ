@@ -13,20 +13,41 @@
   devem ser especificados *uma só vez* (e.g., `REQ-VID-SUBMIT-001`, com origem em vários casos de uso).
 ]
 
+A extensão de vídeo nesta fase compreende sete funcionalidades, escolhidas de forma a equilibrar utilidade para os utilizadores, complexidade adequada e possibilidade de especificação e validação no âmbito do MVP. A tabela seguinte apresenta o catálogo de funcionalidades e os respetivos estados de implementação.
+
+
+*TODO:* PREENCHER O ESTADO DE IMPLEMENTAÇÃO NO FIM 
+
 #tab([Funcionalidades de vídeo do MVP],
   tabela(
-    colunas: (1fr, 2.1cm, 2.3cm, 2cm, 2.4cm, 2.4cm),
+    colunas: (1fr, 2.1cm, 2.4cm, 2cm, 2.3cm, 2.6cm),
     [Funcionalidade], [Caso de uso], [Prefixo(s) REQ], [Perfis], [Dependências], [Estado de implementação],
-    [#preencher[e.g., Recortar um intervalo temporal]], [UC-VID-001], [#preencher[REQ-VID-TRIM]], [#preencher[Reg., Prem.]], [#preencher[REQ-VID-SUBMIT]], [#preencher[Implementada / Parcial / Só especificada]],
-    [#preencher[…]], [UC-VID-002], [#preencher[…]], [#preencher[…]], [#preencher[…]], [#preencher[…]],
+    [Submeter Vídeo para Processamento], [UC-VID-001], [REQ-VID-SUB], [Registado, Premium], [Nenhuma], [],
+    [Recorte Temporal de Vídeo (_Trim_)], [UC-VID-002], [REQ-VID-TRIM], [Registado, Premium], [UC-VID-001], [],
+    [Aplicar Ferramenta Existente aos Fotogramas de um Vídeo], [UC-VID-003], [REQ-VID-FRM], [Registado, Premium], [UC-VID-001], [],
+    [Converter Formato e Resolução de Vídeo], [UC-VID-004], [REQ-VID-CONV], [Registado, Premium], [UC-VID-001], [],
+    [Extrair Sequência de Fotogramas de um Vídeo], [UC-VID-005], [REQ-VID-FEX], [Registado, Premium], [UC-VID-001], [],
+    [Concatenar Múltiplos Vídeos (_Merge_)], [UC-VID-006], [REQ-VID-MERGE], [Registado, Premium], [UC-VID-001], [],
+    [Gerir Áudio do Vídeo  (Remover, Substituir, Extrair)], [UC-VID-007], [REQ-VID-AUD], [Registado, Premium], [UC-VID-001], [],
   ),
 )
 
-*Justificação no contexto do MVP.* Para cada funcionalidade: porque é que é das primeiras a valer a pena construir,
-que valor entrega e que parte do suporte a vídeo ficaria por validar sem ela.
+ A seleção destas funcionalidades reflete um equilíbrio deliberado entre a entrega de valor imediato ao utilizador final e a validação técnica das várias dimensões operacionais do processamento de vídeo:
 
-- *UC-VID-001 — #preencher[nome]*: #preencher[…]
-- *UC-VID-002 — #preencher[nome]*: #preencher[…]
+- *UC-VID-001 — Submeter Vídeo para Processamento:* Constitui a porta de entrada indispensável de todo o ecossistema de vídeo. Permite validar a transferência de ficheiros volumosos para o armazenamento de objetos, a validação estrita de contentores e codecs, a extração de metadados e a aplicação das restrições de dimensão por perfil. Sem esta funcionalidade, nenhuma outra operação de vídeo seria exequível.
+
+- *UC-VID-002 — Recorte Temporal de Vídeo (_Trim_):*  Disponibiliza uma operação essencial de edição, permitindo selecionar e obter apenas os segmentos relevantes de um vídeo, sem modificar o conteúdo original. Constitui um primeiro cenário de transformação temporal com valor direto para o utilizador.
+
+- *UC-VID-003 — Aplicar Ferramenta Existente a Todos os Fotogramas:* Esta funcionalidade é particularmente relevante para o MVP por demonstrar a complementaridade entre os dois tipos de conteúdo e ampliar as possibilidades de transformação audiovisual. Estabelece a ponte arquitetural mais relevante entre o sistema legado de imagens e a nova extensão de vídeo, permitindo estender o domínio do vídeo capacidades de tratamento de imagem já oferecidas pelo PictuRAS. Valida a capacidade de decompor um vídeo em fotogramas individuais, encaminhá-los para os microsserviços de imagem preexistentes sem qualquer alteração aos seus contratos, e recompor o vídeo final. Sem ela, perder-se-ia a oportunidade de capitalizar todo o investimento anterior em ferramentas de imagem. 
+
+- *UC-VID-004 — Converter Formato e Resolução de Vídeo:* Permite adequar os vídeos a diferentes necessidades de compatibilidade, qualidade e dimensão. Introduz uma capacidade de transformação frequente e útil, complementando as operações de edição temporal. 
+
+- *UC-VID-005 — Extrair Sequência de Fotogramas de um Vídeo:* Conecta o fluxo temporal de volta ao domínio estático, permitindo gerar coleções de imagens a partir de excertos de vídeo. É essencial para tarefas de amostragem, inspeção detalhada e preparação de conteúdos para análise posterior pelas ferramentas avançadas de IA do PictuRAS. Reforça a ligação entre o processamento de vídeo e as funcionalidades de imagem da plataforma.
+
+- *UC-VID-006 — Concatenar Múltiplos Vídeos (_Merge_):* Permite combinar vários vídeos ou excertos numa única narrativa sequêncial, respondendo a uma necessidade comum de composição de conteúdos. Acrescenta ao MVP uma operação que envolve múltiplas entradas e a produção de um resultado audiovisual unificado.
+
+- *UC-VID-007 — Gerir Áudio do Vídeo:* Permite remover, substituir ou extrair a componente sonora de um vídeo, oferecendo maior controlo sobre o conteúdo audiovisual. Complementa as funcionalidades visuais e temporais, assegurando que o MVP contempla também operações sobre áudio, muito úteis para a experiência do utilizador.
+
 
 == Diagrama de casos de uso (atualizado)
 
@@ -65,6 +86,8 @@ que valor entrega e que parte do suporte a vídeo ficaria por validar sem ela.
   Usem os mesmos termos que nos casos de uso e requisitos (se é "biblioteca", não passa a "galeria").
 ]
 
+*TODO:*
+
 #figure(
   image("../images/baseline/modelo_dominio_base.png", width: 100%),
   caption: [Modelo de domínio da solução de base — *a substituir*],
@@ -87,25 +110,37 @@ que valor entrega e que parte do suporte a vídeo ficaria por validar sem ela.
   (`UC-VID-001/RN2`). As decisões de qualidade (`DQ-nnn`) estão reunidas no capítulo de Rastreabilidade.
 ]
 
+*TODO:* REVER ISTO, NAO REVI
+
 #tab([Regras de negócio transversais],
   tabela(
-    colunas: (1.6cm, 1fr, 3cm, 3cm),
-    [ID], [Regra], [Origem / justificação], [Requisitos],
-    [RNG-01], [#preencher[e.g., São aceites vídeos MP4 (H.264) e MOV]], [#preencher[…]], [#preencher[IDs]],
+    colunas: (1.8cm, 1fr, 3.8cm, 3cm),
+    [ID], [Regra transversal], [Origem / Justificação], [Requisitos associados],
+    [RNG-01], [O sistema aceita na Fase 1 (MVP) exclusivamente ficheiros de vídeo no contentor MP4 com codificação de vídeo H.264 e codificação de áudio AAC. Ficheiros sem faixa de vídeo legível ou com formatos incompatíveis são rejeitados na validação preliminar.], [Interoperabilidade universal na web e foco de MVP (UC-VID-001/RN4, UC-VID-004/RN1)], [REQ-VID-SUB-005 a SUB-009 \ REQ-VID-CONV-002 a CONV-005],
+    [RNG-02], [Utilizadores anónimos não têm permissão para submeter ou processar vídeos na Fase 1, mantendo apenas o acesso preexistente a ferramentas básicas sobre imagens estáticas.], [Mitigação de riscos de sobrecarga e custos computacionais na nuvem (UC-VID-001/RN1, UC-VID-002/RN4, UC-VID-003/RN1, UC-VID-007/RN1)], [REQ-VID-SUB-002 \ REQ-VID-SUB-003],
+    [RNG-03], [A submissão/upload de ficheiros de vídeo não é contabilizada na quota diária. Cada operação de processamento de vídeo confirmada consome exatamente uma unidade da quota diária de operações avançadas para utilizadores registados (limite de 5 operações/dia). Utilizadores premium não têm limite diário.], [Sustentabilidade do modelo SaaS e incentivo ao upload sem penalização prévia (UC-VID-001/RN5, UC-VID-002/RN3, UC-VID-003/RN2, UC-VID-006/RN4, UC-VID-007/RN2)], [REQ-VID-SUB-025 \ REQ-VID-COM-004 a COM-008],
+    [RNG-04], [São impostos limites técnicos por perfil: utilizadores registados estão limitados a 100 MB, 5 minutos de duração, resolução até 1080p e 60 fps; utilizadores premium têm limites de 1 GB, 30 minutos, resolução até 4K (3840×2160) e 60 fps. Ficheiros que excedam estes limiares são rejeitados antes da persistência.], [Proteção da infraestrutura e diferenciação comercial entre planos (UC-VID-001/RN2,RN3, UC-VID-003/RN3, UC-VID-004/RN2, UC-VID-006/RN2)], [REQ-VID-SUB-016 a SUB-023 \ REQ-VID-CONV-006, CONV-007 \ REQ-VID-MERGE-002, MERGE-003, MERGE-006, MERGE-007],
+    [RNG-05], [O ficheiro de vídeo de origem é estritamente imutável, nunca sendo substituído, corrompido ou eliminado durante o processamento. O resultado de qualquer operação concluída com sucesso é persistido como um novo conteúdo na biblioteca do projeto.], [Preservação da integridade de dados e facilidade de recuperação e edição não-destrutiva (UC-VID-002/RN2, UC-VID-004/RN5, UC-VID-005/RN5, UC-VID-006/RN3, UC-VID-007/RN3, DQ-003)], [REQ-VID-COM-017 \ REQ-VID-Q-004 \ REQ-VID-TRIM-011 \ REQ-VID-CONV-010 \ REQ-VID-AUD-012],
+    [RNG-06], [Todas as operações de processamento de vídeo são executadas de forma assíncrona através de filas de mensagens (RabbitMQ), registando os estados discretos `em fila`, `em processamento`, `concluída`, `falhada` ou `cancelada`, e emitindo eventos de progresso via WebSocket para os clientes autorizados.], [Experiência de utilização não bloqueante em operações demoradas e desacoplamento de serviços (UC-VID-002/RN6, DQ-001)], [REQ-VID-COM-009 a COM-013 \ REQ-VID-COM-020 \ REQ-VID-Q-002, Q-003, Q-016],
+    [RNG-07], [Em caso de falha de processamento ou cancelamento a pedido do utilizador, todos os artefactos parciais e ficheiros temporários no armazenamento de objetos são eliminados de imediato, garantindo a ausência de ficheiros órfãos e devolvendo qualquer quota previamente reservada.], [Consistência do sistema e justiça na gestão de quotas diárias (UC-VID-001/RN6, UC-VID-002/RN7, UC-VID-006/RN5, UC-VID-007/RN4, DQ-004)], [REQ-VID-SUB-024 \ REQ-VID-COM-007, COM-008 \ REQ-VID-COM-014 a COM-016 \ REQ-VID-Q-007, Q-013 a Q-015],
+    [RNG-08], [A aplicação de ferramentas de imagem a vídeos é restrita a serviços que aceitem e produzam exatamente uma imagem por fotograma. O vídeo de saída recomposto mantém obrigatoriamente a taxa de fotogramas, resolução e faixa sonora original, salvo especificação explícita em contrário.], [Garantia de coerência audiovisual e interoperabilidade com microsserviços legados de imagem (UC-VID-003/RN1-RN5, DQ-002)], [REQ-VID-FRM-001 a FRM-010 \ REQ-VID-FRM-014 \ REQ-VID-Q-006],
   ),
 )
 
 == Convenções de identificação
 
+De forma a manter a consistência metodológica exigida pelas diretrizes do projeto e garantir uma rastreabilidade sem ambiguidades ao longo de todo o dossiê de engenharia, são adotadas as convenções de identificação discriminadas na tabela abaixo.
+
 #tabela(
-  colunas: (4.2cm, 1fr),
-  [Identificador], [Utilização],
-  [UC-VID-nnn], [Caso de uso de vídeo (numeração única no relatório, a partir de UC-VID-001)],
-  [REQ-VID-{FUNC}-nnn], [Requisito (funcional ou não funcional); {FUNC} identifica a funcionalidade ou a área do serviço (e.g., TRIM, SUBMIT, STATUS); IDs nunca se reutilizam],
-  [RN#emph[k], A#emph[k], Q#emph[k], FA#emph[k]], [Regra, assunção, questão em aberto e fluxo alternativo de um caso de uso (locais ao caso de uso; qualificados, e.g. `UC-VID-001/RN2`, nas tabelas partilhadas)],
-  [RNG-nn / DQ-nnn], [Regra de negócio transversal / decisão de qualidade (globais)],
-  [DA-nn], [Decisão arquitetural (Capítulo de Arquitetura)],
-  [TST-{FUNC}-nn], [Teste (automático ou manual)],
-  [T-nn], [Tarefa de manutenção corretiva da solução de base],
-  [UCnn, RFnn, RNFnn], [Elementos do documento de requisitos de base (referidos quando são alterados — ALT)],
+  colunas: (4.4cm, 1fr),
+  [Identificador], [Utilização e convenção],
+  [UC-VID-nnn], [Caso de uso de vídeo, numerado sequencialmente a partir de `UC-VID-001`. Identifica univocamente a especificação funcional de cada capacidade introduzida.],
+  [REQ-VID-{FUNC}-nnn], [Requisito funcional ou não funcional. `{FUNC}` identifica a funcionalidade ou a área do serviço(`SUB` para submissão, `TRIM` para recorte, `FRM` para fotogramas, `CONV` para conversão, `FEX` para extração, `MERGE` para concatenação, `AUD` para gestão de áudio, `COM` para requisitos comuns/transversais, `Q` para requisitos de qualidade).],
+  [RN#emph[k], A#emph[k], Q#emph[k], FA#emph[k]], [Regra, assunção, questão em aberto e fluxo alternativo específicos de um caso de uso. Nas tabelas partilhadas do relatório são referenciados sob a forma qualificada (e.g., `UC-VID-001/RN2`).],
+  [RNG-nn], [Regra de negócio transversal ao sistema.],
+  [DQ-nnn], [Decisão de qualidade global.],
+  [DA-nn], [Decisão arquitetural, documentada formalmente no Capítulo de Arquitetura.],
+  [TST-{FUNC}-nn], [Caso de teste (manual ou automatizado) associado à verificação de requisitos.],
+  [T-nn], [Tarefa de manutenção corretiva da solução de base.],
+  [UCnn, RFnn, RNFnn], [Elementos preexistentes do documento de requisitos de base (`doc-ext-requisitos.pdf`), explicitamente citados sempre que são objeto de alteração ou extensão (`ALT`).],
 )
