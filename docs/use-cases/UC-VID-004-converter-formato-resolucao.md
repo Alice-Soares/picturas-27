@@ -54,17 +54,17 @@ A conversão de vídeo permite adaptar conteúdos a diferentes dispositivos e co
 | 4         | O utilizador define o formato e a resolução de destino.              | —                                                                                                              |
 | 5         | —                                                                    | O sistema valida as opções e apresenta uma estimativa do tamanho final do ficheiro.                            |
 | 6         | O utilizador confirma a operação.                                    | —                                                                                                              |
-| 7         | —                                                                    | O sistema cria um job de transcodificação e publica a tarefa na fila do processamento.                         |
-| 8         | O utilizador acompanha o progresso.                                  | O sistema atualiza o estado do job e comunica o progresso em tempo real via WebSocket.                         |
+| 7         | —                                                                    | O sistema cria um operação de transcodificação e publica a operação na fila do processamento.                         |
+| 8         | O utilizador acompanha o progresso.                                  | O sistema atualiza o estado do operação e comunica o progresso em tempo real via WebSocket.                         |
 | 9         | —                                                                    | O sistema executa a transcodificação e guarda o vídeo resultante no armazenamento.                             |
-| 10        | —                                                                    | O sistema atualiza o estado do job para concluído e disponibiliza o ficheiro convertido ao utilizador.         |
+| 10        | —                                                                    | O sistema atualiza o estado do operação para concluído e disponibiliza o ficheiro convertido ao utilizador.         |
 
 ### 2.3 Fluxos Alternativos
 
 | **Fluxo**                       | **Descrição**                                                                                                                                                 |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FA1 – Conversão em lote         | Se o utilizador selecionar vários vídeos, o sistema cria um job por vídeo e aplica os mesmos parâmetros a todos.                                              |
-| FA2 – Cancelamento da conversão | Durante a execução, o utilizador pode cancelar a operação; o sistema interrompe a transcodificação, limpa ficheiros temporários e marca o job como cancelado. |
+| FA1 – Conversão em lote         | Se o utilizador selecionar vários vídeos, o sistema cria um operação por vídeo e aplica os mesmos parâmetros a todos.                                              |
+| FA2 – Cancelamento da conversão | Durante a execução, o utilizador pode cancelar a operação; o sistema interrompe a transcodificação, limpa ficheiros temporários e marca o operação como cancelado. |
 | FA3 – Perfil predefinido        | Se o utilizador selecionar um perfil predefinido, o sistema preenche automaticamente o formato, resolução e codec mais adequados.                             |
 
 ### 2.4 Exceções
@@ -74,14 +74,14 @@ A conversão de vídeo permite adaptar conteúdos a diferentes dispositivos e co
 | Formato de origem não suportado        | O sistema rejeita a conversão e informa o utilizador dos formatos aceites.                |
 | Combinação de formato e codec inválida | O sistema bloqueia a configuração e solicita uma combinação compatível.                   |
 | Quota de operações avançadas esgotada   | O sistema impede a conversão e informa que o limite do perfil foi atingido.               |
-| Falha durante a transcodificação       | O sistema marca o job como falhado, elimina ficheiros temporários e informa o utilizador. |
+| Falha durante a transcodificação       | O sistema marca o operação como falhado, elimina ficheiros temporários e informa o utilizador. |
 
 ### 2.5 Pós-condições
 
 | **Tipo**            | **Resultado**                                                                                                                 |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | Garantia de Sucesso | O ficheiro convertido fica armazenado no projeto e disponível para visualização e transferência sem alterar o vídeo original. |
-| Garantia Mínima     | O vídeo original permanece intacto, os ficheiros temporários são removidos e o job é registado com o estado final correto.    |
+| Garantia Mínima     | O vídeo original permanece intacto, os ficheiros temporários são removidos e o operação é registado com o estado final correto.    |
 
 ### 2.6 Regras de Negócio e Restrições
 
@@ -89,7 +89,7 @@ A conversão de vídeo permite adaptar conteúdos a diferentes dispositivos e co
 | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | RN1    | O MVP aceita MP4 com vídeo H.264 e áudio AAC; outros formatos só são aceites se forem explicitamente adicionados à lista de combinações suportadas.                |
 | RN2    | A resolução de saída não pode exceder 1920×1080 para registados nem 3840×2160 para premium.                                                                       |
-| RN3    | Cada job de conversão aceite conta como uma operação avançada; utilizadores premium não têm limite diário.                                                        |
+| RN3    | Cada operação de conversão aceite conta como uma operação avançada; utilizadores premium não têm limite diário.                                                        |
 | RN4    | O áudio de saída deve ser AAC quando o contentor de saída for MP4.                                                                                                |
 | RN5    | O vídeo original deve permanecer inalterado após a conversão.                                                                                                   |
 
@@ -131,5 +131,32 @@ A conversão de vídeo permite adaptar conteúdos a diferentes dispositivos e co
 - [ ] Utilização de agentes de IA documentada.
 
 ---
-
 ---
+
+## 4. Esboço de requisitos derivados
+
+### 4.1 Requisitos de Sistema
+
+| **ID** | **Requisito** | **Tipo** | **Prioridade** | **Novo/Alt** | **Origem** | **Como verificar** |
+|--------|---------------|----------|----------------|--------------|------------|--------------------|
+| REQ-VID-CONV-001 | O sistema deve apresentar e validar apenas combinações de contentor, codec e resolução suportadas pelo perfil e pelo MVP. | F | Deve ter | NOVO | Passos 3-4, RN1-RN2 | Selecionar combinações válidas e inválidas. |
+| REQ-VID-CONV-002 | O sistema deve executar a conversão de forma assíncrona, comunicar progresso e disponibilizar o novo ficheiro quando concluída. | F | Deve ter | NOVO | Passos 7-10 | Verificar operação, eventos e resultado. |
+| REQ-VID-CONV-003 | Quando a saída for MP4, o sistema deve codificar o áudio como AAC e manter o vídeo original intacto. | F | Deve ter | NOVO | RN4-RN5 | Inspecionar codecs e comparar o original. |
+
+### 4.2 Impacto no sistema existente
+
+| **Elemento existente afetado** | **Impacto (Manter / Estender / Alterar)** | **Descrição do impacto** | **Requisitos relacionados** |
+|--------------------------------|-------------------------------------------|--------------------------|------------------------------|
+| Projects Service e quota | Estender | Registar conversões como operações e aplicar a política existente de operações avançadas. | CONV-001, CONV-002 |
+| RabbitMQ e workers | Estender | Criar worker de transcodificação sem alterar as filas das ferramentas de imagem. | CONV-002 |
+| SeaweedFS / Image Storage Service | Estender | Guardar resultados de vídeo como novos objetos. | CONV-002, CONV-003 |
+| FFmpeg/FFprobe | Novo | Validar streams e executar a transcodificação. | CONV-001, CONV-003 |
+
+### 4.3 Matriz de Rastreabilidade
+
+| **Elemento do Caso de Uso** | **Descrição abreviada** | **Requisito(s) de Sistema** |
+|------------------------------|-------------------------|------------------------------|
+| Passos 1-5 | Apresentar e validar opções | REQ-VID-CONV-001 |
+| Passos 6-8 | Criar operação e comunicar progresso | REQ-VID-CONV-002 |
+| Passos 9-10 | Guardar conversão sem substituir origem | REQ-VID-CONV-003 |
+| FA2 e exceções | Cancelar ou falhar com limpeza | REQ-VID-CONV-002 |

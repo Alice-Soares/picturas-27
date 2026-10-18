@@ -60,11 +60,11 @@ Ficheiros de referencia do fluxo de imagem:
 ## Perfis e quota
 
 - Anonimo: funcionalidades de imagem permitidas, sem suporte de video no MVP.
-- Registado/free: pode carregar videos e executar jobs de video sujeitos a quota de operacoes avancadas.
-- Premium: pode carregar videos e executar jobs sem limite diario de operacoes.
+- Registado/free: pode carregar videos e executar operações de video sujeitos a quota de operacoes avancadas.
+- Premium: pode carregar videos e executar operações sem limite diario de operacoes.
 - O upload de video nao consome quota.
-- Cada job de processamento de video aceite conta como uma operacao avancada para utilizadores registados.
-- Um job que falha, e cancelado ou termina sem efeito nao consome quota.
+- Cada operação de processamento de video aceite conta como uma operacao avancada para utilizadores registados.
+- Um operação que falha, e cancelado ou termina sem efeito nao consome quota.
 - A quota deve ser reservada antes do processamento e devolvida em falhas/cancelamentos quando essa mecanica for implementada.
 - A aplicacao atual controla quota sobretudo para ferramentas avancadas de imagem. O suporte de quota de video ainda tem de ser implementado sem quebrar essa logica.
 
@@ -76,7 +76,7 @@ Utilizador registado:
 - duracao ate 5 minutos
 - resolucao ate 1920x1080
 - ate 60 fps
-- extracao ate 1000 fotogramas por job
+- extracao ate 1000 fotogramas por operação
 - concatenacao de 2 a 5 videos, com duracao total ate 5 minutos
 
 Utilizador premium:
@@ -85,7 +85,7 @@ Utilizador premium:
 - duracao ate 30 minutos
 - resolucao ate 3840x2160
 - ate 60 fps
-- extracao ate 5000 fotogramas por job
+- extracao ate 5000 fotogramas por operação
 - concatenacao de 2 a 15 videos, com duracao total ate 30 minutos
 
 Estes valores sao decisoes de MVP documentadas nos use cases. Rever com a equipa/docente antes da implementacao se necessario.
@@ -108,14 +108,14 @@ Remover audio de video sem audio:
 
 - apresentar aviso de que o video ja nao tem faixa de audio;
 - nao criar novo ficheiro;
-- nao iniciar job;
+- nao iniciar operação;
 - nao consumir quota.
 
 Extrair audio de video sem audio:
 
 - apresentar erro;
 - nao criar resultado;
-- nao iniciar job;
+- nao iniciar operação;
 - nao consumir quota.
 
 Substituir audio:
@@ -153,7 +153,7 @@ Os use cases devem respeitar apenas as secoes 0 a 3 do template do Exercico 1. A
 2. Definir uma representacao de conteudo de video que nao quebre `imgs` nem o processamento de fotografias.
 3. Criar validacao de video com FFprobe.
 4. Estender upload e armazenamento com uma convencao de chaves/estagios compativel com a camada S3 existente.
-5. Criar estados persistentes de job: `queued`, `processing`, `completed`, `failed`, `cancelled`.
+5. Criar estados persistentes de operação: `queued`, `processing`, `completed`, `failed`, `cancelled`.
 6. Criar um worker/base de video com FFmpeg.
 7. Implementar primeiro upload e recorte temporal.
 8. Implementar conversao, extracao de fotogramas e concatenacao.
@@ -171,7 +171,7 @@ Os use cases devem respeitar apenas as secoes 0 a 3 do template do Exercico 1. A
 - Nao introduzir MinIO novo; o README documenta a migracao existente para SeaweedFS.
 - Usar parsers/FFprobe/FFmpeg para metadata e processamento, nao extensoes de ficheiro como unica validacao.
 - Manter o original e guardar resultados como novos conteudos.
-- Tratar falhas de forma atomica: limpar temporarios, marcar job e devolver quota reservada.
+- Tratar falhas de forma atomica: limpar temporarios, marcar operação e devolver quota reservada.
 - Validar com testes focados e depois testes de regressao das fotografias.
 - Nao assumir que filas, workers, FFmpeg, entidades de video ou progresso percentual ja existem.
 - Atualizar documentacao e testes quando uma decisao for implementada.

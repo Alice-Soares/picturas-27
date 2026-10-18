@@ -55,10 +55,10 @@ A extração de fotogramas liga o domínio do vídeo ao domínio da imagem e per
 | 5 | — | O sistema calcula e apresenta a estimativa do número total de fotogramas. |
 | 6 | O utilizador confirma a operação. | — |
 | 7 | — | O sistema valida o perfil, o número de fotogramas e o espaço disponível. |
-| 8 | — | O sistema cria um job de processamento e publica a tarefa na fila de extração. |
+| 8 | — | O sistema cria um operação de processamento e publica a operação na fila de extração. |
 | 9 | O utilizador acompanha o progresso. | O sistema atualiza o estado por WebSocket. |
 | 10 | — | O sistema extrai cada fotograma e guarda-o no armazenamento como imagem do projeto. |
-| 11 | — | O sistema marca o job como concluído e notifica o utilizador. |
+| 11 | — | O sistema marca o operação como concluído e notifica o utilizador. |
 | 12 | — | As imagens ficam disponíveis na biblioteca para processamento posterior. |
 
 ### 2.3 Fluxos Alternativos
@@ -66,7 +66,7 @@ A extração de fotogramas liga o domínio do vídeo ao domínio da imagem e per
 | **Fluxo** | **Descrição** |
 |-----------|---------------|
 | FA1 – Extração parcial | Se o utilizador definir um intervalo temporal, o sistema extrai apenas os fotogramas desse intervalo e ignora o restante conteúdo. |
-| FA2 – Cancelamento da extração | Durante a execução, o utilizador pode cancelar a operação; o sistema elimina os fotogramas temporários e termina o job em estado cancelado. |
+| FA2 – Cancelamento da extração | Durante a execução, o utilizador pode cancelar a operação; o sistema elimina os fotogramas temporários e termina o operação em estado cancelado. |
 | FA3 – Novo projeto para os fotogramas | Se o utilizador optar por receber os fotogramas num projeto novo, o sistema cria esse projeto e organiza os ficheiros nesse contexto. |
 
 ### 2.4 Exceções
@@ -76,7 +76,7 @@ A extração de fotogramas liga o domínio do vídeo ao domínio da imagem e per
 | Codec do vídeo não suportado | O sistema rejeita a operação e informa o utilizador dos codecs aceitáveis. |
 | Número de fotogramas excede o limite do perfil | O sistema bloqueia a extração e pede que o utilizador reduza o intervalo ou o volume. |
 | Espaço de armazenamento insuficiente | O sistema informa que não há espaço suficiente e não inicia o processamento. |
-| Falha a meio do processamento | O sistema elimina os fotogramas temporários, marca o job como falhado, devolve qualquer quota reservada e notifica o utilizador. |
+| Falha a meio do processamento | O sistema elimina os fotogramas temporários, marca o operação como falhado, devolve qualquer quota reservada e notifica o utilizador. |
 
 ### 2.5 Pós-condições
 
@@ -90,8 +90,8 @@ A extração de fotogramas liga o domínio do vídeo ao domínio da imagem e per
 | **ID** | **Regra** |
 |--------|-----------|
 | RN1 | O perfil anónimo não tem acesso a esta funcionalidade até existir uma regra de vídeo aprovada. |
-| RN2 | O limite é de 1000 fotogramas por job para registados e 5000 para premium; os fotogramas são guardados em JPEG. |
-| RN3 | Cada job de extração aceite conta como uma operação avançada; utilizadores premium não têm limite diário. |
+| RN2 | O limite é de 1000 fotogramas por operação para registados e 5000 para premium; os fotogramas são guardados em JPEG. |
+| RN3 | Cada operação de extração aceite conta como uma operação avançada; utilizadores premium não têm limite diário. |
 | RN4 | Os fotogramas extraídos devem ser armazenados como imagens normais do projeto. |
 | RN5 | O vídeo original não pode ser alterado por esta funcionalidade. |
 
@@ -134,3 +134,30 @@ A extração de fotogramas liga o domínio do vídeo ao domínio da imagem e per
 
 ---
 ---
+
+## 4. Esboço de requisitos derivados
+
+### 4.1 Requisitos de Sistema
+
+| **ID** | **Requisito** | **Tipo** | **Prioridade** | **Novo/Alt** | **Origem** | **Como verificar** |
+|--------|---------------|----------|----------------|--------------|------------|--------------------|
+| REQ-VID-FEX-001 | O sistema deve permitir definir intervalo temporal, quantidade máxima e formato de saída para a extração. | F | Deve ter | NOVO | Passos 3-5 | Configurar uma extração e inspecionar o operação. |
+| REQ-VID-FEX-002 | O sistema deve limitar a extração a 1000 fotogramas por operação para registados e 5000 para premium. | F | Deve ter | NOVO | RN2 | Testar os limites e valores acima deles. |
+| REQ-VID-FEX-003 | O sistema deve guardar os fotogramas como imagens JPEG do projeto sem alterar o vídeo original. | F | Deve ter | ALT | RN4-RN5, pós-condição | Verificar ficheiros, projeto e hash do vídeo. |
+
+### 4.2 Impacto no sistema existente
+
+| **Elemento existente afetado** | **Impacto (Manter / Estender / Alterar)** | **Descrição do impacto** | **Requisitos relacionados** |
+|--------------------------------|-------------------------------------------|--------------------------|------------------------------|
+| Projects Service e biblioteca | Estender | Associar imagens extraídas ao projeto e ao vídeo de origem. | FEX-001, FEX-003 |
+| Image Storage Service / SeaweedFS | Estender | Reutilizar o armazenamento de imagens para resultados JPEG e limpar temporários. | FEX-003 |
+| RabbitMQ e WebSocket Gateway | Estender | Criar operação assíncrono e publicar progresso autorizado. | FEX-001, FEX-002 |
+| FFmpeg/FFprobe | Novo | Selecionar e extrair fotogramas do intervalo pedido. | FEX-001, FEX-002 |
+
+### 4.3 Matriz de Rastreabilidade
+
+| **Elemento do Caso de Uso** | **Descrição abreviada** | **Requisito(s) de Sistema** |
+|------------------------------|-------------------------|------------------------------|
+| Passos 3-7 | Configurar, estimar e validar | REQ-VID-FEX-001, REQ-VID-FEX-002 |
+| Passos 8-11 | Processar e guardar imagens | REQ-VID-FEX-003 |
+| FA1-FA3 e exceções | Intervalo, cancelamento e limpeza | REQ-VID-FEX-001, REQ-VID-FEX-003 |

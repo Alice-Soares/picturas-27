@@ -50,10 +50,10 @@ Permite manipular a faixa de áudio de um vídeo: removê-la, substituí-la por 
 | --------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1         | O utilizador seleciona um vídeo na biblioteca e clica em "Gerir Áudio". | O sistema apresenta as opções **Remover Áudio**, **Substituir Áudio** e **Extrair Faixa de Áudio**. |
 | 2         | O utilizador escolhe a operação desejada e confirma.                    | O sistema valida o perfil, a quota aplicável e, para extração, a existência de áudio no ficheiro de origem. Para substituição, solicita e valida o ficheiro de áudio. |
-| 3         | —                                                                       | O sistema cria um job de processamento de áudio e coloca-o na fila (RabbitMQ).                                                                |
+| 3         | —                                                                       | O sistema cria um operação de processamento de áudio e coloca-o na fila (RabbitMQ).                                                                |
 | 4         | —                                                                       | O sistema notifica o utilizador que o processamento está em curso.                                                                            |
 | 5         | O utilizador acompanha o estado.                                        | O sistema atualiza o progresso em tempo real via WebSocket.                                                                                   |
-| 6         | —                                                                       | O worker (FFmpeg) remove a faixa de áudio, extrai-a para M4A/AAC ou substitui-a pela faixa escolhida pelo utilizador. |
+| 6         | —                                                                       | O worker de vídeo, com FFmpeg, remove a faixa de áudio, extrai-a para M4A/AAC ou substitui-a pela faixa escolhida pelo utilizador. |
 | 7         | —                                                                       | O sistema guarda o novo vídeo MP4 no armazenamento do projeto; na extração, guarda também o ficheiro M4A com áudio AAC. |
 | 8         | —                                                                       | O sistema regista o novo item na base de dados, associa-o ao projeto e aplica a regra de quota definida para a operação.                      |
 | 9         | —                                                                       | O sistema notifica a conclusão com sucesso e disponibiliza o novo ficheiro na biblioteca do projeto.                                          |
@@ -64,14 +64,14 @@ Permite manipular a faixa de áudio de um vídeo: removê-la, substituí-la por 
 | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | FA1 – Vídeo sem faixa sonora original | Para remover áudio, o sistema apresenta o aviso "Este vídeo já não tem faixa de áudio" e termina sem criar resultado nem consumir quota. Para extrair áudio, apresenta um erro e também não cria resultado nem consome quota. |
 | FA2 – Substituição com duração diferente | O utilizador pode escolher opcionalmente o intervalo da faixa a utilizar. Se o áudio for mais curto, o vídeo fica sem som no restante tempo; se for mais longo, o sistema corta-o no fim do vídeo. |
-| FA3 – Cancelamento pelo utilizador    | Durante a execução, o utilizador pode cancelar o job: o worker interrompe o processo, limpa temporários, repõe o estado como cancelado e não desconta quota. |
+| FA3 – Cancelamento pelo utilizador    | Durante a execução, o utilizador pode cancelar o operação: o worker interrompe o processo, limpa temporários, repõe o estado como cancelado e não desconta quota. |
 
 ### 2.4 Exceções
 
 | **Condição**                                 | **Comportamento do Sistema**                                                                        |
 | -------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Quota de operações avançadas esgotada        | O sistema impede a submissão do job e indica o estado atual da quota.                               |
-| Erro técnico no processamento (FFmpeg crash) | O sistema interceta o erro, marca o job como falhado, elimina ficheiros parciais e liberta a quota. |
+| Quota de operações avançadas esgotada        | O sistema impede a submissão do operação e indica o estado atual da quota.                               |
+| Erro técnico no processamento (FFmpeg crash) | O sistema interceta o erro, marca o operação como falhado, elimina ficheiros parciais e liberta a quota. |
 | Ficheiro corrompido                          | O sistema aborta a operação, marca como falhado e apresenta mensagem explicativa.                   |
 
 ### 2.5 Pós-condições
@@ -79,16 +79,16 @@ Permite manipular a faixa de áudio de um vídeo: removê-la, substituí-la por 
 | **Tipo**            | **Resultado**                                                                                                                            |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | Garantia de Sucesso | O novo ficheiro (vídeo silenciado ou áudio extraído) está guardado na biblioteca; o vídeo original permanece intacto.                    |
-| Garantia Mínima     | O vídeo original permanece inalterado, os temporários são limpos, o job fica marcado como falhado/cancelado e nenhuma quota é consumida. |
+| Garantia Mínima     | O vídeo original permanece inalterado, os temporários são limpos, o operação fica marcado como falhado/cancelado e nenhuma quota é consumida. |
 
 ### 2.6 Regras de Negócio e Restrições
 
 | **ID** | **Regra**                                                                                       |
 | ------ | ----------------------------------------------------------------------------------------------- |
 | RN1    | Utilizadores anónimos não têm acesso a esta funcionalidade.                                     |
-| RN2    | Cada job de gestão de áudio aceite conta como uma operação avançada para o utilizador registado; utilizadores premium não têm limite diário. |
+| RN2    | Cada operação de gestão de áudio aceite conta como uma operação avançada para o utilizador registado; utilizadores premium não têm limite diário. |
 | RN3    | O vídeo original nunca é substituído pelo resultado; cada resultado é guardado como novo conteúdo. |
-| RN4    | Jobs cancelados ou falhados, e operações terminadas sem efeito por falta de áudio, não consomem quota. |
+| RN4    | Operações cancelados ou falhados, e operações terminadas sem efeito por falta de áudio, não consomem quota. |
 | RN5    | O áudio de substituição deve ser fornecido em MP3 ou M4A/AAC e é convertido para AAC no vídeo MP4 resultante. |
 
 ### 2.7 Assunções
@@ -126,5 +126,34 @@ Permite manipular a faixa de áudio de um vídeo: removê-la, substituí-la por 
 - [x] Utilização de agentes de IA documentada.
 
 ---
-
 ---
+
+## 4. Esboço de requisitos derivados
+
+### 4.1 Requisitos de Sistema
+
+| **ID** | **Requisito** | **Tipo** | **Prioridade** | **Novo/Alt** | **Origem** | **Como verificar** |
+|--------|---------------|----------|----------------|--------------|------------|--------------------|
+| REQ-VID-AUD-001 | O sistema deve permitir remover, substituir ou extrair a faixa de áudio de um vídeo. | F | Deve ter | NOVO | Passos 1-2 | Executar cada operação. |
+| REQ-VID-AUD-002 | O sistema deve aceitar áudio de substituição MP3 ou M4A/AAC e gerar AAC no vídeo MP4 resultante. | F | Deve ter | NOVO | RN5 | Testar formatos aceites e inspecionar o resultado. |
+| REQ-VID-AUD-003 | O sistema deve rejeitar a extração quando o vídeo não tiver faixa sonora. | F | Deve ter | NOVO | FA1 | Executar extração num vídeo sem áudio. |
+| REQ-VID-AUD-004 | O sistema deve preservar o vídeo original e guardar cada resultado como novo conteúdo do projeto. | F | Deve ter | NOVO | RN3, pós-condição | Comparar original e novo item. |
+| REQ-VID-AUD-005 | O sistema deve permitir cancelar o operação e limpar temporários sem consumir quota. | F | Deve ter | NOVO | FA3-RN4 | Cancelar e verificar estado, armazenamento e quota. |
+
+### 4.2 Impacto no sistema existente
+
+| **Elemento existente afetado** | **Impacto (Manter / Estender / Alterar)** | **Descrição do impacto** | **Requisitos relacionados** |
+|--------------------------------|-------------------------------------------|--------------------------|------------------------------|
+| Projects Service e quota | Estender | Registar cada resultado como novo conteúdo e aplicar a política de operações avançadas. | AUD-001, AUD-004, AUD-005 |
+| RabbitMQ e WebSocket Gateway | Estender | Criar operação de áudio e comunicar estados/progresso ao projeto autorizado. | AUD-001, AUD-005 |
+| SeaweedFS / Image Storage Service | Estender | Guardar vídeo e M4A resultantes e limpar parciais. | AUD-002, AUD-004, AUD-005 |
+| FFmpeg/FFprobe | Novo | Detetar streams e executar remoção, substituição ou extração. | AUD-001, AUD-002, AUD-003 |
+
+### 4.3 Matriz de Rastreabilidade
+
+| **Elemento do Caso de Uso** | **Descrição abreviada** | **Requisito(s) de Sistema** |
+|------------------------------|-------------------------|------------------------------|
+| Passos 1-2 | Escolher operação e validar entrada | REQ-VID-AUD-001, REQ-VID-AUD-002, REQ-VID-AUD-003 |
+| Passos 3-5 | Criar operação e comunicar progresso | REQ-VID-AUD-005 |
+| Passos 6-9 | Processar, persistir e notificar | REQ-VID-AUD-004 |
+| FA1-FA3 e exceções | Sem áudio, cancelamento e falha | REQ-VID-AUD-003, REQ-VID-AUD-005 |

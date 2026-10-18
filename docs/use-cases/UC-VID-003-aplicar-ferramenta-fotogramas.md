@@ -57,7 +57,7 @@ Esta funcionalidade valida a extensão do conjunto de ferramentas de imagem para
 | 6         | O utilizador confirma o intervalo e a configuração.                                  | —                                                                                                                                                      |
 | 7         | O utilizador confirma a execução.                                                    | —                                                                                                                                                      |
 | 8         | —                                                                                    | O sistema valida o vídeo de origem, os parâmetros e a disponibilidade de armazenamento antes de iniciar o processamento.                               |
-| 9         | —                                                                                    | O sistema cria um job de processamento e inicia a extração dos fotogramas para armazenamento temporário.                                               |
+| 9         | —                                                                                    | O sistema cria um operação de processamento e inicia a extração dos fotogramas para armazenamento temporário.                                               |
 | 10        | —                                                                                    | O sistema processa cada fotograma individualmente com a ferramenta selecionada e atualiza o progresso em tempo real.                                   |
 | 11        | —                                                                                    | O sistema recompõe o vídeo resultante, preservando a faixa de áudio original e armazena o ficheiro no projeto do utilizador.                           |
 | 12        | O utilizador visualiza o resultado.                                                  | O sistema disponibiliza o vídeo processado para pré-visualização e transferência.                                                                      |
@@ -67,17 +67,17 @@ Esta funcionalidade valida a extensão do conjunto de ferramentas de imagem para
 | **Fluxo**                           | **Descrição**                                                                                                                                                         |
 | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | FA1 – Encadeamento de ferramentas   | Se o utilizador selecionar mais do que uma ferramenta em sequência, o sistema aplica cada transformação por ordem ao mesmo fotograma antes de recompor o vídeo final. |
-| FA2 – Reprocessamento de fotograma  | Se um fotograma falhar, o sistema tenta processá-lo novamente. Se a falha persistir, o job termina como falhado, elimina o resultado parcial e informa o utilizador.  |
-| FA3 – Cancelamento do processamento | Durante a execução, o utilizador pode cancelar a operação; o sistema interrompe os fotogramas pendentes, limpa ficheiros temporários e marca o job como cancelado.    |
+| FA2 – Reprocessamento de fotograma  | Se um fotograma falhar, o sistema tenta processá-lo novamente. Se a falha persistir, o operação termina como falhado, elimina o resultado parcial e informa o utilizador.  |
+| FA3 – Cancelamento do processamento | Durante a execução, o utilizador pode cancelar a operação; o sistema interrompe os fotogramas pendentes, limpa ficheiros temporários e marca o operação como cancelado.    |
 
 ### 2.4 Exceções
 
 | **Condição**                                       | **Comportamento do Sistema**                                                                                                                          |
 | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Vídeo com codec não suportado                      | O sistema rejeita a operação e informa que o formato ou codec do vídeo não é compatível com a extração por fotogramas.                                |
-| Ferramenta incompatível com fotogramas             | Se a ferramenta selecionada gere metadados em vez de imagem, o sistema informa o utilizador e solicita confirmação antes de continuar.                |
+| Ferramenta incompatível com fotogramas             | Se a ferramenta selecionada gere metadados em vez de imagem, o sistema informa o utilizador e solicita confirmação antes de continuar.             |
 | Quota esgotada                                     | O sistema bloqueia a operação e indica que a quota do perfil já foi usada.                                                                            |
-| Falha persistente no processamento de um fotograma | O sistema marca o job como falhado, elimina os fotogramas/resultados temporários, mantém o vídeo original intacto e devolve qualquer quota reservada. |
+| Falha persistente no processamento de um fotograma | O sistema marca o operação como falhado, elimina os fotogramas/resultados temporários, mantém o vídeo original intacto e devolve qualquer quota reservada. |
 
 ### 2.5 Pós-condições
 
@@ -91,7 +91,7 @@ Esta funcionalidade valida a extensão do conjunto de ferramentas de imagem para
 | **ID** | **Regra**                                                                                                                                                         |
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | RN1    | Utilizadores anónimos não têm acesso a esta funcionalidade.                                                                                                       |
-| RN2    | Cada job de aplicação de ferramenta conta como uma operação avançada, independentemente do número de fotogramas processados; utilizadores premium não têm limite diário. |
+| RN2    | Cada operação de aplicação de ferramenta conta como uma operação avançada, independentemente do número de fotogramas processados; utilizadores premium não têm limite diário. |
 | RN3    | O vídeo deve respeitar os limites do perfil: 5 minutos e 1920×1080 para registados; 30 minutos e 3840×2160 para premium.                                               |
 | RN4    | O vídeo resultante mantém a faixa de áudio original e a resolução do vídeo de origem.                                                                             |
 | RN5    | As ferramentas de IA só podem ser aplicadas a intervalos limitados e não ao vídeo completo, salvo decisão posterior documentada.                                  |
@@ -134,5 +134,34 @@ Esta funcionalidade valida a extensão do conjunto de ferramentas de imagem para
 - [ ] Utilização de agentes de IA documentada.
 
 ---
-
 ---
+
+## 4. Esboço de requisitos derivados
+
+### 4.1 Requisitos de Sistema
+
+| **ID** | **Requisito** | **Tipo** | **Prioridade** | **Novo/Alt** | **Origem** | **Como verificar** |
+|--------|---------------|----------|----------------|--------------|------------|--------------------|
+| REQ-VID-FRM-001 | O sistema deve permitir selecionar uma ferramenta de imagem existente e parâmetros compatíveis para aplicação aos fotogramas de um vídeo. | F | Deve ter | ALT | Passos 3-4 | Apresentar apenas ferramentas suportadas e validar parâmetros. |
+| REQ-VID-FRM-002 | O sistema deve extrair, processar e recompor os fotogramas no intervalo e à taxa definidos pelo utilizador. | F | Deve ter | NOVO | Passos 5, 9-11 | Verificar intervalo, número de fotogramas e resultado. |
+| REQ-VID-FRM-003 | O sistema deve preservar a faixa de áudio e a resolução quando a ferramenta não exigir alteração. | F | Deve ter | NOVO | RN4 | Comparar metadados de origem e resultado. |
+| REQ-VID-FRM-004 | O sistema deve aplicar ferramentas compatíveis pela ordem selecionada quando o encadeamento for solicitado. | F | Deveria ter | ALT | FA1 | Submeter duas ferramentas e verificar a ordem. |
+| REQ-VID-FRM-005 | O sistema deve repetir uma vez o processamento de um fotograma que falhe e terminar o operação como falhado se a falha persistir. | F | Deve ter | NOVO | FA2, exceção | Injetar uma falha repetida e verificar limpeza. |
+
+### 4.2 Impacto no sistema existente
+
+| **Elemento existente afetado** | **Impacto (Manter / Estender / Alterar)** | **Descrição do impacto** | **Requisitos relacionados** |
+|--------------------------------|-------------------------------------------|--------------------------|------------------------------|
+| Microserviços de ferramentas de imagem | Estender | Reutilizar workers existentes para receber fotogramas, sem alterar o contrato de imagem isolado. | FRM-001, FRM-002, FRM-004 |
+| RabbitMQ e Projects Service | Estender | Orquestrar decomposição, processamento, recomposição e estado do operação. | FRM-002, FRM-005 |
+| Armazenamento S3 e diretório temporário | Estender | Isolar fotogramas temporários e guardar apenas o resultado final. | FRM-002, FRM-005 |
+| FFmpeg/FFprobe | Novo | Decompor e recompor o vídeo, preservando streams não afetadas. | FRM-002, FRM-003 |
+
+### 4.3 Matriz de Rastreabilidade
+
+| **Elemento do Caso de Uso** | **Descrição abreviada** | **Requisito(s) de Sistema** |
+|------------------------------|-------------------------|------------------------------|
+| Passos 3-8 | Selecionar ferramenta, parâmetros e validar | REQ-VID-FRM-001, REQ-VID-FRM-002 |
+| Passos 9-12 | Processar fotogramas e gerar resultado | REQ-VID-FRM-002, REQ-VID-FRM-003 |
+| FA1 | Encadear ferramentas | REQ-VID-FRM-004 |
+| FA2-FA3 e exceções | Repetir, cancelar e limpar | REQ-VID-FRM-005 |

@@ -58,7 +58,7 @@ Esta funcionalidade é a base de todo o suporte a vídeo no PictuRAS, porque sem
 | 8         | —                                                         | O sistema valida a duração, a resolução e o fps contra os limites do perfil. |
 | 9         | —                                                         | O sistema cria o registo correspondente na base de dados.                                                                                                             |
 | 10        | —                                                         | O sistema associa o vídeo ao projeto e torna-o disponível para visualização e processamento posterior.                                                                |
-| 11        | —                                                         | O sistema informa o sucesso da operação; o upload não consome a quota diária de operações, tal como acontece com a submissão de imagens.                              |
+| 11        | —                                                         | O sistema informa o sucesso da operação; a submissão não consome a quota diária de operações avançadas, que continua a aplicar-se aos operações de processamento.        |
 
 ### 2.3 Fluxos Alternativos
 
@@ -131,3 +131,36 @@ Esta funcionalidade é a base de todo o suporte a vídeo no PictuRAS, porque sem
 | GitHub Copilot           | Revisão dos limites de vídeo e rastreabilidade                          | Os limites de tamanho, duração, resolução e fps aplicam-se apenas ao perfil registado; para premium foi registada a ausência de limites funcionais por perfil, mantendo a validação de formato/codec e a dependência da capacidade da infraestrutura                       |
 
 ---
+
+
+## 4. Esboço de requisitos derivados
+
+### 4.1 Requisitos de Sistema
+
+| **ID** | **Requisito** | **Tipo** | **Prioridade** | **Novo/Alt** | **Origem** | **Como verificar** |
+|--------|---------------|----------|----------------|--------------|------------|--------------------|
+| REQ-VID-SUB-001 | O sistema deve permitir a submissão de vídeos apenas a utilizadores registados ou premium com sessão válida. | F | Deve ter | ALT | UC-VID-001, FA4, RN1 | Tentar submeter vídeo sem sessão e com os dois perfis autorizados. |
+| REQ-VID-SUB-002 | O sistema deve aceitar no MVP vídeos MP4 com vídeo H.264 e, quando exista áudio, AAC. | F | Deve ter | NOVO | UC-VID-001, RN4 | Submeter ficheiros compatíveis e incompatíveis. |
+| REQ-VID-SUB-003 | O sistema deve extrair e guardar codec, resolução, duração, taxa de fotogramas e tamanho. | F | Deve ter | NOVO | UC-VID-001, passo 7 | Inspecionar o registo após uma submissão válida. |
+| REQ-VID-SUB-004 | O sistema deve rejeitar vídeos que excedam os limites do perfil antes de os associar ao projeto. | F | Deve ter | NOVO | UC-VID-001, passos 8, RN2-RN3 | Testar ficheiros no limite e acima de cada limite. |
+| REQ-VID-SUB-005 | O sistema deve guardar o vídeo validado através da fachada de armazenamento existente, criar a referência no projeto e manter o original disponível para operações posteriores. | F | Deve ter | ALT | UC-VID-001, passos 4, 9-10, RN7-RN8 | Verificar objeto, registo e associação ao projeto. |
+| REQ-VID-SUB-006 | O sistema deve remover temporários e não criar referências persistentes quando a submissão for rejeitada, cancelada ou falhar. | F | Deve ter | NOVO | UC-VID-001, FA3, exceções | Interromper e provocar falhas durante o upload. |
+
+### 4.2 Impacto no sistema existente
+
+| **Elemento existente afetado** | **Impacto (Manter / Estender / Alterar)** | **Descrição do impacto** | **Requisitos relacionados** |
+|--------------------------------|-------------------------------------------|--------------------------|------------------------------|
+| Autenticação e perfis | Alterar | Reutilizar JWT e autorização existentes, acrescentando a regra de que o perfil anónimo não pode submeter vídeo. | SUB-001, SUB-004 |
+| Image Storage Service / SeaweedFS | Estender | Reutilizar o upload S3 existente com content-type, chaves e limpeza próprios para vídeo. | SUB-002, SUB-005, SUB-006 |
+| Projects Service e modelo de projeto | Estender | Adicionar uma referência de vídeo e os seus metadados sem alterar referências de imagens. | SUB-003, SUB-005 |
+| API Gateway e frontend | Estender | Expor upload, validação, estado e erro de vídeo na biblioteca do projeto. | SUB-001, SUB-004, SUB-005 |
+| FFmpeg/FFprobe | Novo | Introduzir inspeção de contentor, codec e metadados antes da persistência. | SUB-002, SUB-003, SUB-004 |
+
+### 4.3 Matriz de Rastreabilidade
+
+| **Elemento do Caso de Uso** | **Descrição abreviada** | **Requisito(s) de Sistema** |
+|------------------------------|-------------------------|------------------------------|
+| Passos 2-3 | Validar perfil, extensão e conteúdo | REQ-VID-SUB-001, REQ-VID-SUB-002 |
+| Passos 4-8 | Transferir, inspecionar e aplicar limites | REQ-VID-SUB-003, REQ-VID-SUB-004 |
+| Passos 9-11 | Persistir e associar ao projeto | REQ-VID-SUB-005 |
+| FA3-FA4 e exceções | Cancelar/rejeitar sem resíduos | REQ-VID-SUB-006 |
