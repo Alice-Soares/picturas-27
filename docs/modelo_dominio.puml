@@ -1,0 +1,76 @@
+@startuml modelo_dominio
+' Modelo de domínio atualizado (Fase 1 — vídeo)
+' Elementos novos a laranja; baseline a azul.
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor #75CFF5
+  BorderColor Black
+  ArrowColor Black
+}
+skinparam class<<novo>> {
+  BackgroundColor #FFD9A0
+}
+
+hide circle
+hide methods
+
+' ---------- Baseline ----------
+class Utilizador
+class Anónimo
+class Premium
+class Projeto
+class Imagem
+class Preset
+class Ferramenta
+class Básica
+class Avançada
+class "Assistente IA" as AssistenteIA
+class "Sugestão IA" as SugestaoIA
+
+' ---------- Novos / alterados ----------
+class Registado <<novo>>
+abstract class "Conteúdo Multimédia" as Conteudo <<novo>>
+class "Vídeo" as Video <<novo>> {
+}
+class Quota <<novo>> {
+}
+
+' ---------- Hierarquia de utilizadores ----------
+Anónimo   --|> Utilizador : é
+Registado --|> Utilizador : é
+Premium   --|> Registado : é
+
+' ---------- Hierarquia de conteúdo multimédia ----------
+Imagem --|> Conteudo : é
+Video  --|> Conteudo : é
+
+' ---------- Hierarquia de ferramentas ----------
+Básica   --|> Ferramenta : é
+Avançada --|> Ferramenta : é
+AssistenteIA --|> Avançada : é
+
+' ---------- Relações ----------
+Registado "0..*" --> "0..*" Utilizador : convida
+Utilizador "1" --> "0..*" Preset : cria
+Utilizador "1..*" --> "0..*" Projeto : gere
+Utilizador "1..*" --> "0..*" Imagem : upload
+Registado "1" --> "0..*" Video : upload
+Utilizador "0..*" --> "0..*" Básica : aplica
+Registado "0..*" --> "0..*" Avançada : aplica
+Registado "1" -- "1" Quota : tem
+
+Projeto "1" --> "0..*" Conteudo : contém
+Projeto "0..*" --> "0..*" Ferramenta : usa
+Projeto "1" --> "0..*" SugestaoIA : recebe
+Preset "0..1" --> "1..*" Ferramenta : contém
+Ferramenta "0..*" --> "0..*" Conteudo : altera
+AssistenteIA "1" --> "0..*" SugestaoIA : produz
+
+note bottom of Quota
+  Limita o número de operações diárias.
+end note
+
+@enduml
