@@ -208,7 +208,6 @@ Os use cases devem respeitar apenas as secoes 0 a 3 do template do Exercico 1. A
 
 ## Proximas decisoes pendentes
 
-- Confirmar o numero mecanografico de Samuel.
 - Confirmar com a equipa/docente os limites MVP.
 - Decidir se varias faixas de audio serao selecionaveis.
 - Definir a forma exata de reserva/devolucao da quota no users service.
