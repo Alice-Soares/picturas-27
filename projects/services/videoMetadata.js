@@ -30,7 +30,7 @@ async function readVideoMetadata(file) {
     });
 
     return {
-      container: String(probe.format?.format_name || "").split(",")[0].toLowerCase(),
+      container: String(probe.format?.format_name || "").toLowerCase(),
       videoCodec: String(video.codec_name || "").toLowerCase(),
       audioCodec: audio ? String(audio.codec_name || "").toLowerCase() : null,
       size: stat.size,

@@ -9,6 +9,23 @@ const videoUpload = multer({ dest: "/tmp/picturas-video-storage" });
 require("fs").mkdirSync("/tmp/picturas-video-storage", { recursive: true });
 
 router.post(
+  "/video/:userId/:projectId",
+  videoUpload.single("video"),
+  async (req, res) => {
+    if (!req.file) return res.status(400).json({ error: "VIDEO_FILE_REQUIRED" });
+    try {
+      const result = await uploadVideo(req.params.userId, req.params.projectId, req.file);
+      return res.status(201).json({ message: "Vídeo enviado com sucesso!", data: result });
+    } catch (error) {
+      return res.status(500).json({ error: "VIDEO_STORAGE_FAILED" });
+    } finally {
+      const fs = require("fs");
+      fs.rm(req.file.path, { force: true }, () => {});
+    }
+  },
+);
+
+router.post(
   "/:userId/:projectId/:stage",
   upload.single("file"),
   async (req, res) => {
@@ -22,7 +39,6 @@ router.post(
       });
     }
 
-
     try {
       const result = await uploadImage(userId, projectId, req.file, stage);
       res
@@ -30,23 +46,6 @@ router.post(
         .json({ message: "Imagem enviada com sucesso!", data: result });
     } catch (error) {
       res.status(500).json({ error: error.message });
-    }
-  },
-);
-
-router.post(
-  "/video/:userId/:projectId",
-  videoUpload.single("video"),
-  async (req, res) => {
-    if (!req.file) return res.status(400).json({ error: "VIDEO_FILE_REQUIRED" });
-    try {
-      const result = await uploadVideo(req.params.userId, req.params.projectId, req.file);
-      return res.status(201).json({ message: "Vídeo enviado com sucesso!", data: result });
-    } catch (error) {
-      return res.status(500).json({ error: "VIDEO_STORAGE_FAILED" });
-    } finally {
-      const fs = require("fs");
-      fs.rm(req.file.path, { force: true }, () => {});
     }
   },
 );

@@ -2,7 +2,10 @@ const { validateVideoLimits } = require("./videoLimits");
 
 function validateVideo(metadata, profile) {
   const failures = [];
-  if (!metadata.container.split(",").includes("mp4")) failures.push("container");
+  const containers = String(metadata.container || "")
+    .split(",")
+    .map((container) => container.trim().toLowerCase());
+  if (!containers.includes("mp4")) failures.push("container");
   if (metadata.videoCodec !== "h264") failures.push("videoCodec");
   if (metadata.audioCodec && metadata.audioCodec !== "aac") failures.push("audioCodec");
   failures.push(...validateVideoLimits(metadata, profile));

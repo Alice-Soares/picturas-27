@@ -36,8 +36,14 @@ export function AddVideoDialog() {
         setOpen(false);
       },
       onError: async (error) => {
-        const responseCode = (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
-        if (responseCode === "VIDEO_DUPLICATE" && !duplicateRetry) {
+        const response = (error as {
+          response?: { status?: number; data?: { error?: string | { code?: string } } };
+        })?.response;
+        const responseError = response?.data?.error;
+        const responseCode = typeof responseError === "string"
+          ? responseError
+          : responseError?.code;
+        if ((responseCode === "VIDEO_DUPLICATE" || response?.status === 409) && !duplicateRetry) {
           setDuplicateRetry(window.confirm("Já existe um vídeo com este nome. Pretende manter ambos?"));
           return;
         }
