@@ -49,11 +49,11 @@ Esta funcionalidade é a base de todo o suporte a vídeo no PictuRAS, porque sem
 | **Passo** | **Ação do Ator**                                          | **Resposta do Sistema**                                                                                                                                               |
 | --------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1         | O utilizador abre a biblioteca de conteúdos ou o projeto. | O sistema apresenta a interface de upload com suporte para ficheiros de vídeo.                                                                                        |
-| 2         | O utilizador seleciona um ficheiro de vídeo local.        | O sistema valida a extensão e o tipo de ficheiro.                                                                                                                     |
+| 2         | O utilizador seleciona um ficheiro de vídeo local.        | O sistema inicia uma submissão individual, recebe o ficheiro num temporário em disco e valida extensão e tipo sem manter o vídeo completo em memória.                 |
 | 3         | —                                                         | O sistema verifica a permissão do perfil e, quando aplicável, os limites definidos para a submissão.                                                                  |
-| 4         | —                                                         | O sistema envia o ficheiro para o serviço de armazenamento.                                                                                                           |
+| 4         | —                                                         | O sistema envia o ficheiro para uma área temporária do serviço de armazenamento, usando o estágio `video-src` para o objeto validado.                                 |
 | 5         | O utilizador aguarda a conclusão da transferência.        | O sistema confirma o estado da transferência.                                                                                                                         |
-| 6         | —                                                         | O sistema conclui a transferência e verifica a integridade do ficheiro.                                                                                               |
+| 6         | —                                                         | O sistema conclui a transferência e verifica a integridade do ficheiro; uma transferência acima do limite de corpo é rejeitada antes do processamento.                |
 | 7         | —                                                         | O sistema extrai os metadados do vídeo (codec, resolução, duração, fps e tamanho).                                                                                    |
 | 8         | —                                                         | O sistema valida a duração, a resolução e o fps contra os limites do perfil. |
 | 9         | —                                                         | O sistema cria o registo correspondente na base de dados.                                                                                                             |
@@ -64,8 +64,8 @@ Esta funcionalidade é a base de todo o suporte a vídeo no PictuRAS, porque sem
 
 | **Fluxo**                          | **Descrição**                                                                                                                                                                |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FA1 – Upload duplicado             | Se o vídeo tiver o mesmo nome de um ficheiro já existente no projeto, o sistema apresenta opções de substituir, manter ambos ou cancelar.                                    |
-| FA2 – Upload em lote               | Se o utilizador selecionar vários vídeos, o sistema valida cada elemento individualmente e só associa ao projeto os ficheiros válidos.                                       |
+| FA1 – Upload duplicado             | Se o vídeo tiver o mesmo nome de um ficheiro já existente no projeto, o sistema apresenta as opções de manter ambos ou cancelar. A substituição não faz parte do MVP. |
+| FA2 – Upload em lote               | Se o utilizador selecionar vários vídeos, o sistema valida cada elemento individualmente e devolve um resultado independente (`concluída`, `rejeitada`, `cancelada` ou `falhada`) para cada elemento. |
 | FA3 – Cancelamento do upload       | Durante a transferência, o utilizador pode cancelar a operação; o sistema deve interromper a transferência e remover o objeto.                                               |
 | FA4 – Tentativa por perfil anónimo | Se um utilizador anónimo tentar submeter um vídeo, o sistema rejeita a operação, explica que a funcionalidade exige uma conta registada e não cria objeto nem consome quota. |
 
@@ -91,32 +91,34 @@ Esta funcionalidade é a base de todo o suporte a vídeo no PictuRAS, porque sem
 | **ID** | **Regra**                                                                                                                                                                                 |
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | RN1    | Utilizadores anónimos não podem submeter vídeos no MVP; podem continuar a utilizar as funcionalidades de imagem permitidas pelo sistema.                                                  |
-| RN2    | Utilizadores registados podem submeter vídeos até 100 MB, 5 minutos, 1920×1080 e 60 fps. |
-| RN3    | Utilizadores premium podem submeter vídeos até 1 GB, 30 minutos, 3840×2160 e 60 fps. |
+| RN2    | Utilizadores registados podem submeter vídeos até 100 MB, 5 minutos, 1920×1080 e 60 fps. Qualquer largura ou altura superior ao máximo rejeita o vídeo. |
+| RN3    | Utilizadores premium podem submeter vídeos até 1 GB, 30 minutos, 3840×2160 e 60 fps. Qualquer largura ou altura superior ao máximo rejeita o vídeo. |
 | RN4    | O MVP aceita vídeo MP4 com vídeo H.264 e, quando exista áudio, AAC; ficheiros sem faixa de vídeo ou com combinações incompatíveis são rejeitados. |
 | RN5    | A submissão de vídeo não é contabilizada como operação diária; a quota aplica-se às operações de processamento classificadas como avançadas, de acordo com a política existente.          |
 | RN6    | Uma submissão rejeitada, cancelada ou falhada não consome quota nem deixa objetos parciais associados ao projeto.                                                                         |
 | RN7    | A submissão não pode deixar o projeto apontar para um objeto inexistente, parcial ou corrompido.                                                                                          |
-| RN8    | A referência persistida deve identificar o utilizador, o projeto, o estágio do conteúdo e o objeto armazenado sem depender do nome original do ficheiro.                                  |
+| RN8    | A referência persistida deve identificar o utilizador, o projeto, o estágio `video-src` e o objeto armazenado sem depender do nome original do ficheiro. |
+| RN9    | Os limites de tamanho usam unidades decimais: 1 MB corresponde a 1 000 000 bytes e 1 GB corresponde a 1 000 000 000 bytes. |
+| RN10   | O vídeo completo deve ser recebido em ficheiro temporário em disco; o sistema não deve manter o conteúdo completo em memória durante a submissão. |
 
 ### 2.7 Assunções
 
 | **ID** | **Assunção**                                                                                                                                                                                                                                                                |
 | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A1     | O SeaweedFS continuará a ser o armazenamento de objetos e será acedido através da fachada S3 existente; o suporte a vídeos pode exigir configuração, contentores próprios ou limites físicos da infraestrutura, sem os transformar em limites funcionais do perfil premium. |
+| A1     | O SeaweedFS continuará a ser o armazenamento de objetos e será acedido através da fachada S3 existente; o suporte a vídeos pode exigir configuração ou contentores próprios, sem alterar os limites funcionais definidos para cada perfil. |
 | A2     | O serviço de projetos e a fachada de armazenamento serão estendidos para aceitar vídeos sem quebrar o fluxo atual de imagens.                                                                                                                                               |
-| A3     | Será disponibilizado um componente de análise de vídeo, como FFmpeg/FFprobe ou equivalente, para extrair metadados e validar o contentor MP4, os codecs, a duração, a resolução e o fps.                                                                                    |
+| A3     | FFmpeg/FFprobe será instalado na imagem Docker do serviço de projetos para extrair metadados e validar o contentor MP4, os codecs, a duração, a resolução e o fps. |
 | A4     | O projeto do utilizador já está operacional para receber novos conteúdos.                                                                                                                                                                                                   |
 | A5     | O serviço de armazenamento e a base de dados estão disponíveis durante o processo de submissão.                                                                                                                                                                             |
 
-### 2.8 Questões em Aberto
+### 2.8 Questões Resolvidas e Fora do MVP
 
 | **ID** | **Questão**                                                                                                                                      |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Q1     | Os vídeos usam os buckets por utilizador já adotados pela fachada S3, com uma nova convenção de chave/estágio, ou devem usar um bucket separado? |
-| Q2     | O sistema deve gerar automaticamente uma miniatura para cada vídeo submetido com sucesso?                                                        |
-| Q3     | A interface deve suportar drag-and-drop além do seletor de ficheiros tradicional?                                                                |
-| Q4     | Deve existir um limite máximo de uploads simultâneos por utilizador?                                                                             |
+| Q1     | Resolvida: os vídeos reutilizam o bucket por utilizador da fachada S3 e usam uma nova convenção de chave com o estágio `video-src`. |
+| Q2     | Fora do MVP: não é obrigatória a geração automática de miniaturas. |
+| Q3     | Fora do MVP: o seletor tradicional é suficiente; drag-and-drop pode ser avaliado depois. |
+| Q4     | Fora do MVP: não é definido um limite funcional adicional de uploads simultâneos. |
 
 ---
 
@@ -127,8 +129,8 @@ Esta funcionalidade é a base de todo o suporte a vídeo no PictuRAS, porque sem
 | GitHub Copilot           | Estrutura inicial do caso de uso e dos fluxos principais e alternativos | Revisão manual pela equipa; ajuste dos limites de upload e das regras por perfil                                                                                                                                                                                           |
 | GitHub Copilot           | Revisão de conformidade com o projeto existente                         | Comparação com o template e o enunciado da Fase 1; consulta do README                                                                                                                                                                                                      |
 | GitHub Copilot           | Revisão técnica do armazenamento, progresso e quotas                    | Corrigida a referência para SeaweedFS/S3; distinguido o upload multipart do processamento assíncrono via RabbitMQ/WebSocket; explicitada a necessidade de extensão para FFmpeg/FFprobe; limites e contabilização de quota ficaram rastreáveis em regras e questões abertas |
-| GitHub Copilot           | Definição das restrições por perfil                                     | Análise das regras existentes para imagens, quotas e perfis; decisão de excluir anónimos do upload de vídeo no MVP, limitar tecnicamente o perfil registado e não definir limites funcionais de tamanho, duração, resolução ou fps para premium                            |
-| GitHub Copilot           | Revisão dos limites de vídeo e rastreabilidade                          | Os limites de tamanho, duração, resolução e fps aplicam-se apenas ao perfil registado; para premium foi registada a ausência de limites funcionais por perfil, mantendo a validação de formato/codec e a dependência da capacidade da infraestrutura                       |
+| GitHub Copilot           | Definição das restrições por perfil                                     | Análise das regras existentes para imagens, quotas e perfis; decisão de excluir anónimos do upload de vídeo no MVP e aplicar os limites funcionais definidos para os perfis registado e premium. |
+| GitHub Copilot           | Revisão dos limites de vídeo e rastreabilidade                          | Confirmação dos limites de tamanho, duração, resolução e fps para ambos os perfis; resolução rejeitada quando qualquer dimensão excede o máximo e tamanhos interpretados em unidades decimais. |
 
 ---
 
@@ -145,6 +147,10 @@ Esta funcionalidade é a base de todo o suporte a vídeo no PictuRAS, porque sem
 | REQ-VID-SUB-004 | O sistema deve rejeitar vídeos que excedam os limites do perfil antes de os associar ao projeto. | F | Deve ter | NOVO | UC-VID-001, passos 8, RN2-RN3 | Testar ficheiros no limite e acima de cada limite. |
 | REQ-VID-SUB-005 | O sistema deve guardar o vídeo validado através da fachada de armazenamento existente, criar a referência no projeto e manter o original disponível para operações posteriores. | F | Deve ter | ALT | UC-VID-001, passos 4, 9-10, RN7-RN8 | Verificar objeto, registo e associação ao projeto. |
 | REQ-VID-SUB-006 | O sistema deve remover temporários e não criar referências persistentes quando a submissão for rejeitada, cancelada ou falhar. | F | Deve ter | NOVO | UC-VID-001, FA3, exceções | Interromper e provocar falhas durante o upload. |
+| REQ-VID-SUB-030 | O sistema deve devolver um resultado independente para cada vídeo de um lote. | F | Deve ter | NOVO | UC-VID-001, FA2 | Submeter um lote misto e verificar o estado de cada vídeo. |
+| REQ-VID-SUB-031 | O sistema deve permitir manter ambos ou cancelar quando o nome do vídeo duplicar um conteúdo existente, sem substituir o original no MVP. | F | Deve ter | NOVO | UC-VID-001, FA1, RN8 | Submeter nome duplicado e executar as duas opções. |
+| REQ-VID-SUB-032 | O sistema deve aplicar os limites de tamanho usando unidades decimais. | F | Deve ter | NOVO | UC-VID-001, RN9 | Testar valores no limite e acima dele. |
+| REQ-VID-SUB-033 | O sistema deve receber o vídeo completo em ficheiro temporário em disco, sem o manter completo em memória durante a submissão. | F | Deve ter | NOVO | UC-VID-001, RN10 | Inspecionar o fluxo de upload e o consumo de memória. |
 
 ### 4.2 Impacto no sistema existente
 
@@ -161,6 +167,6 @@ Esta funcionalidade é a base de todo o suporte a vídeo no PictuRAS, porque sem
 | **Elemento do Caso de Uso** | **Descrição abreviada** | **Requisito(s) de Sistema** |
 |------------------------------|-------------------------|------------------------------|
 | Passos 2-3 | Validar perfil, extensão e conteúdo | REQ-VID-SUB-001, REQ-VID-SUB-002 |
-| Passos 4-8 | Transferir, inspecionar e aplicar limites | REQ-VID-SUB-003, REQ-VID-SUB-004 |
+| Passos 4-8 | Transferir, inspecionar e aplicar limites | REQ-VID-SUB-003, REQ-VID-SUB-004, REQ-VID-SUB-032, REQ-VID-SUB-033 |
 | Passos 9-11 | Persistir e associar ao projeto | REQ-VID-SUB-005 |
-| FA3-FA4 e exceções | Cancelar/rejeitar sem resíduos | REQ-VID-SUB-006 |
+| FA1-FA4 e exceções | Duplicados, lote, cancelamento e rejeição sem resíduos | REQ-VID-SUB-006, REQ-VID-SUB-030, REQ-VID-SUB-031 |

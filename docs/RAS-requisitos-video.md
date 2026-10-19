@@ -14,7 +14,7 @@ Os requisitos específicos de cada caso de uso estão identificados pelo prefixo
 
 | Caso de uso | Funcionalidade coberta| Requisitos específicos | Requisitos transversais |
 |---|---|---|---|
-| UC-VID-001 | Submeter vídeo | `SUB-001` a `SUB-029` | `COM-001` a `COM-020`, `Q-001` a `Q-016` |
+| UC-VID-001 | Submeter vídeo | `SUB-001` a `SUB-033` | `COM-001` a `COM-020`, `Q-001` a `Q-016` |
 | UC-VID-002 | Recorte temporal | `TRIM-001` a `TRIM-013` | `COM-001` a `COM-020`, `Q-001` a `Q-016` |
 | UC-VID-003 | Aplicar ferramenta aos fotogramas | `FRM-001` a `FRM-014` | `COM-001` a `COM-020`, `Q-001` a `Q-016` |
 | UC-VID-004 | Converter formato e resolução | `CONV-001` a `CONV-011` | `COM-001` a `COM-020`, `Q-001` a `Q-016` |
@@ -47,18 +47,22 @@ Os requisitos específicos de cada caso de uso estão identificados pelo prefixo
 | REQ-VID-SUB-015 | O sistema deve criar uma referência de vídeo apenas depois de todas as validações passarem. | F | Deve ter | ALT | UC-VID-001, passos 9-10, RN7-RN8 | Submeter vídeo válido e verificar a criação da referência. |
 | REQ-VID-SUB-016 | O sistema deve rejeitar vídeos superiores a 100 MB para utilizadores registados que não sejam premium. | F | Deve ter | ALT | UC-VID-001, RN2 | Submeter ficheiro acima de 100 MB com perfil registado não premium. |
 | REQ-VID-SUB-017 | O sistema deve rejeitar vídeos superiores a 5 minutos para utilizadores registados que não sejam premium. | F | Deve ter | ALT | UC-VID-001, RN2 | Submeter vídeo acima de 5 minutos com perfil registado não premium. |
-| REQ-VID-SUB-018 | O sistema deve rejeitar vídeos acima de 1920x1080 para utilizadores registados que não sejam premium. | F | Deve ter | ALT | UC-VID-001, RN2 | Submeter vídeo acima da resolução com perfil registado não premium. |
+| REQ-VID-SUB-018 | O sistema deve rejeitar vídeos cuja largura exceda 1920 ou cuja altura exceda 1080 para utilizadores registados que não sejam premium. | F | Deve ter | ALT | UC-VID-001, RN2 | Testar largura e altura acima dos limites com perfil registado não premium. |
 | REQ-VID-SUB-019 | O sistema deve rejeitar vídeos acima de 60 fps para utilizadores registados que não sejam premium. | F | Deve ter | ALT | UC-VID-001, RN2 | Submeter vídeo acima da taxa com perfil registado não premium. |
 | REQ-VID-SUB-020 | O sistema deve rejeitar vídeos superiores a 1 GB para utilizadores premium. | F | Deve ter | ALT | UC-VID-001, RN3 | Submeter ficheiro acima de 1 GB com perfil premium. |
 | REQ-VID-SUB-021 | O sistema deve rejeitar vídeos superiores a 30 minutos para utilizadores premium. | F | Deve ter | ALT | UC-VID-001, RN3 | Submeter vídeo acima de 30 minutos com perfil premium. |
-| REQ-VID-SUB-022 | O sistema deve rejeitar vídeos acima de 3840x2160 para utilizadores premium. | F | Deve ter | ALT | UC-VID-001, RN3 | Submeter vídeo acima da resolução com perfil premium. |
+| REQ-VID-SUB-022 | O sistema deve rejeitar vídeos cuja largura exceda 3840 ou cuja altura exceda 2160 para utilizadores premium. | F | Deve ter | ALT | UC-VID-001, RN3 | Testar largura e altura acima dos limites com perfil premium. |
 | REQ-VID-SUB-023 | O sistema deve rejeitar vídeos acima de 60 fps para utilizadores premium. | F | Deve ter | ALT | UC-VID-001, RN3 | Submeter vídeo acima da taxa com perfil premium. |
 | REQ-VID-SUB-024   | O sistema deve remover objetos temporários e não criar referências persistentes quando a submissão for rejeitada, cancelada ou falhar.                            | F    | Deve ter    | NOVO     | UC-VID-001, FA3, exceções, pós-condição mínima       | Interromper e falhar submissões e verificar armazenamento e base de dados.            |
 | REQ-VID-SUB-025   | O sistema não deve contabilizar a submissão de vídeo na quota diária de operações avançadas.                                                                      | F    | Deve ter    | ALT      | UC-VID-001, RN5                                      | Comparar a quota antes e depois de uma submissão válida.                              |
 | REQ-VID-SUB-026 | O sistema deve associar a referência de vídeo ao utilizador que efetuou a submissão. | F | Deve ter | ALT | UC-VID-001, passos 9-10 | Submeter vídeo e verificar o utilizador associado. |
 | REQ-VID-SUB-027 | O sistema deve associar a referência de vídeo ao projeto selecionado. | F | Deve ter | ALT | UC-VID-001, passos 9-10 | Submeter vídeo e verificar o projeto associado. |
 | REQ-VID-SUB-028 | O sistema deve associar os metadados extraídos à referência de vídeo. | F | Deve ter | ALT | UC-VID-001, passos 9-10 | Comparar os metadados persistidos com FFprobe. |
-| REQ-VID-SUB-029 | O sistema deve associar o objeto armazenado à referência de vídeo. | F | Deve ter | ALT | UC-VID-001, passos 9-10 | Verificar a referência do objeto no armazenamento. |
+| REQ-VID-SUB-029 | O sistema deve associar o objeto armazenado no estágio persistente `video-src` à referência de vídeo. | F | Deve ter | ALT | UC-VID-001, passos 9-10, RN8 | Verificar a referência do objeto no armazenamento e o estágio persistido. |
+| REQ-VID-SUB-030 | O sistema deve devolver um resultado independente para cada vídeo de um lote. | F | Deve ter | NOVO | UC-VID-001, FA2 | Submeter um lote misto e verificar o estado de cada vídeo. |
+| REQ-VID-SUB-031 | O sistema deve permitir manter ambos ou cancelar quando o nome do vídeo duplicar um conteúdo existente, sem substituir o original no MVP. | F | Deve ter | NOVO | UC-VID-001, FA1, RN8 | Submeter nome duplicado e executar as duas opções. |
+| REQ-VID-SUB-032 | O sistema deve aplicar os limites de tamanho usando unidades decimais: 1 MB corresponde a 1 000 000 bytes e 1 GB corresponde a 1 000 000 000 bytes. | F | Deve ter | NOVO | UC-VID-001, RN9 | Testar valores no limite e acima dele. |
+| REQ-VID-SUB-033 | O sistema deve receber o vídeo completo em ficheiro temporário em disco, sem o manter completo em memória durante a submissão. | F | Deve ter | NOVO | UC-VID-001, RN10 | Inspecionar o fluxo de upload e o consumo de memória. |
 
 #### Recorte temporal — UC-VID-002
 
@@ -107,8 +111,8 @@ Os requisitos específicos de cada caso de uso estão identificados pelo prefixo
 | REQ-VID-CONV-003 | O sistema deve apresentar os codecs de saída suportados para cada contentor. | F | Deve ter | NOVO | UC-VID-004, passo 3, RN1 | Consultar combinações apresentadas. |
 | REQ-VID-CONV-004 | O sistema deve permitir selecionar uma resolução de saída. | F | Deve ter | NOVO | UC-VID-004, passo 4 | Selecionar resolução válida. |
 | REQ-VID-CONV-005 | O sistema deve rejeitar uma combinação de contentor e codec não suportada. | F | Deve ter | NOVO | UC-VID-004, exceção | Submeter combinação inválida. |
-| REQ-VID-CONV-006 | O sistema deve rejeitar uma resolução acima de 1920x1080 para utilizadores registados. | F | Deve ter | ALT | UC-VID-004, RN2 | Tentar selecionar resolução acima do limite. |
-| REQ-VID-CONV-007 | O sistema deve rejeitar uma resolução acima de 3840x2160 para utilizadores premium. | F | Deve ter | ALT | UC-VID-004, RN2 | Tentar selecionar resolução acima do limite. |
+| REQ-VID-CONV-006 | O sistema deve rejeitar uma resolução cuja largura exceda 1920 ou cuja altura exceda 1080 para utilizadores registados. | F | Deve ter | ALT | UC-VID-004, RN2 | Testar largura e altura acima do limite. |
+| REQ-VID-CONV-007 | O sistema deve rejeitar uma resolução cuja largura exceda 3840 ou cuja altura exceda 2160 para utilizadores premium. | F | Deve ter | ALT | UC-VID-004, RN2 | Testar largura e altura acima do limite. |
 | REQ-VID-CONV-008 | O sistema deve apresentar uma estimativa do tamanho do resultado antes da confirmação, quando esta puder ser calculada. | F | Deveria ter | NOVO | UC-VID-004, passo 5 | Configurar uma conversão e verificar a estimativa. |
 | REQ-VID-CONV-009 | O sistema deve executar a conversão de forma assíncrona. | F | Deve ter | NOVO | UC-VID-004, passos 7-8 | Verificar que a confirmação não bloqueia até ao fim. |
 | REQ-VID-CONV-010 | O sistema deve guardar o vídeo convertido como novo conteúdo sem substituir o original. | F | Deve ter | NOVO | UC-VID-004, pós-condição | Comparar os objetos antes e depois. |
@@ -301,11 +305,12 @@ Os identificadores seguem o formato `REQ-VID-<categoria>-<número>`:
 
 ## Decisões e limites mantidos em aberto
 
-As seguintes decisões continuam fora do catálogo por não estarem fechadas nos
-casos de uso: retoma de operações interrompidas, substituição ou versionamento
-do original, transições no merge, múltiplas faixas de áudio, uploads simultâneos,
-pré-visualização avançada, filtros de alteração visual e criação automática de
-miniaturas. Devem permanecer como questões abertas até existir uma decisão explícita da equipa.
+As seguintes capacidades permanecem fora do MVP: retoma de operações interrompidas,
+substituição ou versionamento do original, transições no merge, múltiplas faixas de
+áudio, limite funcional adicional de uploads simultâneos, pré-visualização avançada,
+filtros de alteração visual e criação automática de miniaturas. A submissão duplicada
+no MVP está fechada pelas opções de manter ambos ou cancelar; a substituição fica
+explicitamente excluída.
 
 ## Verificações de cobertura
 
@@ -316,5 +321,5 @@ miniaturas. Devem permanecer como questões abertas até existir uma decisão ex
   limpeza, persistência e preservação do original estão separados.
 - O impacto identifica o que é mantido, estendido, alterado ou criado no baseline.
 - Os requisitos de qualidade distinguem objetivos de MVP de alvos de produção.
-- Os valores de limites devem ser confirmados pela equipa/docente antes da
-  implementação final.
+- Os valores de limites, as unidades decimais, o estágio `video-src` e o
+  comportamento de lotes e duplicados estão fechados para a implementação do MVP.

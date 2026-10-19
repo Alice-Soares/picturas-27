@@ -55,7 +55,7 @@
   tabela(
     colunas: (4cm, 1fr),
     [Fluxo], [Descrição (passo de origem: condição -> comportamento -> retorno)],
-    [FA1 – Upload duplicado], [No passo 2: Se o vídeo tiver o mesmo nome de um ficheiro já existente no projeto, o sistema apresenta opções de substituir, manter ambos ou cancelar.],
+    [FA1 – Upload duplicado], [No passo 2: Se o vídeo tiver o mesmo nome de um ficheiro já existente no projeto, o sistema apresenta as opções de manter ambos ou cancelar; substituir fica fora do MVP.],
     [FA2 – Upload em lote], [No passo 2: Se o utilizador selecionar vários vídeos, o sistema valida cada elemento individualmente e só associa ao projeto os ficheiros válidos.],
     [FA3 – Cancelamento do upload], [Durante o passo 5: Durante a transferência, o utilizador pode cancelar a operação; o sistema interrompe a transferência e remove o objeto.],
     [FA4 – Tentativa por perfil anónimo], [No passo 1/2: Se um utilizador anónimo tentar submeter um vídeo, o sistema rejeita a operação, explica que a funcionalidade exige uma conta registada e não cria objeto nem consome quota.],
