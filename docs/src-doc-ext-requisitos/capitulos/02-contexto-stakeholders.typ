@@ -17,9 +17,12 @@ A introdução de capacidades de vídeo digital no PictuRAS constitui uma evolu�
 
 == Perfis de utilização e vídeo
 
-Os perfis *Anónimo*, *Registado* e *Premium* definidos na _baseline_ mantêm-se válidos. A introdução de vídeo não implica a criação de novos perfis, mas exige a definição de limites específicos de submissão e processamento, bem como a clarificação da contabilização das operações nas quotas existentes.
+Os perfis *Anónimo*, *Registado* e *Premium* definidos na _baseline_ mantêm-se válidos, isto é as regras atuais de acesso e quotas para imagens continuam em vigor. A introdução de vídeo não implica a criação de novos perfis, mas exige a definição de limites específicos de submissão e processamento, bem como a clarificação da contabilização das operações nas quotas existentes.
 
-O perfil *Anónimo* não dispõe de acesso às funcionalidades de vídeo no MVP, de modo a evitar a utilização intensiva de recursos computacionais por utilizadores não autenticados. Para o perfil *Registado*, são estabelecidos limites conservadores de submissão e processamento, adequados à natureza gratuita do serviço e à necessidade de controlar o consumo de recursos. Decidiu-se ainda manter a quota diária de 5 operações, com a regra de que a submissão de vídeos não consome quota. Por sua vez, o perfil *Premium*, embora não esteja sujeito a quotas diárias de operações, mantém limites técnicos sobre os vídeos submetidos, ainda que mais permissivos, de forma a prevenir cargas de processamento excessivas e assegurar a estabilidade e sustentabilidade da plataforma. 
+O perfil *Anónimo* não dispõe de acesso às funcionalidades de vídeo no MVP, de modo a evitar a utilização intensiva de recursos computacionais por utilizadores não autenticados. Para o perfil *Registado*, são estabelecidos limites conservadores de submissão e processamento, adequados à natureza gratuita do serviço e à necessidade de controlar o consumo de recursos. Decidiu-se ainda que cada operação de processamento de vídeo aceite conta como uma operação avançada, independentemente da quantidade de fotogramas ou ficheiros envolvidos, e fica sujeita à quota diária existente de 5 operações avançadas. A submissão de um vídeo por um utilizador não consome uma operação da quota e uma operação que falhe, seja cancelada ou termine sem produzir alterações também não consome quota.
+
+Por sua vez, o perfil *Premium*, embora não esteja sujeito a quotas diárias de operações, mantém limites técnicos sobre os vídeos submetidos, ainda que mais permissivos, de forma a prevenir cargas de processamento excessivas e assegurar a estabilidade e sustentabilidade da plataforma. 
+
 
 A @tab-perfis-video sintetiza as condições de acesso estabelecidas para o MVP, evidenciando as diferenças entre perfis e as regras de negócio transversais que as fundamentam.
 
@@ -27,9 +30,9 @@ A @tab-perfis-video sintetiza as condições de acesso estabelecidas para o MVP,
   tabela(
     colunas: (2.6cm, 4.0cm, 1fr, 2.8cm),
     [Perfil], [Situação na _baseline_], [Alteração introduzida para vídeo], [Regras / requisitos],
-    [Utilizador Anónimo], [Operações limitadas, imagens pequenas, sem autenticação], [Sem acesso a submissão ou processamento de vídeo no MVP; mantém apenas operações em imagens.], [UC-VID-001/RN1 \ UC-VID-002/RN4 \ UC-VID-003/RN1 \ UC-VID-007/RN1 \ RNG-02],
-    [Utilizador Registado], [Gratuito, até 5 operações/dia, projetos persistentes], [Vídeos até 100 MB, 5 min, 1080p e 60 fps. Submissão não gasta quota; cada processamento consome 1 operação diária (quota de 5 ops/dia), com estorno em caso de falha ou cancelamento.], [UC-VID-001/RN2,RN5,RN6 \ UC-VID-002/RN3,RN7 \ UC-VID-003/RN2,RN3 \ UC-VID-004/RN2,RN3 \ UC-VID-005/RN2,RN3 \ UC-VID-006/RN1,RN2,RN4 \ UC-VID-007/RN2,RN4 \ RNG-03, RNG-04],
-    [Utilizador Premium], [Pago, uso ilimitado, acesso a ferramentas avançadas/IA], [Acesso ilimitado a todas as ferramentas de vídeo sem consumo de quota. Vídeos até 1 GB, 30 min, 4K (3840×2160) e 60 fps. Concatenação até 15 vídeos e extração até 5000 fotogramas.], [UC-VID-001/RN3 \ UC-VID-003/RN3 \ UC-VID-004/RN2 \ UC-VID-005/RN2 \ UC-VID-006/RN1,RN2 \ RNG-03, RNG-04],
+    [Utilizador Anónimo], [Operações de imagem limitadas e imagens pequenas; sem autenticação], [As regras de imagem da _baseline_ mantêm-se. Sem acesso a submissão ou processamento de vídeo no MVP.], [UC-VID-001/RN1 \ UC-VID-002/RN4 \ UC-VID-003/RN1 \ UC-VID-007/RN1 \ RNG-02],
+    [Utilizador Registado], [Operações básicas de imagem sem limite diário; quota de 5 operações avançadas de imagem por dia; projetos persistentes], [Para vídeo: submissão até 100 MB, 5 min, 1920×1080 e 60 fps, sem consumir quota. Cada operação aceite de processamento conta como 1 operação avançada (mesmo que processe vários fotogramas/ficheiros) e usa a quota diária de 5; falhas, cancelamentos e operações sem efeito não consomem quota.], [UC-VID-001/RN2,RN5,RN6 \ UC-VID-002/RN3,RN7 \ UC-VID-003/RN2,RN3 \ UC-VID-004/RN2,RN3 \ UC-VID-005/RN2,RN3 \ UC-VID-006/RN1,RN2,RN4 \ UC-VID-007/RN2,RN4 \ RNG-03, RNG-04],
+    [Utilizador Premium], [Sem quota diária de operações avançadas de imagem; acesso a funcionalidades avançadas/IA], [Para vídeo: sem quota diária de processamento, mas com limites técnicos. Submissão até 1 GB, 30 min, 3840×2160 e 60 fps; concatenação até 15 vídeos e extração até 5000 fotogramas.], [UC-VID-001/RN3 \ UC-VID-003/RN3 \ UC-VID-004/RN2 \ UC-VID-005/RN2 \ UC-VID-006/RN1,RN2 \ RNG-03, RNG-04],
   ),
 ) <tab-perfis-video>
 
