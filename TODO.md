@@ -23,6 +23,36 @@ Nao assumir que uma funcionalidade descrita neste ficheiro ja esta implementada.
 - Nao existem ainda entidades, workers ou pipelines de video implementados.
 - Nao existe ainda validacao FFmpeg/FFprobe implementada para videos.
 
+## Retomar UC-VID-001 — upload de video
+
+**Estado em 2026-10-19:** o fluxo principal funciona, mas o `UC-VID-001`
+nao deve ser considerado fechado enquanto a T039 estiver pendente.
+
+- [ ] Investigar o cancelamento cooperativo no backend: o browser abortou o
+  pedido (`ERR_ABORTED`), mas o Projects Service terminou a submissao grande
+  com `HTTP 201`.
+- [ ] Confirmar se um upload cancelado cria referencia no projeto ou deixa
+  objeto no Storage.
+- [ ] Se necessario, propagar o cancelamento do cliente pelo Gateway e
+  Projects Service, interromper o processamento e executar a limpeza
+  transacional.
+- [ ] Repetir no browser o duplicado com a acao **manter ambos** depois do
+  tratamento de `HTTP 409`; confirmar `HTTP 201` e duas referencias no projeto.
+- [ ] Recarregar o projeto e confirmar que a imagem adicionada no teste
+  continua visivel, garantindo a regressao do fluxo de imagens.
+- [ ] Atualizar a evidencia em
+  `specs/001-video-submission/quickstart.md` com os resultados finais.
+- [ ] Executar `git diff --check`, testes/build disponiveis e a validacao
+  end-to-end completa.
+- [ ] Marcar a T039 como concluida em
+  `specs/001-video-submission/tasks.md` apenas depois de todos os pontos
+  anteriores passarem.
+
+**Evidencia ja obtida:** MP4 H.264/AAC aceite (`HTTP 201`), ficheiro invalido
+rejeitado (`HTTP 400`), duplicado cancelado (`HTTP 409`), upload de imagem
+concluido e build Docker do frontend concluido. O detalhe do cancelamento
+continua por resolver.
+
 ## Arquitetura existente relevante
 
 Fluxo de imagem:

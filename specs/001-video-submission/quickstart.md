@@ -79,4 +79,4 @@ e o [modelo](data-model.md).
 | `REQ-VID-SUB-024` a `REQ-VID-SUB-029` | `videoCleanup.test.js`, `videoSubmission.contract.test.js` | pass |
 | `REQ-VID-SUB-030` e `REQ-VID-SUB-031` | `videoFailure.integration.test.js` e fluxo de duplicados do cliente | pass |
 | `REQ-VID-SUB-032` e `REQ-VID-SUB-033` | `videoLimits.test.js` e inspeção do parsing em disco | pass |
-| Validação end-to-end com Docker | daemon Docker indisponível nesta sessão | pendente |
+| Validação end-to-end com Docker | Upload válido HTTP 201; ficheiro inválido HTTP 400; duplicado HTTP 409; upload de imagem concluído; cancelamento do browser abortado, mas a submissão grande terminou HTTP 201 no backend | pendente — resolver a corrida do cancelamento servidor |

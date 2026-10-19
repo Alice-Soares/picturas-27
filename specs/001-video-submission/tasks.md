@@ -128,7 +128,7 @@ requisitos.
 - [X] T036 [P] Confirmar que o fluxo existente de imagens continua funcional e documentar o resultado em [specs/001-video-submission/quickstart.md](./quickstart.md)
 - [X] T037 [P] Executar a matriz de aceitação dos 33 requisitos `REQ-VID-SUB-*` e registar resultados em [specs/001-video-submission/quickstart.md](./quickstart.md)
 - [X] T038 Rever logs e respostas para garantir que não contêm segredos, credenciais, caminhos internos ou detalhes de comandos em [apiGateway/routes/projects.js](../../apiGateway/routes/projects.js), [projects/services/videoErrors.js](../../projects/services/videoErrors.js) e [imageStorageService/route/upload.js](../../imageStorageService/route/upload.js)
-- [X] T039 Executar `git diff --check`, lint/build/testes disponíveis nos manifests e a validação end-to-end do quickstart antes de marcar o `UC-VID-001` como concluído
+- [ ] T039 Executar `git diff --check`, lint/build/testes disponíveis nos manifests e a validação end-to-end do quickstart antes de marcar o `UC-VID-001` como concluído
 
 ## Dependencies & Execution Order
 
