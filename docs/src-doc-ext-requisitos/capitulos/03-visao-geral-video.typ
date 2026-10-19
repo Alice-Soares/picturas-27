@@ -64,7 +64,9 @@ A extensão de vídeo nesta fase compreende sete funcionalidades, escolhidas de 
   caption: [Diagrama de casos de uso atualizado (Fase 1 — vídeo)],
 )
 
-O diagrama de casos de uso foi atualizado para refletir a extensão do sistema com as novas funcionalidades de processamento e manipulação de vídeo (incremento do MVP de Vídeo). Para facilitar a leitura e manter a coerência visual e contextual em relação ao sistema base, os casos de uso legados (relativos à edição de imagem e autenticação) foram mantidos a cinzento, enquanto os novos casos de uso de vídeo são destacados a azul.
+O diagrama de casos de uso foi atualizado para refletir a extensão do sistema com as novas funcionalidades de processamento e manipulação de vídeo (incremento do MVP de Vídeo). Para facilitar a leitura e manter a coerência visual e contextual em relação ao sistema base, os casos de uso já existentes (relativos à edição de imagem e autenticação) foram mantidos a cinzento, enquanto os novos casos de uso de vídeo são destacados a azul. Todos os novos casos de uso estão associados ao Utilizador Registado, pelo que são também acessíveis aos atores que herdam dele (Utilizador Premium e Utilizador Convidado), mas não ao Utilizador Anónimo.
+
+Além de acrescentar os casos de uso de vídeo, corrigiu-se o diagrama base. Nele, os casos de uso "Criar filtro personalizado" e "Partilhar projeto" estavam associados ao Utilizador e, por herança, também ao Utilizador Anónimo, o que contraria as regras de negócio. Passaram a estar associados ao Utilizador Registado, ficando disponíveis apenas para este e para os atores que o herdam. O Utilizador Anónimo mantém o acesso a "Registo", "Login", "Carregar imagens" e "Aplicar encadeamento de ferramentas a conjunto de imagens".
 
 === Hierarquia de Atores e Regras de Acesso
 
@@ -72,10 +74,9 @@ A modelação da hierarquia de atores foi reformulada para garantir o cumpriment
 
 - *Utilizador:* Representa a entidade base de interação com o sistema. Agrupa a funcionalidade de Login e o conjunto de ferramentas essenciais de manipulação de imagem.
 - *Utilizador Anónimo:* Herda diretamente do *Utilizador*, tendo acesso às operações base de imagem, e estende-o ao adicionar o caso de uso Registo. Esta estruturação garante que o caso de uso *Registo* permanece exclusivo de utilizadores não autenticados.
-- *Utilizador Registado:* Herda do *Utilizador* (mantendo acesso às funcionalidades de imagem e autenticação) e adiciona o acesso exclusivo ao processamento de vídeo. É o ponto de entrada para todas as funcionalidades de vídeo do MVP (`UC-VID-001` a `UC-VID-007`).
+- *Utilizador Registado:* Herda do *Utilizador* (mantendo acesso às funcionalidades de imagem e autenticação) e adiciona os casos de uso "Criar filtro personalizado" e "Partilhar projeto", bem comoo acesso exclusivo ao processamento de vídeo. É o ponto de entrada para todas as funcionalidades de vídeo do MVP (`UC-VID-001` a `UC-VID-007`), que os atores que herdam dele também possuem.
 - *Utilizador Convidado:* Herda as permissões do *Utilizador Registado*, permitindo que um utilizador que aceda a um projeto via link de partilha com permissões de edição possa manipular tanto conteúdos de imagem como de vídeo no âmbito desse projeto.
-- *Premium:* Especialização do *Utilizador Registado* que herda todas as capacidades de imagem e vídeo, acrescentando o acesso a ferramentas avançadas como o *Assistente IA na edição*.
-
+- *Utilizador Premium:* Especialização do *Utilizador Registado* que herda todas as capacidades de imagem e vídeo, acrescentando o acesso a ferramentas avançadas como o *Assistente IA na edição*.
 
 Os novos casos de uso introduzidos cobrem o ciclo de vida e manipulação de ficheiros de vídeo no sistema, estando todos associados ao *Utilizador Registado* (e, por herança, aos perfis *Utilizador Convidado* e *Premium*):
 
