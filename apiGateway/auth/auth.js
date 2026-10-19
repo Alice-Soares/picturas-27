@@ -33,6 +33,7 @@ module.exports.checkToken = (req, res, next) => {
       }
 
       req.authUserId = user_id;
+      req.authUserType = payload.type;
 
       next();
     } catch (_) {

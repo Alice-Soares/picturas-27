@@ -13,11 +13,29 @@ const imgSchema = new mongoose.Schema({
   og_sha256: { type: String, required: true }, 
 });
 
+const videoSchema = new mongoose.Schema({
+  user_id: { type: mongoose.Schema.Types.ObjectId, required: true },
+  project_id: { type: mongoose.Schema.Types.ObjectId, required: true },
+  stage: { type: String, enum: ["video-src"], required: true },
+  object_key: { type: String, required: true },
+  name: { type: String, required: true },
+  size: { type: Number, required: true },
+  duration: { type: Number, required: true },
+  width: { type: Number, required: true },
+  height: { type: Number, required: true },
+  fps: { type: Number, required: true },
+  container: { type: String, required: true },
+  videoCodec: { type: String, required: true },
+  audioCodec: { type: String, default: null },
+  sha256: { type: String, required: true },
+}, { _id: true });
+
 
 const projectSchema = new mongoose.Schema({
   name: { type: String, required: true },
   user_id: { type: mongoose.Schema.Types.ObjectId, required: true },
   imgs: { type: [imgSchema], default: [] },
+  videos: { type: [videoSchema], default: [] },
   tools: { type: [toolSchema], default: [] },
   version: { type: Number, default: 0 },
   activeToken: { type: Number, default: 0 },

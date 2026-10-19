@@ -22,6 +22,24 @@ const httpsAgent = new https.Agent({
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+const videoUpload = multer({
+  storage: multer.diskStorage({
+    destination: "/tmp/picturas-video-gateway",
+    filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
+  }),
+  limits: { fileSize: 1_000_000_000 },
+});
+fs.mkdirSync("/tmp/picturas-video-gateway", { recursive: true });
+function receiveVideo(req, res, next) {
+  return videoUpload.single("video")(req, res, (error) => {
+    if (!error) return next();
+    if (req.file?.path) fs.rm(req.file.path, { force: true }, () => {});
+    if (error.code === "LIMIT_FILE_SIZE") {
+      return res.status(413).json({ error: "VIDEO_FILE_TOO_LARGE" });
+    }
+    return res.status(400).json({ error: "VIDEO_UPLOAD_INVALID" });
+  });
+}
 
 const projectsURL = "https://projects:9001/";
 
@@ -445,6 +463,49 @@ router.post(
     .catch((err) => forwardAxiosError(res, err, "mensagem fallback"))
 
   }
+);
+
+router.post(
+  "/:user/:project/video",
+  auth.checkToken,
+  receiveVideo,
+  async (req, res) => {
+    if (!req.file) return res.status(400).json({ error: "VIDEO_FILE_REQUIRED" });
+    const ownerId = req.query.owner || req.params.user;
+    const callerId = req.authUserId || req.params.user;
+    const data = new FormData();
+    data.append("video", fs.createReadStream(req.file.path), {
+      filename: req.file.originalname,
+      contentType: req.file.mimetype || "video/mp4",
+    });
+    try {
+      const resp = await axios.post(
+        projectsURL + `${ownerId}/${req.params.project}/video`,
+        data,
+        {
+          headers: {
+            ...data.getHeaders(),
+            Authorization: req.headers["authorization"],
+            "X-Project-Version": req.headers["x-project-version"],
+            "X-Caller-Id": callerId,
+            "X-User-Profile": req.authUserType,
+          },
+          params: req.query.share ? { share: req.query.share } : undefined,
+          httpsAgent,
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+        },
+      );
+      if (resp.headers?.["x-project-version"]) {
+        res.set("X-Project-Version", resp.headers["x-project-version"]);
+      }
+      return res.status(201).json(resp.data);
+    } catch (error) {
+      return forwardAxiosError(res, error, "Falha na submissão do vídeo");
+    } finally {
+      fs.rm(req.file.path, { force: true }, () => {});
+    }
+  },
 );
 
 /**

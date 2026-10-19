@@ -31,8 +31,20 @@ export interface SingleProject {
   name: string;
   tools: ProjectToolResponse[];
   imgs: ProjectImage[];
+  videos: ProjectVideo[];
   version: number;
 
+}
+export interface ProjectVideo {
+  _id: string;
+  name: string;
+  stage: "video-src";
+  duration: number;
+  width: number;
+  height: number;
+  fps: number;
+  videoCodec: string;
+  audioCodec?: string | null;
 }
 export interface ProjectImage {
   _id: string;
@@ -208,6 +220,7 @@ export const fetchProject = async (
     user_id: response.data.user_id,
     name: response.data.name,
     imgs: response.data.imgs,
+    videos: response.data.videos ?? [],
     tools: response.data.tools,
     version: response.data.version,
   } as SingleProject;
@@ -463,6 +476,64 @@ export const addProjectImages = async ({
     return lastVersion;
 
 };
+
+export const addProjectVideo = async ({
+  uid, pid, token, video, projectVersion, ownerId, shareId, duplicateAction, signal,
+}: {
+  uid: string; pid: string; token: string; video: File; projectVersion: number;
+  ownerId?: string; shareId?: string;
+  duplicateAction?: "keep" | "cancel";
+  signal?: AbortSignal;
+}) => {
+  const query = buildQuery({ ownerId, shareId });
+  const formData = new FormData();
+  formData.append("video", video);
+  if (duplicateAction) formData.append("duplicateAction", duplicateAction);
+  const response = await api.post(`/projects/${uid}/${pid}/video${query}`, formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+      "X-Project-Version": String(projectVersion),
+    },
+    signal,
+  });
+  if (response.status < 200 || response.status >= 300) {
+    throw new Error("Failed to upload video");
+  }
+  return {
+    data: response.data,
+    newVersionHeader: response.headers?.["x-project-version"],
+  };
+};
+
+export type VideoBatchResult = {
+  fileName: string;
+  status: "concluída" | "rejeitada" | "cancelada" | "falhada";
+  data?: unknown;
+  error?: unknown;
+};
+
+export async function addProjectVideos(params: Omit<Parameters<typeof addProjectVideo>[0], "video"> & {
+  videos: File[];
+  signal?: AbortSignal;
+}): Promise<VideoBatchResult[]> {
+  return Promise.all(params.videos.map(async (video) => {
+    try {
+      const result = await addProjectVideo({ ...params, video });
+      return { fileName: video.name, status: "concluída", data: result.data };
+    } catch (error) {
+      if (axios.isCancel(error) || params.signal?.aborted) {
+        return { fileName: video.name, status: "cancelada", error };
+      }
+      const code = (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
+      return {
+        fileName: video.name,
+        status: code === "VIDEO_VALIDATION_FAILED" || code === "VIDEO_DUPLICATE" ? "rejeitada" : "falhada",
+        error,
+      };
+    }
+  }));
+}
 
 export const deleteProjectImages = async ({
   uid,

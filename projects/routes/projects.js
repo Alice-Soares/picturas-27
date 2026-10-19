@@ -54,6 +54,24 @@ const { requireProjectVersion } = require("../middleware/projectVersion");
 
 const storage = multer.memoryStorage();
 var upload = multer({ storage: storage });
+const videoUpload = multer({
+  storage: multer.diskStorage({
+    destination: "/tmp/picturas-video-projects",
+    filename: (req, file, cb) => cb(null, `${uuidv4()}-${file.originalname}`),
+  }),
+  limits: { fileSize: 1_000_000_000 },
+});
+fs.mkdirSync("/tmp/picturas-video-projects", { recursive: true });
+function receiveVideo(req, res, next) {
+  return videoUpload.single("video")(req, res, (error) => {
+    if (!error) return next();
+    if (req.file?.path) fs.rm(req.file.path, { force: true }, () => {});
+    if (error.code === "LIMIT_FILE_SIZE") {
+      return res.status(413).json({ error: "VIDEO_FILE_TOO_LARGE" });
+    }
+    return res.status(400).json({ error: "VIDEO_UPLOAD_INVALID" });
+  });
+}
 
 const key = fs.readFileSync(__dirname + "/../certs/selfsigned.key");
 const cert = fs.readFileSync(__dirname + "/../certs/selfsigned.crt");
@@ -812,9 +830,11 @@ router.get("/:user/:project", checkSharePermission, async (req, res, next) => {
     .then(async (project) => {
       const response = {
         _id: project._id,
+        user_id: project.user_id,
         name: project.name,
         tools: project.tools,
         imgs: [],
+        videos: project.videos || [],
         version: project.version,
       };
 
@@ -1248,6 +1268,47 @@ router.post(
       })
       .catch((_) => res.status(501).jsonp(`Error acquiring user's project`));
   }
+);
+
+router.post(
+  "/:user/:project/video",
+  checkSharePermission,
+  requireEditPermission,
+  (req, res, next) => {
+    if (req.sharedPermission) return next();
+    const caller = getCallerId(req);
+    if (!caller) return res.status(401).json({ error: "AUTHENTICATION_REQUIRED" });
+    if (String(caller) !== String(req.params.user)) {
+      return res.status(403).json({ error: "PROJECT_ACCESS_DENIED" });
+    }
+    return next();
+  },
+  requireProjectVersion,
+  receiveVideo,
+  async (req, res) => {
+    if (!req.file) return res.status(400).json({ error: "VIDEO_FILE_REQUIRED" });
+    try {
+      const { submitVideo } = require("../services/videoSubmission");
+      const result = await submitVideo({
+        req,
+        project: req.projectDoc,
+        expectedVersion: req.expectedVersion,
+      });
+      res.set("X-Project-Version", String(result.version));
+      return res.status(201).json(result);
+    } catch (error) {
+      if (error.status === 409) {
+        return res.status(409).json({
+          error: error.message === "VIDEO_DUPLICATE" ? "VIDEO_DUPLICATE" : "PROJECT_VERSION_CONFLICT",
+        });
+      }
+      const publicError = error.publicError || {
+        code: "VIDEO_VALIDATION_FAILED",
+        message: "O vídeo não cumpre os requisitos de formato ou do perfil.",
+      };
+      return res.status(400).json({ error: publicError });
+    }
+  },
 );
 
 // Add new tool to a project

@@ -5,6 +5,7 @@ import { fetchSharedProject, resolveShareLink } from "@/lib/projects";
 import { ProjectImageList } from "@/components/project-page/project-image-list";
 import { ViewToggle } from "@/components/project-page/view-toggle";
 import { AddImagesDialog } from "@/components/project-page/add-images-dialog";
+import { AddVideoDialog } from "@/components/project-page/add-video-dialog";
 import { Button } from "@/components/ui/button";
 import { Toolbar } from "@/components/toolbar/toolbar";
 import { ShareProjectDialog } from "@/components/projects/share-dialog";
@@ -714,6 +715,7 @@ const handleCancel = () => {
 
                   <PresetsDialog />
                   <AddImagesDialog />
+                  <AddVideoDialog />
           </>
           )}
                 {/* botão Share só para o owner */}
