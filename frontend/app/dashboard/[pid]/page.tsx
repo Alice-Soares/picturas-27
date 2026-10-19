@@ -6,6 +6,7 @@ import { ProjectImageList } from "@/components/project-page/project-image-list";
 import { ViewToggle } from "@/components/project-page/view-toggle";
 import { AddImagesDialog } from "@/components/project-page/add-images-dialog";
 import { AddVideoDialog } from "@/components/project-page/add-video-dialog";
+import { ProjectVideoList } from "@/components/project-page/project-video-list";
 import { Button } from "@/components/ui/button";
 import { Toolbar } from "@/components/toolbar/toolbar";
 import { ShareProjectDialog } from "@/components/projects/share-dialog";
@@ -830,10 +831,22 @@ const handleCancel = () => {
 
         <div className="h-full overflow-x-hidden flex">
         <Toolbar />
+        <div className="w-full overflow-y-auto">
+        <ProjectVideoList
+          videos={project.data.videos}
+          uid={session.user._id}
+          pid={pid}
+          token={session.token}
+          projectVersion={project.data.version}
+          ownerId={ownerId}
+          shareId={shareId}
+          canEdit={canEdit && mode !== "results"}
+        />
         <ProjectImageList
           setCurrentImageId={setCurrentImage}
           results={projectResults.data}
         />
+        </div>
       </div>
       </div>
       <Transition

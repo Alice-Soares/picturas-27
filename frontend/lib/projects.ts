@@ -45,6 +45,19 @@ export interface ProjectVideo {
   fps: number;
   videoCodec: string;
   audioCodec?: string | null;
+  sourceVideoId?: string | null;
+}
+
+export interface VideoTrimOperation {
+  id: string;
+  type: "trim";
+  status: "queued" | "processing" | "completed" | "failed" | "cancelled";
+  progress: number;
+  sourceVideoId: string;
+  startSeconds: number;
+  endSeconds: number;
+  resultVideoId: string | null;
+  errorCode: string | null;
 }
 export interface ProjectImage {
   _id: string;
@@ -525,6 +538,94 @@ export async function addProjectVideos(params: Omit<Parameters<typeof addProject
       if (axios.isCancel(error) || params.signal?.aborted) {
         return { fileName: video.name, status: "cancelada", error };
       }
+
+      /* trim API functions are declared below addProjectVideos */
+      /*
+      export const createProjectVideoTrim = async ({
+        uid,
+        pid,
+        token,
+        videoId,
+        startSeconds,
+        endSeconds,
+        projectVersion,
+        ownerId,
+        shareId,
+      }: {
+        uid: string;
+        pid: string;
+        token: string;
+        videoId: string;
+        startSeconds: number;
+        endSeconds: number;
+        projectVersion: number;
+        ownerId?: string;
+        shareId?: string;
+      }) => {
+        const pathUid = ownerId ?? uid;
+        const query = buildQuery({ ownerId, shareId });
+        const response = await api.post<{ operationId: string; status: VideoTrimOperation["status"] }>(
+          `/projects/${pathUid}/${pid}/video/${videoId}/trim${query}`,
+          { startSeconds, endSeconds },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "X-Project-Version": String(projectVersion),
+            },
+          },
+        );
+        return response.data;
+      };
+
+      export const getProjectVideoTrim = async ({
+        uid,
+        pid,
+        token,
+        operationId,
+        ownerId,
+        shareId,
+      }: {
+        uid: string;
+        pid: string;
+        token: string;
+        operationId: string;
+        ownerId?: string;
+        shareId?: string;
+      }) => {
+        const pathUid = ownerId ?? uid;
+        const query = buildQuery({ ownerId, shareId });
+        const response = await api.get<VideoTrimOperation>(
+          `/projects/${pathUid}/${pid}/video-operations/${operationId}${query}`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        return response.data;
+      };
+
+      export const cancelProjectVideoTrim = async ({
+        uid,
+        pid,
+        token,
+        operationId,
+        ownerId,
+        shareId,
+      }: {
+        uid: string;
+        pid: string;
+        token: string;
+        operationId: string;
+        ownerId?: string;
+        shareId?: string;
+      }) => {
+        const pathUid = ownerId ?? uid;
+        const query = buildQuery({ ownerId, shareId });
+        const response = await api.post<{ operationId: string; status: VideoTrimOperation["status"] }>(
+          `/projects/${pathUid}/${pid}/video-operations/${operationId}/cancel${query}`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        return response.data;
+      };
+      */
       const code = (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
       return {
         fileName: video.name,
@@ -534,6 +635,48 @@ export async function addProjectVideos(params: Omit<Parameters<typeof addProject
     }
   }));
 }
+
+export const createProjectVideoTrim = async (params: {
+  uid: string; pid: string; token: string; videoId: string;
+  startSeconds: number; endSeconds: number; projectVersion: number;
+  ownerId?: string; shareId?: string;
+}) => {
+  const pathUid = params.ownerId ?? params.uid;
+  const query = buildQuery(params);
+  const response = await api.post<{ operationId: string; status: VideoTrimOperation["status"] }>(
+    `/projects/${pathUid}/${params.pid}/video/${params.videoId}/trim${query}`,
+    { startSeconds: params.startSeconds, endSeconds: params.endSeconds },
+    { headers: { Authorization: `Bearer ${params.token}`, "X-Project-Version": String(params.projectVersion) } },
+  );
+  return response.data;
+};
+
+export const getProjectVideoTrim = async (params: {
+  uid: string; pid: string; token: string; operationId: string;
+  ownerId?: string; shareId?: string;
+}) => {
+  const pathUid = params.ownerId ?? params.uid;
+  const query = buildQuery(params);
+  const response = await api.get<VideoTrimOperation>(
+    `/projects/${pathUid}/${params.pid}/video-operations/${params.operationId}${query}`,
+    { headers: { Authorization: `Bearer ${params.token}` } },
+  );
+  return response.data;
+};
+
+export const cancelProjectVideoTrim = async (params: {
+  uid: string; pid: string; token: string; operationId: string;
+  ownerId?: string; shareId?: string;
+}) => {
+  const pathUid = params.ownerId ?? params.uid;
+  const query = buildQuery(params);
+  const response = await api.post<{ operationId: string; status: VideoTrimOperation["status"] }>(
+    `/projects/${pathUid}/${params.pid}/video-operations/${params.operationId}/cancel${query}`,
+    {},
+    { headers: { Authorization: `Bearer ${params.token}` } },
+  );
+  return response.data;
+};
 
 export const deleteProjectImages = async ({
   uid,

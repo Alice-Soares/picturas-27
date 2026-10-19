@@ -3,6 +3,9 @@ import {
   addProject,
   addProjectImages,
   addProjectVideo,
+  createProjectVideoTrim,
+  getProjectVideoTrim,
+  cancelProjectVideoTrim,
   addProjectTool,
   deleteProject,
   deleteProjectImages,
@@ -162,6 +165,50 @@ export const useAddProjectVideo = (uid: string, pid: string, token: string, owne
     },
   });
 };
+
+export const useCreateProjectVideoTrim = (
+  uid: string,
+  pid: string,
+  token: string,
+  ownerId?: string,
+  shareId?: string,
+) => {
+  const qc = useQueryClient();
+  const projectKey = ["project", uid, pid, token, ownerId, shareId];
+  return useMutation({
+    mutationFn: (args: {
+      videoId: string;
+      startSeconds: number;
+      endSeconds: number;
+      projectVersion: number;
+    }) => createProjectVideoTrim({ uid, pid, token, ownerId, shareId, ...args }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: projectKey, refetchType: "all" });
+    },
+  });
+};
+
+export const useGetProjectVideoTrim = (
+  uid: string,
+  pid: string,
+  token: string,
+  ownerId?: string,
+  shareId?: string,
+) => useMutation({
+  mutationFn: (operationId: string) =>
+    getProjectVideoTrim({ uid, pid, token, ownerId, shareId, operationId }),
+});
+
+export const useCancelProjectVideoTrim = (
+  uid: string,
+  pid: string,
+  token: string,
+  ownerId?: string,
+  shareId?: string,
+) => useMutation({
+  mutationFn: (operationId: string) =>
+    cancelProjectVideoTrim({ uid, pid, token, ownerId, shareId, operationId }),
+});
 
 export const useDeleteProjectImages = (
   uid: string,

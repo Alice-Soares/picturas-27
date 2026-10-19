@@ -28,6 +28,7 @@ const videoSchema = new mongoose.Schema({
   videoCodec: { type: String, required: true },
   audioCodec: { type: String, default: null },
   sha256: { type: String, required: true },
+  sourceVideoId: { type: mongoose.Schema.Types.ObjectId, default: null },
 }, { _id: true });
 
 

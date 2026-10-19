@@ -36,6 +36,13 @@ const { ensureEditorSlot, releaseEditorSlot } = require("../utils/presence");
 const { extractImageFeatures } = require("../utils/imageFeatures");
 const PreviewCache = require("../controllers/previewCache");
 const { makePreviewCacheKey, makeToolsFingerprint } = require("../utils/cacheKey");
+const {
+  createTrimOperation,
+  getOperation,
+  cancelTrimOperation,
+} = require("../services/videoOperationService");
+const { getUserType } = require("../utils/presence");
+const { publicTrimError } = require("../services/videoTrimErrors");
 
 const {
   get_image_internal_url,
@@ -117,6 +124,12 @@ function requireAuth(req, res, next) {
   next();
 }
 
+async function trimProfile(req) {
+  if (req.headers["x-user-profile"] === "premium") return "premium";
+  const profile = await getUserType(getCallerId(req));
+  return profile === "premium" ? "premium" : "registered";
+}
+
 /**
  * Calcula quantas operações avançadas vão ser usadas *nesta execução*.
  * - totalAdv: nº total de tools avançadas atualmente no projeto
@@ -165,6 +178,73 @@ function toolsEqual(a, b) {
   return true;
 }
 
+
+router.post("/:user/:project/video/:videoId/trim", requireAuth, async (req, res) => {
+  const callerId = getCallerId(req);
+  if (String(callerId) !== String(req.params.user)) {
+    return res.status(403).json({ error: "VIDEO_TRIM_UNAUTHORIZED" });
+  }
+  try {
+    const operation = await createTrimOperation({
+      userId: req.params.user,
+      projectId: req.params.project,
+      videoId: req.params.videoId,
+      startSeconds: req.body?.startSeconds,
+      endSeconds: req.body?.endSeconds,
+      profile: await trimProfile(req),
+    });
+    return res.status(202).json({
+      operationId: String(operation._id),
+      status: operation.status,
+    });
+  } catch (error) {
+    const publicError = publicTrimError(error);
+    return res.status(error.status || (publicError.code === "VIDEO_TRIM_FAILED" ? 500 : 400)).json({
+      error: publicError.code,
+    });
+  }
+});
+
+router.get("/:user/:project/video-operations/:operationId", requireAuth, async (req, res) => {
+  const callerId = getCallerId(req);
+  if (String(callerId) !== String(req.params.user)) {
+    return res.status(403).json({ error: "VIDEO_TRIM_UNAUTHORIZED" });
+  }
+  try {
+    const operation = await getOperation(req.params.user, req.params.project, req.params.operationId);
+    return res.status(200).json({
+      id: String(operation._id),
+      type: operation.type,
+      status: operation.status,
+      progress: operation.progress,
+      sourceVideoId: String(operation.source_video_id),
+      startSeconds: operation.start_seconds,
+      endSeconds: operation.end_seconds,
+      resultVideoId: operation.result_video_id ? String(operation.result_video_id) : null,
+      errorCode: operation.error_code,
+    });
+  } catch (error) {
+    const publicError = publicTrimError(error);
+    return res.status(error.status || 404).json({ error: publicError.code });
+  }
+});
+
+router.post("/:user/:project/video-operations/:operationId/cancel", requireAuth, async (req, res) => {
+  const callerId = getCallerId(req);
+  if (String(callerId) !== String(req.params.user)) {
+    return res.status(403).json({ error: "VIDEO_TRIM_UNAUTHORIZED" });
+  }
+  try {
+    const operation = await cancelTrimOperation(req.params.user, req.params.project, req.params.operationId);
+    return res.status(202).json({
+      operationId: String(operation._id),
+      status: operation.status,
+    });
+  } catch (error) {
+    const publicError = publicTrimError(error);
+    return res.status(error.status || 400).json({ error: publicError.code });
+  }
+});
 
 // TODO process message according to type of output
 function process_msg() {

@@ -43,14 +43,16 @@ function read_rabbit_msg(queue, callback) {
             channel.assertQueue(queue, { durable: true }, (err_queue, q) => {
                 if(err_queue) throw err_queue;
 
-                channel.consume(q.queue, (msg) => {
-                    if(msg != null){
-                        callback(msg);
-                        // Acknowledge the message
-                        channel.ack(msg);
-                    }
-                }, {
-                    noAck: false
+                channel.bindQueue(q.queue, exchange, queue, {}, (err_bind) => {
+                    if (err_bind) throw err_bind;
+                    channel.consume(q.queue, (msg) => {
+                        if(msg != null){
+                            callback(msg);
+                            channel.ack(msg);
+                        }
+                    }, {
+                        noAck: false
+                    });
                 });
             });
         });
