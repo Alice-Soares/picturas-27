@@ -34,26 +34,28 @@ A @tab-perfis-video sintetiza as condições de acesso estabelecidas para o MVP,
 ) <tab-perfis-video>
 
 
-
 == _Stakeholders_ e interesses
 
+A introdução de vídeo não altera substancialmente o conjunto de intervenientes do PictuRAS, mas acrescenta novos interesses e responsabilidades aos já identificados na solução de base. A revisão incide, sobretudo, na utilização das novas funcionalidades, no controlo dos recursos computacionais e na manutenção da qualidade do serviço. A nomenclatura dos intervenientes coincide integralmente com a utilizada na secção de cabeçalho de cada caso de uso, detalhando-se os seus interesses específicos e desdobramentos operacionais na tabela seguinte. 
 
-A introdução de vídeo não altera substancialmente o conjunto de intervenientes do PictuRAS, mas acrescenta novos interesses e responsabilidades aos já identificados na solução de base. A revisão incide, sobretudo, na utilização das novas funcionalidades, no controlo dos recursos computacionais e na manutenção da qualidade do serviço. A nomenclatura dos intervenientes coincide integralmente com a utilizada na secção de cabeçalho de cada caso de uso, detalhando-se os seus interesses específicos e desdobramentos operacionais na tabela seguinte.
-
-*TODO:* REVER ESTA TABELA
+*TODO:* REVER A COLUNA DE UC/REQUISITOS PARA VER SE BATE CERTO E ESTA COERENTE
 
 #tab([_Stakeholders_ e interesses (novos ou revistos)],
   tabela(
     colunas: (3.2cm, 1.8cm, 1fr, 1.8cm, 2.8cm),
     [_Stakeholder_], [Estado], [Interesse(s) relativamente ao vídeo], [Influência], [UC / requisitos],
-    [Utilizador Registado], [Revisto], [Submeter e transformar vídeos (recorte, conversão, extração, áudio, filtros) sem perda de qualidade, com acompanhamento de progresso em tempo real, sem corrupção do ficheiro original e com gestão transparente da sua quota diária de 5 operações.], [Alta], [UC-VID-001 a UC-VID-007 \ REQ-VID-SUBMIT \ REQ-VID-TRIM],
-    [Utilizador Premium], [Revisto], [Executar processamentos intensivos sobre vídeos longos (até 30 min) e em alta resolução (até 4K) sem restrições de quotas diárias, com tempos de resposta previsíveis e garantia de armazenamento seguro na nuvem.], [Alta], [UC-VID-001 a UC-VID-007 \ REQ-VID-CONV],
-    [Utilizador Anónimo], [Revisto], [Manter a facilidade de utilização rápida para imagens estáticas; obter feedback claro e mensagens informativas sobre as razões da indisponibilidade de vídeo e incentivo à criação de conta.], [Média], [UC-VID-001/RN1 \ REQ-VID-SUBMIT-003],
-    [Proprietário do Sistema], [Revisto], [Salvaguardar a viabilidade económica e o controlo de custos computacionais e de armazenamento; assegurar o cumprimento rigoroso das quotas por perfil; potenciar a conversão de utilizadores gratuitos para planos Premium através do valor acrescentado das funcionalidades de vídeo.], [Alta], [UC-VID-001 a UC-VID-007 \ RNG-01 a RNG-05],
-    [Equipa de Desenvolvimento e DevOps], [Revisto], [Garantir a estabilidade e escalabilidade da arquitetura de modo a integrar o processamento de vídeo, assegurar a fiabilidade das operações e a gestão adequada de falhas, preservar a compatibilidade com as funcionalidades de imagem e facilitar a manutenção e evolução da solução.], [Alta], [Todos os UC-VID],
-    [Serviço de Armazenamento], [Revisto], [Assegurar a persistência segura e performante de ficheiros multimédia pesados, garantindo isolamento por utilizador/projeto e integridade criptográfica sem ficheiros órfãos.], [Média], [UC-VID-001 \ UC-VID-004 \ UC-VID-005],
+    [Utilizador Registado], [Revisto], [Submeter e transformar vídeos (recorte, conversão, extração de imagens, áudio, filtros) sem perda de qualidade, com acompanhamento de progresso em tempo real, sem corrupção do ficheiro original e com gestão transparente da sua quota diária de 5 operações.], [Alta], [UC-VID-001 a UC-VID-007; UC07; REQ-VID-SUB-001, REQ-VID-SUB-016 a 019, REQ-VID-SUB-025, REQ-VID-COM-004, 005, 007, 008, 011, 012, 017, 018, 020; RF45; RNF44],
+    [Utilizador Premium], [Revisto], [Executar processamentos intensivos sobre vídeos longos (até 30 min) e em alta resolução (até 4K) sem restrições de quotas diárias, com tempos de resposta compatíveis com o tamanho do vídeo e garantia de armazenamento seguro na nuvem.], [Alta], [UC-VID-001 a UC-VID-007; REQ-VID-SUB-001, REQ-VID-SUB-020 a 023, REQ-VID-COM-006; UC06; RF44; RNF43, RNF45],
+    [Utilizador Anónimo], [Revisto], [Manter a facilidade de utilização rápida para imagens estáticas; obter retorno claro e mensagens informativas sobre as razões da indisponibilidade de vídeo e incentivo à criação de conta.], [Média], [UC-VID-001; REQ-VID-SUB-002; RNF48],
+    [Proprietário do Sistema], [Novo], [Salvaguardar a viabilidade económica e o controlo de custos computacionais e de armazenamento; assegurar o cumprimento rigoroso das quotas por perfil; potenciar a conversão de utilizadores gratuitos para planos Premium através do valor acrescentado das funcionalidades de vídeo.], [Alta], [UC-VID-001 a UC-VID-007; RNG-01 a RNG-05; REQ-VID-SUB-016 a 025; REQ-VID-COM-004 a 008],
+    [Equipa de Desenvolvimento], [Revisto], [Garantir a estabilidade e escalabilidade da arquitetura de modo a integrar o processamento de vídeo, assegurar a fiabilidade das operações e a gestão adequada de falhas, preservar a compatibilidade com as funcionalidades de imagem e facilitar a manutenção e evolução da solução.], [Alta], [UC-VID-001 a UC-VID-007; REQ-VID-COM-009 a 020; REQ-VID-Q-001 a 016; RNF43, RNF46],
+    [Serviço Cloud (MinIO)], [Revisto], [Assegurar a persistência segura e performante de ficheiros multimédia pesados, garantindo isolamento por utilizador/projeto e integridade dos dados sem ficheiros órfãos.], [Média], [UC-VID-001; UC-VID-002 a UC-VID-007; REQ-VID-SUB-015, 024, 026 a 029; REQ-VID-COM-014 a 018; RNF45],
+    [Convidado por Link], [Revisto], [Visualizar (ou editar, conforme as permissões) projetos partilhados que contenham vídeo, com reprodução fluida.], [Média], [UC07; RF41, RF45, RF52 a RF57; RNF44, RNF45, RNF53],
+    [Administrador de Sistema], [Revisto], [Assegurar que os vídeos armazenados e partilhados cumprem as regras de privacidade e RGPD, incluindo encriptação e revogação de partilhas.], [Alta], [UC07; RNF44; REQ-VID-COM-001 a 003, 013, 019],
   ),
-)
+  )
+
+Os restantes _stakeholders_ da solução de base mantêm-se inalterados e, por isso, não se repetem aqui.
 
 
 == Elicitação de requisitos
