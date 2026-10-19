@@ -207,6 +207,20 @@ OOM-killed.
    docker compose down -v       # ...and wipe all data (databases, images, objects)
    ```
 
+### Video MVP
+
+The video submission MVP accepts authenticated MP4 uploads with H.264 video
+and optional AAC audio. The Projects Service validates metadata with
+FFmpeg/FFprobe and stores validated originals in the `video-src` stage.
+After rebuilding, verify the analyzer with:
+
+```bash
+docker compose exec projects ffprobe -version
+```
+
+The acceptance scenarios and profile limits are documented in
+`specs/001-video-submission/quickstart.md`.
+
 ### First Steps
 
 1. Open <https://localhost:8080> and accept the certificate.

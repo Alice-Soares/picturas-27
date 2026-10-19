@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   addProject,
   addProjectImages,
+  addProjectVideo,
   addProjectTool,
   deleteProject,
   deleteProjectImages,
@@ -145,6 +146,19 @@ export const useAddProjectImages = (uid: string, pid: string, token: string, own
       bumpProjectVersion(qc, projectKey, newVersionHeader);
       qc.invalidateQueries({ queryKey: projectKey, refetchType: "all" });
       qc.invalidateQueries({ queryKey: ["projectImages", uid, pid, token, ownerId, shareId], refetchType: "all" });
+    },
+  });
+};
+
+export const useAddProjectVideo = (uid: string, pid: string, token: string, ownerId?: string, shareId?: string) => {
+  const qc = useQueryClient();
+  const projectKey = ["project", uid, pid, token, ownerId, shareId];
+  return useMutation({
+    mutationFn: (args: { video: File; projectVersion: number; duplicateAction?: "keep" | "cancel"; signal?: AbortSignal }) =>
+      addProjectVideo({ uid, pid, token, ownerId, shareId, ...args }),
+    onSuccess: (result) => {
+      bumpProjectVersion(qc, projectKey, result.newVersionHeader);
+      qc.invalidateQueries({ queryKey: projectKey, refetchType: "all" });
     },
   });
 };
@@ -569,4 +583,3 @@ export const useSetProjectDirty = () => {
     },
   });
 };
-

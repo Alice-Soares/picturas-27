@@ -82,10 +82,16 @@ module.exports.updateIfVersion = async (user_id, project_id, project, expectedVe
   ).exec();
 };
 
+module.exports.appendVideoIfVersion = async (user_id, project_id, video, expectedVersion) =>
+  ProjectModel.findOneAndUpdate(
+    { user_id, _id: project_id, version: expectedVersion },
+    { $push: { videos: video }, $inc: { version: 1 } },
+    { new: true }
+  ).exec();
+
 module.exports.updateRaw = async (user_id, project_id, update) => {
   return await ProjectModel.updateOne(
     { user_id, _id: project_id },
     update
   ).exec();
 };
-
