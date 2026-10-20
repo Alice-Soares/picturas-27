@@ -834,6 +834,7 @@ const handleCancel = () => {
         <div className="w-full overflow-y-auto">
         <ProjectVideoList
           videos={project.data.videos}
+          tools={project.data.tools}
           uid={session.user._id}
           pid={pid}
           token={session.token}

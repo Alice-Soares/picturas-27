@@ -3,6 +3,7 @@ const socketIo = require('socket.io');
 const jwt = require("jsonwebtoken");
 
 const { read_rabbit_msg } = require("./utils/rabbit_mq.js");
+const { emitProjectOperation } = require("./utils/project_events");
 const httpServer = http.createServer();
 httpServer.listen(4000);
 
@@ -91,12 +92,7 @@ function process_msg() {
         }
 
         else if (msg_content.type === "project-op") {
-            const projectId = msg_content.projectId;
-            const op = msg_content.op;
-
-            if (projectId && op) {
-                io.to(`project:${projectId}`).emit("project-op", { projectId, op });
-            }
+            emitProjectOperation(io, msg_content);
             }
 
         //  project updated

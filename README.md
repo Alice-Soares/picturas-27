@@ -131,6 +131,17 @@ exchange:
 `saturation` · `watermark` · `bg_remove_ai` · `cut_ai` · `expand_ai` · `obj_ai` · `people_ai` ·
 `text_ai` · `upgrade_ai`
 
+The video conversion MVP is also an independent tool: `video_conversion_tool`
+consumes `video_conversion_queue`, uses FFmpeg/FFprobe, and shares the
+`image_data` volume mounted at `/app/images`. The Projects Service remains
+responsible for authorization, quotas, operation state, persistence and
+project events; the tool does not access MongoDB or project APIs. Rebuild it
+after changes with:
+
+```bash
+docker compose up -d --build video_conversion_tool
+```
+
 > The `watermark` tool runs from a pre-built public image
 > (`prcsousa/picturas-watermark-tool-ms`) instead of being built from this repository — it is a
 > deliberate example of integrating a third-party service.
@@ -437,7 +448,8 @@ docker compose up -d --build border_tool
 
 1. Create `Tools/<your_tool>/` with `<your_tool>.py`, `requirements.txt` and a `Dockerfile`
    (copy an existing simple tool such as `border` as a template).
-2. Reuse `Tools/utils/` for RabbitMQ connection, image handling and message schemas.
+2. Reuse `Tools/utils/` for RabbitMQ connection, image handling and message schemas. Video
+   tools may use FFmpeg/FFprobe but must keep project orchestration outside the tool.
 3. Register the queue in `rabbitMQ/`.
 4. Add the service to `docker-compose.yaml` with `depends_on: rabbitmq (service_healthy)` and
    the `image_data` volume.

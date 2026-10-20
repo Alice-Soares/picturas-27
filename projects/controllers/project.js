@@ -89,6 +89,13 @@ module.exports.appendVideoIfVersion = async (user_id, project_id, video, expecte
     { new: true }
   ).exec();
 
+module.exports.appendImagesIfVersion = async (user_id, project_id, images, expectedVersion) =>
+  ProjectModel.findOneAndUpdate(
+    { user_id, _id: project_id, version: expectedVersion },
+    { $push: { imgs: { $each: images } }, $inc: { version: 1 } },
+    { new: true },
+  ).exec();
+
 module.exports.updateRaw = async (user_id, project_id, update) => {
   return await ProjectModel.updateOne(
     { user_id, _id: project_id },

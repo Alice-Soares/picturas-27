@@ -145,6 +145,24 @@ services:
     volumes:
       - image_data:/app/images
 
+  video_conversion_tool:
+    build:
+      context: ./Tools
+      dockerfile: video_conversion/Dockerfile
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: user
+      RABBITMQ_PASSWORD: password
+    networks:
+      - elk
+    volumes:
+      - image_data:/app/images
+
   users_mongoDB:
     image: mongo:4.4
     restart: on-failure

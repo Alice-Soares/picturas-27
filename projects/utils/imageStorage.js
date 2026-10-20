@@ -29,8 +29,17 @@ async function get_image_public_url(user, project, type, img) {
 async function post_image(user, project, type, file) {
   return await axios.post(
     `${img_storage_ms}/upload/${user}/${project}/${type}`,
-    file /* , { httpsAgent: httpsAgent } */,
+    file,
+    {
+      ...(typeof file?.getHeaders === "function" ? { headers: file.getHeaders() } : {}),
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+    },
   );
+}
+
+async function post_extracted_image(user, project, file) {
+  return post_image(user, project, "src", file);
 }
 
 async function delete_image(user, project, type, img) {
@@ -47,4 +56,4 @@ async function copy_image(userId, projectId, fromStage, toStage, fileName) {
   );
 }
 
-module.exports = { get_image_internal_url, get_image_public_url, post_image, delete_image, copy_image };
+module.exports = { get_image_internal_url, get_image_public_url, post_image, post_extracted_image, delete_image, copy_image };
