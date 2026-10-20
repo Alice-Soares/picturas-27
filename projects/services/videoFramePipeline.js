@@ -3,7 +3,7 @@ const { spawn } = require("child_process");
 
 function runFfmpeg(args) {
   return new Promise((resolve, reject) => {
-    const child = spawn("ffmpeg", ["-y", ...args], { stdio: ["ignore", "ignore", "pipe"] });
+    const child = spawn(process.env.FFMPEG_PATH || "ffmpeg", ["-y", ...args], { stdio: ["ignore", "ignore", "pipe"] });
     let stderr = "";
     child.stderr.on("data", (chunk) => { stderr += chunk.toString(); });
     child.on("error", reject);

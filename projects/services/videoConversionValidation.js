@@ -11,6 +11,29 @@ function maxResolution(profile) {
     : { width: 1920, height: 1080 };
 }
 
+function conversionOptionsResponse(video, profile) {
+  return {
+    source: {
+      id: String(video._id),
+      name: video.name,
+      container: video.container,
+      videoCodec: video.videoCodec,
+      audioCodec: video.audioCodec ?? null,
+      duration: video.duration,
+      width: video.width,
+      height: video.height,
+      fps: video.fps,
+      size: video.size ?? null,
+    },
+    containers: Object.entries(supportedConversion).map(([name, codecs]) => ({
+      name,
+      videoCodecs: [...codecs.videoCodecs],
+      audioCodecs: codecs.audioCodecs.filter((codec) => codec !== null),
+    })),
+    resolutionLimits: maxResolution(profile),
+  };
+}
+
 function validateConversionOptions(options = {}, profile = "registered") {
   const outputContainer = String(options.outputContainer || "").toLowerCase();
   const outputVideoCodec = String(options.outputVideoCodec || "").toLowerCase();
@@ -43,4 +66,10 @@ function estimateOutputSize({ duration, width, height, bitrate }) {
   return Math.round((bitrate * duration) / 8);
 }
 
-module.exports = { supportedConversion, maxResolution, validateConversionOptions, estimateOutputSize };
+module.exports = {
+  supportedConversion,
+  maxResolution,
+  conversionOptionsResponse,
+  validateConversionOptions,
+  estimateOutputSize,
+};

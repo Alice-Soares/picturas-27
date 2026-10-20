@@ -366,7 +366,9 @@ router.post("/:user/:project/video-operations/:operationId/cancel", requireAuth,
       status: operation.status,
     });
   } catch (error) {
-    const publicError = error.code?.startsWith("VIDEO_FRAME_EXTRACT") || error.message?.startsWith("VIDEO_FRAME_EXTRACT")
+    const publicError = error.code?.startsWith("VIDEO_CONVERSION") || error.message?.startsWith("VIDEO_CONVERSION")
+      ? publicConversionError(error)
+      : error.code?.startsWith("VIDEO_FRAME_EXTRACT") || error.message?.startsWith("VIDEO_FRAME_EXTRACT")
       ? publicFrameExtractionError(error)
       : publicTrimError(error);
     return res.status(error.status || 400).json({ error: publicError.code });
