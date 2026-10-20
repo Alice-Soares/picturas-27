@@ -1053,7 +1053,7 @@ router.get("/:user/:project", checkSharePermission, async (req, res, next) => {
         name: project.name,
         tools: project.tools,
         imgs: [],
-        videos: project.videos || [],
+        videos: [],
         version: project.version,
       };
 
@@ -1075,6 +1075,33 @@ router.get("/:user/:project", checkSharePermission, async (req, res, next) => {
         } catch (_) {
           res.status(404).jsonp(`Error acquiring image's url`);
           return;
+        }
+      }
+
+      for (const video of project.videos || []) {
+        try {
+          const resp = await get_image_public_url(
+            req.params.user,
+            req.params.project,
+            "video-src",
+            path.basename(video.object_key),
+          );
+          response.videos.push({
+            _id: video._id,
+            name: video.name,
+            stage: video.stage,
+            duration: video.duration,
+            width: video.width,
+            height: video.height,
+            fps: video.fps,
+            videoCodec: video.videoCodec,
+            audioCodec: video.audioCodec,
+            sourceVideoId: video.sourceVideoId,
+            url: resp.data.url,
+          });
+        } catch (error) {
+          console.error("Error acquiring video URL:", error.message);
+          return res.status(404).jsonp("Error acquiring video's url");
         }
       }
 

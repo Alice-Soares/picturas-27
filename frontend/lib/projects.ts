@@ -47,6 +47,7 @@ export interface ProjectVideo {
   videoCodec: string;
   audioCodec?: string | null;
   sourceVideoId?: string | null;
+  url: string;
 }
 
 export interface VideoTrimOperation {

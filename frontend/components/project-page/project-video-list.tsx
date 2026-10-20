@@ -35,7 +35,18 @@ export function ProjectVideoList({
       <h2 className="font-semibold">Vídeos do projeto</h2>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {videos.map((video) => (
-          <Card key={video._id} className="flex items-center justify-between gap-3 p-3">
+          <Card key={video._id} className="space-y-3 p-3">
+            <video
+              className="aspect-video w-full rounded-md bg-black object-contain"
+              controls
+              preload="metadata"
+              src={video.url}
+              onError={(event) => {
+                console.error("Unable to load project video", video._id, event.currentTarget.error);
+              }}
+            >
+              O browser não suporta reprodução de vídeo.
+            </video>
             <div className="min-w-0">
               <p className="truncate font-medium">{video.name}</p>
               <p className="text-xs text-muted-foreground">
@@ -43,14 +54,16 @@ export function ProjectVideoList({
                 {video.sourceVideoId ? " · derivado" : ""}
               </p>
             </div>
-            <VideoTrimDialog video={video} uid={uid} pid={pid} token={token}
-              projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
-            <VideoFrameToolDialog video={video} tools={tools} uid={uid} pid={pid} token={token}
-              projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
-            <VideoFrameExtractionDialog video={video} uid={uid} pid={pid} token={token}
-            projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
-            <VideoConversionDialog video={video} uid={uid} pid={pid} token={token}
-              projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
+            <div className="flex flex-wrap gap-2">
+              <VideoTrimDialog video={video} uid={uid} pid={pid} token={token}
+                projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
+              <VideoFrameToolDialog video={video} tools={tools} uid={uid} pid={pid} token={token}
+                projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
+              <VideoFrameExtractionDialog video={video} uid={uid} pid={pid} token={token}
+                projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
+              <VideoConversionDialog video={video} uid={uid} pid={pid} token={token}
+                projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
+            </div>
           </Card>
         ))}
       </div>
