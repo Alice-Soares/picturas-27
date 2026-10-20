@@ -215,13 +215,13 @@ parciais e preservar o vídeo de origem.
 
 ## Traceability Notes
 
-| Elemento do UC-VID-005 | Requirements |
-| --- | --- |
-| Passos 3–7 | `REQ-VID-FEX-001` a `REQ-VID-FEX-008` |
-| Passos 8–12 | `REQ-VID-FEX-009`, `REQ-VID-FEX-011`, `REQ-VID-FEX-NF-001` |
-| FA1 | `REQ-VID-FEX-001`, `REQ-VID-FEX-002` |
-| FA2 e falha de processamento | `REQ-VID-FEX-011`, `REQ-VID-FEX-NF-002` |
-| FA3 | `REQ-VID-FEX-010` |
-| RN1–RN5 | `REQ-VID-FEX-004`, `REQ-VID-FEX-006`, `REQ-VID-FEX-007`, `REQ-VID-FEX-009` |
-| Pré-condições e acesso | `REQ-VID-COM-001`, `REQ-VID-COM-002`, `REQ-VID-COM-003`, `REQ-VID-FEX-NF-003` |
+| Elemento do UC-VID-005                | Requirements                                                                      |
+| ------------------------------------- | --------------------------------------------------------------------------------- |
+| Passos 3–7                            | `REQ-VID-FEX-001` a `REQ-VID-FEX-008`                                             |
+| Passos 8–12                           | `REQ-VID-FEX-009`, `REQ-VID-FEX-011`, `REQ-VID-FEX-NF-001`                        |
+| FA1                                   | `REQ-VID-FEX-001`, `REQ-VID-FEX-002`                                              |
+| FA2 e falha de processamento          | `REQ-VID-FEX-011`, `REQ-VID-FEX-NF-002`                                           |
+| FA3                                   | `REQ-VID-FEX-010`                                                                 |
+| RN1–RN5                               | `REQ-VID-FEX-004`, `REQ-VID-FEX-006`, `REQ-VID-FEX-007`, `REQ-VID-FEX-009`        |
+| Pré-condições e acesso                | `REQ-VID-COM-001`, `REQ-VID-COM-002`, `REQ-VID-COM-003`, `REQ-VID-FEX-NF-003`     |
 | Estados, quota, limpeza e preservação | `REQ-VID-COM-004` a `REQ-VID-COM-020`, `REQ-VID-FEX-NF-001`, `REQ-VID-FEX-NF-002` |

@@ -81,7 +81,7 @@ fotogramas, deteção de alteração visual e retoma de operações ficam fora d
 
 ## Constitution Check
 
-*GATE: PASS antes da investigação e repetir após o design.*
+_GATE: PASS antes da investigação e repetir após o design._
 
 - **Extensão incremental**: PASS — estende `VideoOperation`, as rotas e o
   pipeline existentes sem criar um serviço autónomo nem reescrever o fluxo de
@@ -327,17 +327,17 @@ quebrar operações `trim` ou `frame_tool` já existentes.
 
 ## Traceability Matrix
 
-| Requirement group | Components | Planned validation |
-| --- | --- | --- |
-| `REQ-VID-FEX-001`, `REQ-VID-FEX-002`, `REQ-VID-FEX-003`, `REQ-VID-FEX-004` e `REQ-VID-FEX-005` | Frontend, `videoFrameExtractionValidation`, `VideoOperation` | Configuração, formato, cálculo de estimativa e rejeição de intervalo/zero frames |
-| `REQ-VID-FEX-006`, `REQ-VID-FEX-007` e `REQ-VID-FEX-008` | `videoOperationService`, Users Service, storage adapter | Limites por perfil, quota e espaço insuficiente antes da fila |
-| `REQ-VID-FEX-009` e `010` | Extraction worker, Image Storage Service, `Project` model/controller, frontend | JPEG persistido no projeto atual/novo e visibilidade apenas após conclusão |
-| `REQ-VID-FEX-011` | Extraction worker, cleanup/storage, operation service | Falha e cancelamento removem staging, objetos e resultados não publicados |
-| `REQ-VID-COM-001` a `003` | Projects routes/service, API Gateway, WebSocket/project events | Acesso cruzado a projeto, vídeo, imagens e eventos |
-| `REQ-VID-COM-004` a `008` | `videoOperationService`, Users Service | Reserva/refund de quota em sucesso, falha e cancelamento |
-| `REQ-VID-COM-009` a `013` | `VideoOperation`, RabbitMQ, WebSocket Gateway | Estados, erro persistido, eventos e isolamento do projeto |
-| `REQ-VID-COM-014` a `020` | Worker, storage, project model, frontend | Limpeza, ausência de resultado parcial, preservação e publicação final |
-| `REQ-VID-Q-001` a `005` | Todos os componentes integrados | Cenários de aceitação, hash, progresso e autorização |
+| Requirement group                                                                              | Components                                                                     | Planned validation                                                               |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `REQ-VID-FEX-001`, `REQ-VID-FEX-002`, `REQ-VID-FEX-003`, `REQ-VID-FEX-004` e `REQ-VID-FEX-005` | Frontend, `videoFrameExtractionValidation`, `VideoOperation`                   | Configuração, formato, cálculo de estimativa e rejeição de intervalo/zero frames |
+| `REQ-VID-FEX-006`, `REQ-VID-FEX-007` e `REQ-VID-FEX-008`                                       | `videoOperationService`, Users Service, storage adapter                        | Limites por perfil, quota e espaço insuficiente antes da fila                    |
+| `REQ-VID-FEX-009` e `010`                                                                      | Extraction worker, Image Storage Service, `Project` model/controller, frontend | JPEG persistido no projeto atual/novo e visibilidade apenas após conclusão       |
+| `REQ-VID-FEX-011`                                                                              | Extraction worker, cleanup/storage, operation service                          | Falha e cancelamento removem staging, objetos e resultados não publicados        |
+| `REQ-VID-COM-001` a `003`                                                                      | Projects routes/service, API Gateway, WebSocket/project events                 | Acesso cruzado a projeto, vídeo, imagens e eventos                               |
+| `REQ-VID-COM-004` a `008`                                                                      | `videoOperationService`, Users Service                                         | Reserva/refund de quota em sucesso, falha e cancelamento                         |
+| `REQ-VID-COM-009` a `013`                                                                      | `VideoOperation`, RabbitMQ, WebSocket Gateway                                  | Estados, erro persistido, eventos e isolamento do projeto                        |
+| `REQ-VID-COM-014` a `020`                                                                      | Worker, storage, project model, frontend                                       | Limpeza, ausência de resultado parcial, preservação e publicação final           |
+| `REQ-VID-Q-001` a `005`                                                                        | Todos os componentes integrados                                                | Cenários de aceitação, hash, progresso e autorização                             |
 
 ## Risks and Mitigations
 
@@ -363,5 +363,5 @@ quebrar operações `trim` ou `frame_tool` já existentes.
 Não há violações da constituição que exijam justificação.
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
-| --- | --- | --- |
-| Nenhuma | N/A | N/A |
+| --------- | ---------- | ------------------------------------ |
+| Nenhuma   | N/A        | N/A                                  |
