@@ -9,13 +9,11 @@ function conversionRequest({ operation, inputVideoURI, outputVideoURI }) {
     parameters: {
       inputVideoURI,
       outputVideoURI,
-      options: {
-        outputContainer: operation.output.outputContainer,
-        outputVideoCodec: operation.output.outputVideoCodec,
-        outputAudioCodec: operation.output.outputAudioCodec,
-        outputWidth: operation.output.outputWidth,
-        outputHeight: operation.output.outputHeight,
-      },
+      outputContainer: operation.output.outputContainer,
+      outputVideoCodec: operation.output.outputVideoCodec,
+      outputAudioCodec: operation.output.outputAudioCodec,
+      outputWidth: operation.output.outputWidth,
+      outputHeight: operation.output.outputHeight,
     },
   };
 }

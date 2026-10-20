@@ -21,7 +21,7 @@ alterar o comportamento das ferramentas de imagem existentes.
 
 - [X] T001 Criar a estrutura `Tools/video_conversion/` com `__init__.py`, `video_conversion.py`, `requirements.txt` e `Dockerfile`, seguindo os padrões documentados em `Tools/brightness/` e `Tools/cut/`.
 - [X] T002 [P] Registar o serviço `video_conversion_tool` em `docker-compose.yaml` com build `Tools/video_conversion/Dockerfile`, rede `elk`, dependência saudável de `rabbitmq`, reinício `on-failure` e volume `image_data` montado em `/app/images`.
-- [ ] T003 [P] Registar a fila `video_conversion` no broker e nos mapas de mensagens de `rabbitMQ/`, `Tools/utils/tool_msg.py` e `projects/utils/project_msg.js`, sem alterar as filas de imagem existentes.
+- [X] T003 [P] Registar a fila `video_conversion` no broker e nos mapas de mensagens de `rabbitMQ/`, `Tools/utils/tool_msg.py` e `projects/utils/project_msg.js`, sem alterar as filas de imagem existentes.
 - [X] T004 [P] Definir as dependências Python da Tool, incluindo o cliente RabbitMQ e suporte à execução de FFmpeg/FFprobe, em `Tools/video_conversion/requirements.txt`.
 
 ## Phase 2: Foundational
@@ -89,7 +89,7 @@ vídeo com os parâmetros pedidos enquanto o original permanece inalterado.
 - [X] T024 [US2] Integrar o dispatcher no ciclo de execução em `projects/app.js` e `projects/services/videoOperationService.js`, atualizando a operação para `processing`, encaminhando progresso e tratando sucesso/erro correlacionados.
 - [X] T025 [US2] Implementar o consumidor da Tool em `Tools/video_conversion/video_conversion.py`, validando `procedure`, caminhos confinados a `/app/images`, opções MP4/H.264/AAC e dimensões positivas antes de executar FFmpeg.
 - [X] T026 [US2] Implementar a transcodificação FFmpeg e leitura FFprobe em `Tools/video_conversion/video_conversion.py`, escrevendo apenas no `outputVideoURI`, publicando progresso e devolvendo metadados efetivos sem aceder a MongoDB, projetos, quotas ou autorização.
-- [ ] T027 [US2] Implementar o arranque do consumidor RabbitMQ e a publicação de respostas em `Tools/video_conversion/video_conversion.py`, `Tools/utils/tool_msg.py` e `Tools/utils/rabbit_mq.py`, preservando `correlationId` e erros estáveis.
+- [X] T027 [US2] Implementar o arranque do consumidor RabbitMQ e a publicação de respostas em `Tools/video_conversion/video_conversion.py`, `Tools/utils/tool_msg.py` e `Tools/utils/rabbit_mq.py`, preservando `correlationId` e erros estáveis.
 - [X] T028 [US2] Persistir o resultado recebido da Tool através de `projects/utils/videoStorage.js` e anexá-lo como nova referência com `sourceVideoId` em `projects/services/videoOperationService.js`, sem substituir o vídeo original.
 - [X] T029 [US2] Adicionar a emissão de `project-op` e a atualização do projeto no frontend em `frontend/components/project-page/video-conversion-dialog.tsx` e `frontend/components/project-page/project-video-list.tsx`, usando WebSocket e polling como fallback.
 

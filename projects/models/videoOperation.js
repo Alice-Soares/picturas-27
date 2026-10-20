@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const videoOperationSchema = new mongoose.Schema(
   {
-    type: { type: String, enum: ["trim", "frame_tool", "frame_extract"], required: true },
+    type: { type: String, enum: ["trim", "frame_tool", "frame_extract", "conversion"], required: true },
     user_id: { type: mongoose.Schema.Types.ObjectId, required: true },
     project_id: { type: mongoose.Schema.Types.ObjectId, required: true },
     source_video_id: { type: mongoose.Schema.Types.ObjectId, required: true },

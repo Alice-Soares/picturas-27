@@ -52,6 +52,7 @@ const { getUserType } = require("../utils/presence");
 const { publicTrimError } = require("../services/videoTrimErrors");
 const { publicFrameToolError } = require("../services/videoFrameToolErrors");
 const { publicFrameExtractionError } = require("../services/videoFrameExtractionErrors");
+const { publicConversionError } = require("../services/videoConversionErrors");
 const {
   get_image_public_url,
   post_image,
@@ -207,7 +208,9 @@ router.post("/:user/:project/video/:videoId/trim", requireAuth, async (req, res)
   } catch (error) {
     const publicError = error.code?.startsWith("VIDEO_FRAME_EXTRACT") || error.message?.startsWith("VIDEO_FRAME_EXTRACT")
       ? publicFrameExtractionError(error)
-      : publicTrimError(error);
+      : error.code?.startsWith("VIDEO_CONVERSION") || error.message?.startsWith("VIDEO_CONVERSION")
+        ? publicConversionError(error)
+        : publicTrimError(error);
     return res.status(error.status || (publicError.code === "VIDEO_TRIM_FAILED" ? 500 : 400)).json({
       error: publicError.code,
     });
@@ -265,8 +268,10 @@ router.post("/:user/:project/video/:videoId/frame-extract", requireAuth, async (
     });
   } catch (error) {
     const publicError = publicFrameExtractionError(error);
-
-  }})
+    return res.status(error.status || (publicError.code === "VIDEO_FRAME_EXTRACT_FAILED" ? 500 : 400))
+      .json({ error: publicError.code });
+  }
+});
 
 router.get("/:user/:project/video/:videoId/conversion-options", requireAuth, async (req, res) => {
   if (String(getCallerId(req)) !== String(req.params.user)) {
@@ -335,7 +340,9 @@ router.get("/:user/:project/video-operations/:operationId", requireAuth, async (
   } catch (error) {
     const publicError = error.code?.startsWith("VIDEO_FRAME_EXTRACT") || error.message?.startsWith("VIDEO_FRAME_EXTRACT")
       ? publicFrameExtractionError(error)
-      : publicTrimError(error);
+      : error.code?.startsWith("VIDEO_CONVERSION") || error.message?.startsWith("VIDEO_CONVERSION")
+        ? publicConversionError(error)
+        : publicTrimError(error);
     return res.status(error.status || 404).json({ error: publicError.code });
   }
 });
@@ -347,7 +354,9 @@ router.post("/:user/:project/video-operations/:operationId/cancel", requireAuth,
   }
   try {
     const existing = await getOperation(req.params.user, req.params.project, req.params.operationId);
-    const operation = existing.type === "frame_tool"
+    const operation = existing.type === "conversion"
+      ? await cancelVideoConversionOperation(req.params.user, req.params.project, req.params.operationId)
+      : existing.type === "frame_tool"
       ? await cancelFrameToolOperation(req.params.user, req.params.project, req.params.operationId)
       : existing.type === "frame_extract"
         ? await cancelFrameExtractionOperation(req.params.user, req.params.project, req.params.operationId)

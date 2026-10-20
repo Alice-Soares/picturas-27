@@ -9,6 +9,7 @@ const { validateTools, validateFrameInterval } = require("./videoFrameToolValida
 const { publicFrameToolError } = require("./videoFrameToolErrors");
 const { validateExtraction } = require("./videoFrameExtractionValidation");
 const { publicFrameExtractionError } = require("./videoFrameExtractionErrors");
+const { publicConversionError } = require("./videoConversionErrors");
 const { assertTransition } = require("./videoOperationState");
 const { operationEvent } = require("../utils/videoOperationMsg");
 const { send_msg_project_op } = require("../utils/project_msg");
@@ -132,6 +133,114 @@ async function failOperation(operation, error) {
   return current;
 }
 
+async function getVideoConversionOptions({ userId, projectId, videoId, profile }) {
+  const project = await Project.getOne(userId, projectId);
+  if (!project) {
+    const error = new Error("VIDEO_CONVERSION_UNAUTHORIZED");
+    error.status = 403;
+    throw error;
+  }
+  const video = (project.videos || []).id(videoId);
+  if (!video) {
+    const error = new Error("VIDEO_CONVERSION_NOT_FOUND");
+    error.status = 404;
+    throw error;
+  }
+  return {
+    source: {
+      id: String(video._id),
+      name: video.name,
+      container: video.container,
+      videoCodec: video.videoCodec,
+      audioCodec: video.audioCodec,
+      duration: video.duration,
+      width: video.width,
+      height: video.height,
+      fps: video.fps,
+      size: video.size ?? null,
+    },
+    containers: Object.entries(supportedConversion).map(([name, codecs]) => ({
+      name,
+      videoCodecs: codecs.videoCodecs,
+      audioCodecs: codecs.audioCodecs.filter((codec) => codec !== null),
+    })),
+    resolutionLimits: maxResolution(profile),
+  };
+}
+
+async function createVideoConversionOperation({
+  userId, projectId, videoId, options, profile,
+}) {
+  const project = await Project.getOne(userId, projectId);
+  if (!project) {
+    const error = new Error("VIDEO_CONVERSION_UNAUTHORIZED");
+    error.status = 403;
+    throw error;
+  }
+  const source = (project.videos || []).id(videoId);
+  if (!source) {
+    const error = new Error("VIDEO_CONVERSION_NOT_FOUND");
+    error.status = 404;
+    throw error;
+  }
+  const output = validateConversionOptions(options, profile);
+  output.estimatedSize = estimateOutputSize({
+    duration: source.duration,
+    width: output.outputWidth,
+    height: output.outputHeight,
+    bitrate: options.bitrate,
+  });
+  const quotaReserved = await reserveQuota(
+    userId,
+    profile,
+    "VIDEO_CONVERSION_QUOTA_EXCEEDED",
+  );
+  const operation = await VideoOperation.create({
+    type: "conversion",
+    user_id: userId,
+    project_id: projectId,
+    source_video_id: source._id,
+    start_seconds: 0,
+    end_seconds: source.duration,
+    output,
+    quota_reserved: quotaReserved,
+  });
+  publish(operation);
+  dispatchConversion(operation, source).catch((error) => failConversionOperation(operation, error));
+  return operation;
+}
+
+async function failConversionOperation(operation, error) {
+  const current = await VideoOperation.findById(operation._id);
+  if (!current || ["completed", "cancelled", "failed"].includes(current.status)) return current;
+  const publicError = publicConversionError(error);
+  current.status = "failed";
+  current.error_code = publicError.code;
+  current.error_message = publicError.message;
+  current.finished_at = new Date();
+  await current.save();
+  await refundQuota(current);
+  publish(current);
+  return current;
+}
+
+async function cancelVideoConversionOperation(userId, projectId, operationId) {
+  const operation = await getOperation(userId, projectId, operationId);
+  if (operation.type !== "conversion" ||
+      ["completed", "failed", "cancelled"].includes(operation.status)) {
+    return operation;
+  }
+  assertTransition(operation.status, "cancelled");
+  operation.status = "cancelled";
+  operation.cancelled_at = new Date();
+  operation.finished_at = operation.cancelled_at;
+  await operation.save();
+  cancelConversion(operationId);
+  await refundQuota(operation);
+  publish(operation);
+  return operation;
+}
+
 async function createFrameToolOperation({ userId, projectId, videoId, tools, startSeconds, endSeconds, outputFps, profile }) {
   const project = await Project.getOne(userId, projectId);
   if (!project) {
@@ -140,106 +249,6 @@ async function createFrameToolOperation({ userId, projectId, videoId, tools, sta
     throw error;
   }
 
-  async function getVideoConversionOptions({ userId, projectId, videoId, profile }) {
-    const project = await Project.getOne(userId, projectId);
-    if (!project) {
-      const error = new Error("VIDEO_CONVERSION_UNAUTHORIZED");
-      error.status = 403;
-      throw error;
-    }
-    const video = (project.videos || []).id(videoId);
-    if (!video) {
-      const error = new Error("VIDEO_CONVERSION_NOT_FOUND");
-      error.status = 404;
-      throw error;
-    }
-    return {
-      source: {
-        id: String(video._id),
-        name: video.name,
-        container: video.container,
-        videoCodec: video.videoCodec,
-        audioCodec: video.audioCodec,
-        duration: video.duration,
-        width: video.width,
-        height: video.height,
-        fps: video.fps,
-        size: video.size ?? null,
-      },
-      supported: supportedConversion,
-      resolutionLimit: maxResolution(profile),
-      estimatedSize: null,
-    };
-  }
-
-  async function createVideoConversionOperation({
-    userId, projectId, videoId, options, profile,
-  }) {
-    const project = await Project.getOne(userId, projectId);
-    if (!project) {
-      const error = new Error("VIDEO_CONVERSION_UNAUTHORIZED");
-      error.status = 403;
-      throw error;
-    }
-    const source = (project.videos || []).id(videoId);
-    if (!source) {
-      const error = new Error("VIDEO_CONVERSION_NOT_FOUND");
-      error.status = 404;
-      throw error;
-    }
-    const output = validateConversionOptions(options, profile);
-    output.estimatedSize = estimateOutputSize({
-      duration: source.duration,
-      width: output.outputWidth,
-      height: output.outputHeight,
-      bitrate: options.bitrate,
-    });
-    const quotaReserved = await reserveQuota(userId, profile);
-    const operation = await VideoOperation.create({
-      type: "conversion",
-      user_id: userId,
-      project_id: projectId,
-      source_video_id: source._id,
-      start_seconds: 0,
-      end_seconds: source.duration,
-      output,
-      quota_reserved: quotaReserved,
-    });
-    publish(operation);
-    dispatchConversion(operation, source).catch((error) => failConversionOperation(operation, error));
-    return operation;
-  }
-
-  async function failConversionOperation(operation, error) {
-    const current = await VideoOperation.findById(operation._id);
-    if (!current || ["completed", "cancelled", "failed"].includes(current.status)) return current;
-    current.status = "failed";
-    current.error_code = error.message?.startsWith("VIDEO_")
-      ? error.message
-      : "VIDEO_CONVERSION_FAILED";
-    current.error_message = current.error_code;
-    current.finished_at = new Date();
-    await current.save();
-    await refundQuota(current);
-    publish(current);
-    return current;
-  }
-
-  async function cancelVideoConversionOperation(userId, projectId, operationId) {
-    const operation = await getOperation(userId, projectId, operationId);
-    if (operation.type !== "conversion" || ["completed", "failed", "cancelled"].includes(operation.status)) {
-      return operation;
-    }
-    assertTransition(operation.status, "cancelled");
-    operation.status = "cancelled";
-    operation.cancelled_at = new Date();
-    operation.finished_at = operation.cancelled_at;
-    await operation.save();
-    cancelConversion(operationId);
-    await refundQuota(operation);
-    publish(operation);
-    return operation;
-  }
   const video = (project.videos || []).id(videoId);
   if (!video) {
     const error = new Error("VIDEO_FRAME_TOOL_NOT_FOUND");

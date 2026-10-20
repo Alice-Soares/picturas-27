@@ -56,7 +56,7 @@ def convert(channel, payload):
     parameters = payload["parameters"]
     input_path = parameters["inputVideoURI"]
     output_path = parameters["outputVideoURI"]
-    options = parameters["options"]
+    options = parameters.get("options", parameters)
     input_path = os.path.realpath(input_path)
     output_path = os.path.realpath(output_path)
     if not input_path.startswith(ROOT + os.sep) or not output_path.startswith(ROOT + os.sep):
@@ -101,7 +101,7 @@ def convert(channel, payload):
             last_progress = now
             publish(channel, {
                 "messageId": f"video-conversion-progress-{uuid.uuid4()}",
-                "correlationId": payload["messageId"],
+                "correlationId": payload["correlationId"],
                 "timestamp": utc_now(),
                 "procedure": "video_conversion",
                 "status": "processing",
@@ -115,10 +115,10 @@ def convert(channel, payload):
     metadata = probe(output_path)
     publish(channel, {
         "messageId": f"video-conversion-response-{uuid.uuid4()}",
-        "correlationId": payload["messageId"],
+        "correlationId": payload["correlationId"],
         "timestamp": utc_now(),
         "procedure": "video_conversion",
-        "status": "success",
+        "status": "completed",
         "output": {"type": "video", "videoURI": output_path, "metadata": metadata},
         "metadata": {"microservice": "picturas-video-conversion-tool"},
     })
@@ -136,7 +136,7 @@ def callback(channel, method, properties, body):
         completed = True
     except Exception as error:
         try:
-            correlation_id = payload.get("messageId")
+            correlation_id = payload.get("correlationId")
         except UnboundLocalError:
             correlation_id = None
         publish(channel, {
