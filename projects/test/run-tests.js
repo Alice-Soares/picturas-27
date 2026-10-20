@@ -33,6 +33,7 @@ for (const file of [
   "videoFrameToolFailure.test.js",
   "videoFrameTool.integration.test.js",
   "videoFrameExtractionValidation.test.js",
+  "videoConversionValidation.test.js",
 ]) require(`./${file}`);
 
 async function run() {

@@ -19,7 +19,8 @@ const queues = {
     'expand_ai': 'expand_ai_queue',
     'watermark': 'watermark_queue',
     'project': 'project_queue',
-    'ws': 'ws_queue'
+    'ws': 'ws_queue',
+    'video_conversion': 'video_conversion_queue'
 }
 
 function send_msg_tool(msg_id, timestamp, og_img_uri, new_img_uri, tool, params) {

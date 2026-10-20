@@ -39,6 +39,7 @@ export interface ProjectVideo {
   _id: string;
   name: string;
   stage: "video-src";
+  container: string;
   duration: number;
   width: number;
   height: number;
@@ -80,6 +81,18 @@ export interface VideoFrameExtractionOperation {
   outputFormat: "jpeg";
   frameResults: Array<{ object_key: string; frame_index: number; timestamp_seconds: number }>;
   errorCode: string | null;
+}
+
+export interface VideoConversionOperation extends Omit<VideoTrimOperation, "type"> {
+  type: "conversion";
+  output: {
+    outputContainer: string | null;
+    outputVideoCodec: string | null;
+    outputAudioCodec: string | null;
+    outputWidth: number | null;
+    outputHeight: number | null;
+    estimatedSize: number | null;
+  };
 }
 export interface ProjectImage {
   _id: string;
@@ -696,6 +709,39 @@ export const cancelProjectVideoTrim = async (params: {
     `/projects/${pathUid}/${params.pid}/video-operations/${params.operationId}/cancel${query}`,
     {},
     { headers: { Authorization: `Bearer ${params.token}` } },
+  );
+  return response.data;
+};
+
+export const getProjectVideoConversionOptions = async (params: {
+  uid: string; pid: string; token: string; videoId: string; ownerId?: string; shareId?: string;
+}) => {
+  const pathUid = params.ownerId ?? params.uid;
+  const query = buildQuery(params);
+  const response = await api.get(
+    `/projects/${pathUid}/${params.pid}/video/${params.videoId}/conversion-options${query}`,
+    { headers: { Authorization: `Bearer ${params.token}` } },
+  );
+  return response.data;
+};
+
+export const createProjectVideoConversion = async (params: {
+  uid: string; pid: string; token: string; videoId: string; projectVersion: number;
+  outputContainer: string; outputVideoCodec: string; outputAudioCodec: string | null;
+  outputWidth: number; outputHeight: number; ownerId?: string; shareId?: string;
+}) => {
+  const pathUid = params.ownerId ?? params.uid;
+  const query = buildQuery(params);
+  const response = await api.post<{ operationId: string; status: VideoConversionOperation["status"] }>(
+    `/projects/${pathUid}/${params.pid}/video/${params.videoId}/conversion${query}`,
+    {
+      outputContainer: params.outputContainer,
+      outputVideoCodec: params.outputVideoCodec,
+      outputAudioCodec: params.outputAudioCodec,
+      outputWidth: params.outputWidth,
+      outputHeight: params.outputHeight,
+    },
+    { headers: { Authorization: `Bearer ${params.token}`, "X-Project-Version": String(params.projectVersion) } },
   );
   return response.data;
 };

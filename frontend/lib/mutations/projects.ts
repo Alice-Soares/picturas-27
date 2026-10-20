@@ -6,6 +6,8 @@ import {
   createProjectVideoTrim,
   getProjectVideoTrim,
   cancelProjectVideoTrim,
+  getProjectVideoConversionOptions,
+  createProjectVideoConversion,
   createProjectVideoFrameTool,
   getProjectVideoFrameTool,
   createProjectVideoFrameExtraction,
@@ -58,6 +60,7 @@ export const useAddProject = (uid: string, token: string) => {
         refetchType: "all",
         queryKey: ["projects", uid, token],
       });
+
     },
   });
 };
@@ -209,6 +212,41 @@ export const useCancelProjectVideoTrim = (
   token: string,
   ownerId?: string,
   shareId?: string,
+) => useMutation({
+  mutationFn: (operationId: string) =>
+    cancelProjectVideoTrim({ uid, pid, token, ownerId, shareId, operationId }),
+});
+
+export const useGetProjectVideoConversionOptions = (
+  uid: string, pid: string, token: string, ownerId?: string, shareId?: string,
+) => useMutation({
+  mutationFn: (videoId: string) =>
+    getProjectVideoConversionOptions({ uid, pid, token, ownerId, shareId, videoId }),
+});
+
+export const useCreateProjectVideoConversion = (
+  uid: string, pid: string, token: string, ownerId?: string, shareId?: string,
+) => {
+  const qc = useQueryClient();
+  const projectKey = ["project", uid, pid, token, ownerId, shareId];
+  return useMutation({
+    mutationFn: (args: {
+      videoId: string; projectVersion: number; outputContainer: string; outputVideoCodec: string;
+      outputAudioCodec: string | null; outputWidth: number; outputHeight: number;
+    }) => createProjectVideoConversion({ uid, pid, token, ownerId, shareId, ...args }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: projectKey, refetchType: "all" }),
+  });
+};
+
+export const useGetProjectVideoConversion = (
+  uid: string, pid: string, token: string, ownerId?: string, shareId?: string,
+) => useMutation({
+  mutationFn: (operationId: string) =>
+    getProjectVideoTrim({ uid, pid, token, ownerId, shareId, operationId }),
+});
+
+export const useCancelProjectVideoConversion = (
+  uid: string, pid: string, token: string, ownerId?: string, shareId?: string,
 ) => useMutation({
   mutationFn: (operationId: string) =>
     cancelProjectVideoTrim({ uid, pid, token, ownerId, shareId, operationId }),

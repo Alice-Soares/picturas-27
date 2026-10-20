@@ -44,14 +44,15 @@ const {
   cancelFrameToolOperation,
   createFrameExtractionOperation,
   cancelFrameExtractionOperation,
+  getVideoConversionOptions,
+  createVideoConversionOperation,
+  cancelVideoConversionOperation,
 } = require("../services/videoOperationService");
 const { getUserType } = require("../utils/presence");
 const { publicTrimError } = require("../services/videoTrimErrors");
 const { publicFrameToolError } = require("../services/videoFrameToolErrors");
 const { publicFrameExtractionError } = require("../services/videoFrameExtractionErrors");
-
 const {
-  get_image_internal_url,
   get_image_public_url,
   post_image,
   delete_image,
@@ -229,6 +230,7 @@ router.post("/:user/:project/video/:videoId/frame-tool", requireAuth, async (req
       outputFps: req.body?.outputFps,
       profile: await trimProfile(req),
     });
+
     return res.status(202).json({ operationId: String(operation._id), status: operation.status });
   } catch (error) {
     const publicError = publicFrameToolError(error);
@@ -263,6 +265,42 @@ router.post("/:user/:project/video/:videoId/frame-extract", requireAuth, async (
     });
   } catch (error) {
     const publicError = publicFrameExtractionError(error);
+
+  }})
+
+router.get("/:user/:project/video/:videoId/conversion-options", requireAuth, async (req, res) => {
+  if (String(getCallerId(req)) !== String(req.params.user)) {
+    return res.status(403).json({ error: "VIDEO_CONVERSION_UNAUTHORIZED" });
+  }
+  try {
+    const options = await getVideoConversionOptions({
+      userId: req.params.user,
+      projectId: req.params.project,
+      videoId: req.params.videoId,
+      profile: await trimProfile(req),
+    });
+    return res.status(200).json(options);
+  } catch (error) {
+    const publicError = publicConversionError(error);
+    return res.status(error.status || 400).json({ error: publicError.code });
+  }
+});
+
+router.post("/:user/:project/video/:videoId/conversion", requireAuth, async (req, res) => {
+  if (String(getCallerId(req)) !== String(req.params.user)) {
+    return res.status(403).json({ error: "VIDEO_CONVERSION_UNAUTHORIZED" });
+  }
+  try {
+    const operation = await createVideoConversionOperation({
+      userId: req.params.user,
+      projectId: req.params.project,
+      videoId: req.params.videoId,
+      options: req.body,
+      profile: await trimProfile(req),
+    });
+    return res.status(202).json({ operationId: String(operation._id), status: operation.status });
+  } catch (error) {
+    const publicError = publicConversionError(error);
     return res.status(error.status || 400).json({ error: publicError.code });
   }
 });
@@ -290,6 +328,7 @@ router.get("/:user/:project/video-operations/:operationId", requireAuth, async (
       outputFormat: operation.output_format,
       frameResults: operation.status === "completed" ? operation.frame_results : [],
       tools: operation.tools,
+      output: operation.output,
       resultVideoId: operation.result_video_id ? String(operation.result_video_id) : null,
       errorCode: operation.error_code,
     });
@@ -343,6 +382,10 @@ function process_msg() {
 
       if (msg_id?.startsWith("video-frame-")) {
         await require("../services/videoFrameToolWorker").handleToolResponse(msg_content);
+        return;
+      }
+      if (msg_content?.procedure === "video_conversion") {
+        await require("../services/videoConversionDispatcher").handleToolResponse(msg_content);
         return;
       }
 

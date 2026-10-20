@@ -35,6 +35,14 @@ const videoOperationSchema = new mongoose.Schema(
       ],
       default: [],
     },
+    output: {
+      outputContainer: { type: String, default: null },
+      outputVideoCodec: { type: String, default: null },
+      outputAudioCodec: { type: String, default: null },
+      outputWidth: { type: Number, default: null, min: 1 },
+      outputHeight: { type: Number, default: null, min: 1 },
+      estimatedSize: { type: Number, default: null, min: 0 },
+    },
     frame_attempts: { type: Number, default: 0, min: 0 },
     status: {
       type: String,

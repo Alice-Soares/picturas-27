@@ -6,6 +6,7 @@ import { VideoTrimDialog } from "./video-trim-dialog";
 import { VideoFrameToolDialog } from "./video-frame-tool-dialog";
 import { VideoFrameExtractionDialog } from "./video-frame-extraction-dialog";
 import { ProjectToolResponse } from "@/lib/projects";
+import { VideoConversionDialog } from "./video-conversion-dialog";
 
 export function ProjectVideoList({
   videos,
@@ -47,6 +48,8 @@ export function ProjectVideoList({
             <VideoFrameToolDialog video={video} tools={tools} uid={uid} pid={pid} token={token}
               projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
             <VideoFrameExtractionDialog video={video} uid={uid} pid={pid} token={token}
+            projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
+            <VideoConversionDialog video={video} uid={uid} pid={pid} token={token}
               projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
           </Card>
         ))}
