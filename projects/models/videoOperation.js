@@ -2,12 +2,24 @@ const mongoose = require("mongoose");
 
 const videoOperationSchema = new mongoose.Schema(
   {
-    type: { type: String, enum: ["trim"], required: true },
+    type: { type: String, enum: ["trim", "frame_tool"], required: true },
     user_id: { type: mongoose.Schema.Types.ObjectId, required: true },
     project_id: { type: mongoose.Schema.Types.ObjectId, required: true },
     source_video_id: { type: mongoose.Schema.Types.ObjectId, required: true },
     start_seconds: { type: Number, required: true, min: 0 },
     end_seconds: { type: Number, required: true },
+    output_fps: { type: Number, default: null, min: 0 },
+    tools: {
+      type: [
+        {
+          position: { type: Number, required: true },
+          procedure: { type: String, required: true },
+          params: { type: mongoose.Schema.Types.Mixed, required: true },
+        },
+      ],
+      default: [],
+    },
+    frame_attempts: { type: Number, default: 0, min: 0 },
     status: {
       type: String,
       enum: ["queued", "processing", "completed", "failed", "cancelled"],

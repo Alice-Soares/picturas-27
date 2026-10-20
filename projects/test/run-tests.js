@@ -11,24 +11,46 @@ global.expect = (value) => ({
     assert.throws(value, expected ? new RegExp(expected) : undefined);
   },
 });
+global.expectAsync = (promise) => ({
+  rejects: async (message) => {
+    try {
+      await promise;
+      throw new Error("Expected promise to reject");
+    } catch (error) {
+      assert.strictEqual(error.message, message);
+    }
+  },
+});
 
 for (const file of [
   "videoTrimValidation.test.js",
   "videoOperationState.test.js",
   "videoOperationMsg.test.js",
   "videoOperation.contract.test.js",
+  "videoFrameToolValidation.test.js",
+  "videoFrameTool.contract.test.js",
+  "videoFrameTool.chain.contract.test.js",
+  "videoFrameToolFailure.test.js",
+  "videoFrameTool.integration.test.js",
 ]) require(`./${file}`);
 
-let failures = 0;
-for (const { name, callback } of suite) {
-  try {
-    callback();
-    console.log(`ok - ${name}`);
-  } catch (error) {
-    failures += 1;
-    console.error(`not ok - ${name}`);
-    console.error(error.stack || error.message);
+async function run() {
+  let failures = 0;
+  for (const { name, callback } of suite) {
+    try {
+      await callback();
+      console.log(`ok - ${name}`);
+    } catch (error) {
+      failures += 1;
+      console.error(`not ok - ${name}`);
+      console.error(error.stack || error.message);
+    }
   }
+  if (failures) process.exitCode = 1;
+  else console.log(`\n${suite.length} tests passed`);
 }
-if (failures) process.exitCode = 1;
-else console.log(`\n${suite.length} tests passed`);
+
+run().catch((error) => {
+  console.error(error.stack || error.message);
+  process.exitCode = 1;
+});

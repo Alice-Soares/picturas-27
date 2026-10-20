@@ -5,6 +5,8 @@ const Project = require("../controllers/project");
 const VideoOperation = require("../models/videoOperation");
 const { validateTrimInterval } = require("./videoTrimValidation");
 const { publicTrimError } = require("./videoTrimErrors");
+const { validateTools, validateFrameInterval } = require("./videoFrameToolValidation");
+const { publicFrameToolError } = require("./videoFrameToolErrors");
 const { assertTransition } = require("./videoOperationState");
 const { operationEvent } = require("../utils/videoOperationMsg");
 const { send_msg_project_op } = require("../utils/project_msg");
@@ -121,10 +123,85 @@ async function failOperation(operation, error) {
   return current;
 }
 
+async function createFrameToolOperation({ userId, projectId, videoId, tools, startSeconds, endSeconds, outputFps, profile }) {
+  const project = await Project.getOne(userId, projectId);
+  if (!project) {
+    const error = new Error("VIDEO_FRAME_TOOL_UNAUTHORIZED");
+    error.status = 403;
+    throw error;
+  }
+  const video = (project.videos || []).id(videoId);
+  if (!video) {
+    const error = new Error("VIDEO_FRAME_TOOL_NOT_FOUND");
+    error.status = 404;
+    throw error;
+  }
+  const normalizedTools = validateTools(tools);
+  const interval = validateFrameInterval({
+    startSeconds,
+    endSeconds,
+    outputFps,
+    duration: video.duration,
+    sourceFps: video.fps,
+  });
+  const quotaReserved = await reserveQuota(userId, profile);
+  const operation = await VideoOperation.create({
+    type: "frame_tool",
+    user_id: userId,
+    project_id: projectId,
+    source_video_id: video._id,
+    start_seconds: interval.startSeconds,
+    end_seconds: interval.endSeconds,
+    output_fps: interval.outputFps,
+    tools: normalizedTools,
+    quota_reserved: quotaReserved,
+  });
+  publish(operation);
+  send_rabbit_msg({ operationId: String(operation._id) }, "video_frame_tool");
+  return operation;
+}
+
+async function cancelFrameToolOperation(userId, projectId, operationId) {
+  const operation = await getOperation(userId, projectId, operationId);
+  if (operation.type !== "frame_tool") return operation;
+  if (["completed", "failed", "cancelled"].includes(operation.status)) return operation;
+  assertTransition(operation.status, "cancelled");
+  operation.status = "cancelled";
+  operation.cancelled_at = new Date();
+  operation.finished_at = operation.cancelled_at;
+  await operation.save();
+  try {
+    require("./videoFrameToolWorker").cancelFrameToolProcess(String(operation._id));
+  } catch (error) {
+    console.error("Failed to stop video frame tool process:", error.message);
+  }
+  await refundQuota(operation);
+  publish(operation);
+  return operation;
+}
+
+async function failFrameToolOperation(operation, error) {
+  const current = await VideoOperation.findById(operation._id);
+  if (!current || ["completed", "cancelled", "failed"].includes(current.status)) return current;
+  const publicError = publicFrameToolError(error);
+  current.status = "failed";
+  current.error_code = publicError.code;
+  current.error_message = publicError.message;
+  current.finished_at = new Date();
+  await current.save();
+  await refundQuota(current);
+  publish(current);
+  return current;
+}
+
 module.exports = {
   createTrimOperation,
   getOperation,
   cancelTrimOperation,
   failOperation,
+  createFrameToolOperation,
+  cancelFrameToolOperation,
+  failFrameToolOperation,
   startTrimWorker: () => require("./videoTrimWorker").startTrimWorker(),
+  startFrameToolWorker: () => require("./videoFrameToolWorker").startFrameToolWorker(),
 };

@@ -6,6 +6,8 @@ import {
   createProjectVideoTrim,
   getProjectVideoTrim,
   cancelProjectVideoTrim,
+  createProjectVideoFrameTool,
+  getProjectVideoFrameTool,
   addProjectTool,
   deleteProject,
   deleteProjectImages,
@@ -208,6 +210,24 @@ export const useCancelProjectVideoTrim = (
 ) => useMutation({
   mutationFn: (operationId: string) =>
     cancelProjectVideoTrim({ uid, pid, token, ownerId, shareId, operationId }),
+});
+
+export const useCreateProjectVideoFrameTool = (
+  uid: string, pid: string, token: string, ownerId?: string, shareId?: string,
+) => {
+  const qc = useQueryClient();
+  const projectKey = ["project", uid, pid, token, ownerId, shareId];
+  return useMutation({
+    mutationFn: (args: { videoId: string; tools: any[]; startSeconds: number; endSeconds: number; outputFps: number; projectVersion: number }) =>
+      createProjectVideoFrameTool({ uid, pid, token, ownerId, shareId, ...args }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: projectKey, refetchType: "all" }),
+  });
+};
+
+export const useGetProjectVideoFrameTool = (
+  uid: string, pid: string, token: string, ownerId?: string, shareId?: string,
+) => useMutation({
+  mutationFn: (operationId: string) => getProjectVideoFrameTool({ uid, pid, token, ownerId, shareId, operationId }),
 });
 
 export const useDeleteProjectImages = (

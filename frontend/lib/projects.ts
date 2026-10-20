@@ -59,6 +59,12 @@ export interface VideoTrimOperation {
   resultVideoId: string | null;
   errorCode: string | null;
 }
+
+export interface VideoFrameToolOperation extends Omit<VideoTrimOperation, "type"> {
+  type: "frame_tool";
+  outputFps: number;
+  tools: ProjectToolResponse[];
+}
 export interface ProjectImage {
   _id: string;
   name: string;
@@ -673,6 +679,33 @@ export const cancelProjectVideoTrim = async (params: {
   const response = await api.post<{ operationId: string; status: VideoTrimOperation["status"] }>(
     `/projects/${pathUid}/${params.pid}/video-operations/${params.operationId}/cancel${query}`,
     {},
+    { headers: { Authorization: `Bearer ${params.token}` } },
+  );
+  return response.data;
+};
+
+export const createProjectVideoFrameTool = async (params: {
+  uid: string; pid: string; token: string; videoId: string;
+  tools: ProjectToolResponse[]; startSeconds: number; endSeconds: number;
+  outputFps: number; projectVersion: number; ownerId?: string; shareId?: string;
+}) => {
+  const pathUid = params.ownerId ?? params.uid;
+  const query = buildQuery(params);
+  const response = await api.post<{ operationId: string; status: VideoFrameToolOperation["status"] }>(
+    `/projects/${pathUid}/${params.pid}/video/${params.videoId}/frame-tool${query}`,
+    { tools: params.tools, startSeconds: params.startSeconds, endSeconds: params.endSeconds, outputFps: params.outputFps },
+    { headers: { Authorization: `Bearer ${params.token}`, "X-Project-Version": String(params.projectVersion) } },
+  );
+  return response.data;
+};
+
+export const getProjectVideoFrameTool = async (params: {
+  uid: string; pid: string; token: string; operationId: string; ownerId?: string; shareId?: string;
+}) => {
+  const pathUid = params.ownerId ?? params.uid;
+  const query = buildQuery(params);
+  const response = await api.get<VideoFrameToolOperation>(
+    `/projects/${pathUid}/${params.pid}/video-operations/${params.operationId}${query}`,
     { headers: { Authorization: `Bearer ${params.token}` } },
   );
   return response.data;

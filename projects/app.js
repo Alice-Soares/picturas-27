@@ -6,7 +6,7 @@ var logger = require("morgan");
 const mongoose = require("mongoose");
 
 const { router: projectsRouter, process_msg } = require("./routes/projects");
-const { startTrimWorker } = require("./services/videoOperationService");
+const { startTrimWorker, startFrameToolWorker } = require("./services/videoOperationService");
 
 // Run Docker
 const mongoDB = "mongodb://projects_mongoDB:27018/project";
@@ -37,6 +37,7 @@ app.use("/", projectsRouter);
 // Start the message processing
 process_msg();
 startTrimWorker();
+startFrameToolWorker();
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

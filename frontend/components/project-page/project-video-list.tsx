@@ -3,6 +3,8 @@
 import { Card } from "@/components/ui/card";
 import { ProjectVideo } from "@/lib/projects";
 import { VideoTrimDialog } from "./video-trim-dialog";
+import { VideoFrameToolDialog } from "./video-frame-tool-dialog";
+import { ProjectToolResponse } from "@/lib/projects";
 
 export function ProjectVideoList({
   videos,
@@ -13,6 +15,7 @@ export function ProjectVideoList({
   ownerId,
   shareId,
   canEdit,
+  tools,
 }: {
   videos: ProjectVideo[];
   uid: string;
@@ -22,6 +25,7 @@ export function ProjectVideoList({
   ownerId?: string;
   shareId?: string;
   canEdit?: boolean;
+  tools: ProjectToolResponse[];
 }) {
   if (!videos.length) return null;
   return (
@@ -38,6 +42,8 @@ export function ProjectVideoList({
               </p>
             </div>
             <VideoTrimDialog video={video} uid={uid} pid={pid} token={token}
+              projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
+            <VideoFrameToolDialog video={video} tools={tools} uid={uid} pid={pid} token={token}
               projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
           </Card>
         ))}
