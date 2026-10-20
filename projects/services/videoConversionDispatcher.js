@@ -60,6 +60,9 @@ async function handleToolResponse(message) {
   try {
     clearTimeout(entry.timeout);
     if (message.status === "error") throw new Error(message.error?.code || "VIDEO_CONVERSION_FAILED");
+    if (message.status !== "completed" && message.status !== "success") {
+      throw new Error("VIDEO_CONVERSION_FAILED");
+    }
     const metadata = message.output?.metadata;
     if (!metadata) throw new Error("VIDEO_CONVERSION_FAILED");
     const form = new (require("form-data"))();
