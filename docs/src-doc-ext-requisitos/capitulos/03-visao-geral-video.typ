@@ -99,19 +99,31 @@ A principal decisão de desenho consistiu na introdução do nó *Utilizador Reg
   Usem os mesmos termos que nos casos de uso e requisitos (se é "biblioteca", não passa a "galeria").
 ]
 
-*TODO:*
+O modelo de domínio da figura seguinte representa a estrutura conceptual do sistema PictuRAS após a extensão
+para suporte a vídeo. O diagrama parte do modelo da solução de base e assinala a cinzento os conceitos e
+relações que se mantêm, e a azul os que foram acrescentados ou alterados nesta fase.
+
 
 #figure(
-  image("../images/baseline/modelo_dominio_base.png", width: 100%),
-  caption: [Modelo de domínio da solução de base — *a substituir*],
-)
-
-#figure(kind: image,
-  figura-pendente[modelo de domínio atualizado (`images/modelo_dominio.png`)],
+  image("../images/modelo_dominio.png", width: 100%),
   caption: [Modelo de domínio atualizado (Fase 1 — vídeo)],
 )
 
-#preencher[Texto que explique as alterações ao modelo de domínio e a sua justificação.]
+A principal alteração consiste na *generalização do conceito de `Imagem` para `Conteúdo Multimédia`*, do qual `Imagem` e `Vídeo` passam a ser especializações. Esta decisão resulta do facto de ambos desempenharem funções semelhantes no domínio, nomeadamente o carregamento, a organização em projetos e a edição através de ferramentas. A utilização de um conceito comum evita a duplicação de relações e facilita a integração futura de outros tipos de conteúdo. Cada especialização mantém as suas características próprias, sendo particularmente relevantes para o vídeo atributos como a duração, a resolução e o formato.
+
+Consequentemente, a relação entre `Projeto` e `Imagem` é generalizada, permitindo que *um projeto contenha imagens e vídeos em simultâneo*. Da mesma forma, a associação de carregamento passa a estabelecer-se entre `Utilizador` e `Conteúdo Multimédia`, preservando as cardinalidades anteriormente definidas.
+
+Relativamente às ferramentas de edição, mantém-se a distinção entre `Básica` e `Avançada`, incluindo o `Assistente IA` como ferramenta avançada, responsável pela produção de `Sugestão IA`. A relação anteriormente estabelecida entre `Ferramenta` e `Imagem` é substituída por uma associação com `Conteúdo Multimédia`, permitindo representar a aplicação de ferramentas a ambos os formatos. No caso dos vídeos, as ferramentas de edição de imagem podem atuar sobre os respetivos fotogramas, não sendo necessário introduzir novos conceitos de ferramentas específicos para vídeo.
+
+As relações entre os utilizadores e as ferramentas foram também ajustadas, passando a representar a *escolha da ferramenta*, enquanto a execução do processamento é representada pelo novo conceito de `Operação`. Mantêm-se as restrições de acesso existentes, segundo as quais qualquer `Utilizador` pode escolher ferramentas básicas, enquanto as ferramentas avançadas estão reservadas ao perfil `Premium`.
+
+A introdução de `Operação` constitui outra alteração relevante, motivada pela maior duração e complexidade do processamento de vídeo. Este conceito representa um *pedido de processamento com um ciclo de vida próprio*, podendo assumir estados como em fila, em processamento, concluído, falhado ou cancelado. Cada operação é solicitada por um `Utilizador`, está associada a um `Projeto` e utiliza uma `Ferramenta` para realizar o processamento pretendido. Quando concluída com sucesso, a operação produz conteúdo multimédia resultante da transformação. Esta representação permite acompanhar o estado dos pedidos, gerir cancelamentos e manter um histórico das operações realizadas em cada projeto.
+
+Para representar os limites de utilização das ferramentas e dos recursos de processamento, foi introduzido o conceito de *`Quota`*, associado ao perfil `Registado`. Cada utilizador registado possui uma quota, consumida por determinadas operações, permitindo modelar as restrições de utilização previstas na solução, nomeadamente os limites associados às ferramentas avançadas. Este conceito torna-se também particularmente relevante com a introdução do processamento de vídeo, devido ao maior consumo de recursos associado a este tipo de conteúdo.
+
+O modelo contempla ainda uma alteração nos perfis de utilizador, substituindo a especialização `Gratuito` por `Registado` e mantendo `Anónimo` e `Premium`, permitindo distinguir explicitamente os utilizadores que possuem uma conta e aos quais se aplicam os limites de utilização. Esta alteração foi realizada para manter a terminologia e a estrutura do modelo de domínio coerentes com a solução base fornecida, onde o perfil de utilizador com conta é designado por `Registado`. Adicionalmente, a relação `convida`, anteriormente associada ao conceito genérico de `Utilizador`, passa a estar associada a `Registado`, refletindo que apenas utilizadores com conta podem convidar outros utilizadores. A possibilidade de alteração do tipo de conta mantém-se, sem exigir modificações à estrutura conceptual do modelo.
+
+Os restantes conceitos e relações do domínio permanecem inalterados, nomeadamente a gestão de projetos pelo `Utilizador`, a criação de `Preset`, a utilização de ferramentas pelos projetos e a associação de `Sugestão IA` aos projetos. Mantém-se também a relação que permite a um `Preset` conter uma ou mais ferramentas, preservando as funcionalidades existentes de reutilização de configurações de edição.
 
 == Regras de negócio transversais
 
