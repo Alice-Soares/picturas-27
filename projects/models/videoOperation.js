@@ -2,13 +2,29 @@ const mongoose = require("mongoose");
 
 const videoOperationSchema = new mongoose.Schema(
   {
-    type: { type: String, enum: ["trim", "frame_tool"], required: true },
+    type: { type: String, enum: ["trim", "frame_tool", "frame_extract"], required: true },
     user_id: { type: mongoose.Schema.Types.ObjectId, required: true },
     project_id: { type: mongoose.Schema.Types.ObjectId, required: true },
     source_video_id: { type: mongoose.Schema.Types.ObjectId, required: true },
     start_seconds: { type: Number, required: true, min: 0 },
     end_seconds: { type: Number, required: true },
     output_fps: { type: Number, default: null, min: 0 },
+    target_project_id: { type: mongoose.Schema.Types.ObjectId, default: null },
+    max_frames: { type: Number, default: null, min: 1 },
+    estimated_frames: { type: Number, default: null, min: 0 },
+    extracted_frames: { type: Number, default: 0, min: 0 },
+    output_format: { type: String, default: null },
+    frame_results: {
+      type: [
+        {
+          object_key: { type: String, required: true },
+          sha256: { type: String, required: true },
+          frame_index: { type: Number, required: true, min: 0 },
+          timestamp_seconds: { type: Number, required: true, min: 0 },
+        },
+      ],
+      default: [],
+    },
     tools: {
       type: [
         {

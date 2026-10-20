@@ -11,6 +11,11 @@ const imgSchema = new mongoose.Schema({
   new_uri: { type: String, required: true },
   og_img_key: { type: String, required: true },
   og_sha256: { type: String, required: true }, 
+  sourceVideoId: { type: mongoose.Schema.Types.ObjectId, default: null },
+  extractionOperationId: { type: mongoose.Schema.Types.ObjectId, default: null },
+  frameIndex: { type: Number, default: null, min: 0 },
+  timestampSeconds: { type: Number, default: null, min: 0 },
+  mimeType: { type: String, default: null },
 });
 
 const videoSchema = new mongoose.Schema({

@@ -65,6 +65,22 @@ export interface VideoFrameToolOperation extends Omit<VideoTrimOperation, "type"
   outputFps: number;
   tools: ProjectToolResponse[];
 }
+export interface VideoFrameExtractionOperation {
+  id: string;
+  type: "frame_extract";
+  status: VideoTrimOperation["status"];
+  progress: number;
+  sourceVideoId: string;
+  targetProjectId: string | null;
+  startSeconds: number;
+  endSeconds: number;
+  maxFrames: number;
+  estimatedFrames: number;
+  extractedFrames: number;
+  outputFormat: "jpeg";
+  frameResults: Array<{ object_key: string; frame_index: number; timestamp_seconds: number }>;
+  errorCode: string | null;
+}
 export interface ProjectImage {
   _id: string;
   name: string;
@@ -705,6 +721,45 @@ export const getProjectVideoFrameTool = async (params: {
   const pathUid = params.ownerId ?? params.uid;
   const query = buildQuery(params);
   const response = await api.get<VideoFrameToolOperation>(
+    `/projects/${pathUid}/${params.pid}/video-operations/${params.operationId}${query}`,
+    { headers: { Authorization: `Bearer ${params.token}` } },
+  );
+  return response.data;
+};
+
+export const createProjectVideoFrameExtraction = async (params: {
+  uid: string; pid: string; token: string; videoId: string;
+  startSeconds: number; endSeconds: number; maxFrames: number;
+  targetProjectId?: string; projectVersion: number; ownerId?: string; shareId?: string;
+}) => {
+  const pathUid = params.ownerId ?? params.uid;
+  const query = buildQuery(params);
+  const response = await api.post<{
+    operationId: string;
+    status: VideoFrameExtractionOperation["status"];
+    estimatedFrames: number;
+    maxFrames: number;
+    outputFormat: "jpeg";
+  }>(
+    `/projects/${pathUid}/${params.pid}/video/${params.videoId}/frame-extract${query}`,
+    {
+      startSeconds: params.startSeconds,
+      endSeconds: params.endSeconds,
+      maxFrames: params.maxFrames,
+      targetProjectId: params.targetProjectId,
+      outputFormat: "jpeg",
+    },
+    { headers: { Authorization: `Bearer ${params.token}`, "X-Project-Version": String(params.projectVersion) } },
+  );
+  return response.data;
+};
+
+export const getProjectVideoFrameExtraction = async (params: {
+  uid: string; pid: string; token: string; operationId: string; ownerId?: string; shareId?: string;
+}) => {
+  const pathUid = params.ownerId ?? params.uid;
+  const query = buildQuery(params);
+  const response = await api.get<VideoFrameExtractionOperation>(
     `/projects/${pathUid}/${params.pid}/video-operations/${params.operationId}${query}`,
     { headers: { Authorization: `Bearer ${params.token}` } },
   );

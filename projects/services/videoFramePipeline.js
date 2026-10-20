@@ -11,14 +11,17 @@ function runFfmpeg(args) {
   });
 }
 
-async function extractFrames(input, directory, startSeconds, endSeconds, outputFps) {
-  const pattern = `${directory}/frame-%08d.png`;
+async function extractFrames(input, directory, startSeconds, endSeconds, outputFps, options = {}) {
+  const format = options.format === "jpeg" ? "jpg" : "png";
+  const pattern = `${directory}/frame-%08d.${format}`;
+  const limitArgs = options.maxFrames ? ["-frames:v", String(options.maxFrames)] : [];
   await runFfmpeg([
     "-ss", String(startSeconds), "-to", String(endSeconds), "-i", input,
-    "-vf", `fps=${outputFps}`, "-vsync", "0", pattern,
+    "-vf", `fps=${outputFps}`, "-vsync", "0", ...limitArgs,
+    ...(format === "jpg" ? ["-q:v", "2"] : []), pattern,
   ]);
   return (await fs.promises.readdir(directory))
-    .filter((name) => /^frame-\d+\.png$/.test(name))
+    .filter((name) => new RegExp(`^frame-\\d+\\.${format}$`).test(name))
     .sort()
     .map((name) => `${directory}/${name}`);
 }

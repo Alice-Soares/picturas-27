@@ -465,6 +465,67 @@ router.post(
   }
 );
 
+router.post("/:user/:project/video/:videoId/frame-extract", auth.checkToken, async (req, res) => {
+  const ownerId = req.query.owner || req.params.user;
+  const callerId = req.authUserId || req.params.user;
+  try {
+    const resp = await axios.post(
+      projectsURL + `${ownerId}/${req.params.project}/video/${req.params.videoId}/frame-extract`,
+      req.body,
+      {
+        headers: {
+          Authorization: req.headers["authorization"],
+          "X-Project-Version": req.headers["x-project-version"],
+          "X-Caller-Id": callerId,
+          "X-User-Profile": req.authUserType,
+        },
+        params: req.query.share ? { share: req.query.share } : undefined,
+        httpsAgent,
+      },
+    );
+    return res.status(resp.status).json(resp.data);
+  } catch (error) {
+    return forwardAxiosError(res, error, "Falha ao extrair fotogramas");
+  }
+});
+
+router.get("/:user/:project/video-operations/:operationId", auth.checkToken, async (req, res) => {
+  const ownerId = req.query.owner || req.params.user;
+  const callerId = req.authUserId || req.params.user;
+  try {
+    const resp = await axios.get(
+      projectsURL + `${ownerId}/${req.params.project}/video-operations/${req.params.operationId}`,
+      {
+        headers: { Authorization: req.headers["authorization"], "X-Caller-Id": callerId },
+        params: req.query.share ? { share: req.query.share } : undefined,
+        httpsAgent,
+      },
+    );
+    return res.status(resp.status).json(resp.data);
+  } catch (error) {
+    return forwardAxiosError(res, error, "Falha ao consultar operação de vídeo");
+  }
+});
+
+router.post("/:user/:project/video-operations/:operationId/cancel", auth.checkToken, async (req, res) => {
+  const ownerId = req.query.owner || req.params.user;
+  const callerId = req.authUserId || req.params.user;
+  try {
+    const resp = await axios.post(
+      projectsURL + `${ownerId}/${req.params.project}/video-operations/${req.params.operationId}/cancel`,
+      {},
+      {
+        headers: { Authorization: req.headers["authorization"], "X-Caller-Id": callerId },
+        params: req.query.share ? { share: req.query.share } : undefined,
+        httpsAgent,
+      },
+    );
+    return res.status(resp.status).json(resp.data);
+  } catch (error) {
+    return forwardAxiosError(res, error, "Falha ao cancelar operação de vídeo");
+  }
+});
+
 router.post(
   "/:user/:project/video",
   auth.checkToken,

@@ -7,6 +7,8 @@ const { validateTrimInterval } = require("./videoTrimValidation");
 const { publicTrimError } = require("./videoTrimErrors");
 const { validateTools, validateFrameInterval } = require("./videoFrameToolValidation");
 const { publicFrameToolError } = require("./videoFrameToolErrors");
+const { validateExtraction } = require("./videoFrameExtractionValidation");
+const { publicFrameExtractionError } = require("./videoFrameExtractionErrors");
 const { assertTransition } = require("./videoOperationState");
 const { operationEvent } = require("../utils/videoOperationMsg");
 const { send_msg_project_op } = require("../utils/project_msg");
@@ -15,14 +17,14 @@ const { send_rabbit_msg } = require("../utils/rabbit_mq");
 const usersUrl = "https://users:10001";
 const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
-async function reserveQuota(userId, profile) {
+async function reserveQuota(userId, profile, quotaErrorCode = "VIDEO_TRIM_QUOTA_EXCEEDED") {
   if (profile === "premium") return false;
   try {
     await axios.get(`${usersUrl}/${userId}/process/1`, { httpsAgent });
     return true;
   } catch (error) {
     if (error.response?.status === 701) {
-      const quotaError = new Error("VIDEO_TRIM_QUOTA_EXCEEDED");
+      const quotaError = new Error(quotaErrorCode);
       quotaError.status = 429;
       throw quotaError;
     }
@@ -63,7 +65,7 @@ async function createTrimOperation({ userId, projectId, videoId, startSeconds, e
     endSeconds: Number(endSeconds),
     duration: video.duration,
   });
-  const quotaReserved = await reserveQuota(userId, profile);
+  const quotaReserved = await reserveQuota(userId, profile, "VIDEO_FRAME_EXTRACT_QUOTA_EXCEEDED");
   const operation = await VideoOperation.create({
     type: "trim",
     user_id: userId,
@@ -194,6 +196,97 @@ async function failFrameToolOperation(operation, error) {
   return current;
 }
 
+async function createFrameExtractionOperation({
+  userId,
+  projectId,
+  videoId,
+  targetProjectId,
+  startSeconds,
+  endSeconds,
+  maxFrames,
+  outputFormat,
+  profile,
+}) {
+  const project = await Project.getOne(userId, projectId);
+  if (!project) {
+    const error = new Error("VIDEO_FRAME_EXTRACT_UNAUTHORIZED");
+    error.status = 403;
+    throw error;
+  }
+  const video = (project.videos || []).id(videoId);
+  if (!video) {
+    const error = new Error("VIDEO_FRAME_EXTRACT_NOT_FOUND");
+    error.status = 404;
+    throw error;
+  }
+  const destinationId = targetProjectId || projectId;
+  const destination = await Project.getOne(userId, destinationId);
+  if (!destination) {
+    const error = new Error("VIDEO_FRAME_EXTRACT_DESTINATION_NOT_FOUND");
+    error.status = 404;
+    throw error;
+  }
+  const extraction = validateExtraction({
+    startSeconds,
+    endSeconds,
+    duration: video.duration,
+    sourceFps: video.fps,
+    maxFrames,
+    profile,
+    outputFormat,
+  });
+  const quotaReserved = await reserveQuota(userId, profile);
+  const operation = await VideoOperation.create({
+    type: "frame_extract",
+    user_id: userId,
+    project_id: projectId,
+    target_project_id: destination._id,
+    source_video_id: video._id,
+    start_seconds: extraction.startSeconds,
+    end_seconds: extraction.endSeconds,
+    max_frames: extraction.maxFrames,
+    estimated_frames: extraction.estimatedFrames,
+    output_format: extraction.outputFormat,
+    quota_reserved: quotaReserved,
+  });
+  publish(operation);
+  send_rabbit_msg({ operationId: String(operation._id) }, "video_frame_extract");
+  return operation;
+}
+
+async function cancelFrameExtractionOperation(userId, projectId, operationId) {
+  const operation = await getOperation(userId, projectId, operationId);
+  if (operation.type !== "frame_extract") return operation;
+  if (["completed", "failed", "cancelled"].includes(operation.status)) return operation;
+  assertTransition(operation.status, "cancelled");
+  operation.status = "cancelled";
+  operation.cancelled_at = new Date();
+  operation.finished_at = operation.cancelled_at;
+  await operation.save();
+  try {
+    require("./videoFrameExtractionWorker").cancelFrameExtractionProcess(String(operation._id));
+  } catch (error) {
+    console.error("Failed to stop frame extraction process:", error.message);
+  }
+  await refundQuota(operation);
+  publish(operation);
+  return operation;
+}
+
+async function failFrameExtractionOperation(operation, error) {
+  const current = await VideoOperation.findById(operation._id);
+  if (!current || ["completed", "cancelled", "failed"].includes(current.status)) return current;
+  const publicError = publicFrameExtractionError(error);
+  current.status = "failed";
+  current.error_code = publicError.code;
+  current.error_message = publicError.message;
+  current.finished_at = new Date();
+  await current.save();
+  await refundQuota(current);
+  publish(current);
+  return current;
+}
+
 module.exports = {
   createTrimOperation,
   getOperation,
@@ -202,6 +295,10 @@ module.exports = {
   createFrameToolOperation,
   cancelFrameToolOperation,
   failFrameToolOperation,
+  createFrameExtractionOperation,
+  cancelFrameExtractionOperation,
+  failFrameExtractionOperation,
   startTrimWorker: () => require("./videoTrimWorker").startTrimWorker(),
   startFrameToolWorker: () => require("./videoFrameToolWorker").startFrameToolWorker(),
+  startFrameExtractionWorker: () => require("./videoFrameExtractionWorker").startFrameExtractionWorker(),
 };

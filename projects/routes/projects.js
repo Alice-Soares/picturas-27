@@ -42,10 +42,13 @@ const {
   cancelTrimOperation,
   createFrameToolOperation,
   cancelFrameToolOperation,
+  createFrameExtractionOperation,
+  cancelFrameExtractionOperation,
 } = require("../services/videoOperationService");
 const { getUserType } = require("../utils/presence");
 const { publicTrimError } = require("../services/videoTrimErrors");
 const { publicFrameToolError } = require("../services/videoFrameToolErrors");
+const { publicFrameExtractionError } = require("../services/videoFrameExtractionErrors");
 
 const {
   get_image_internal_url,
@@ -201,7 +204,9 @@ router.post("/:user/:project/video/:videoId/trim", requireAuth, async (req, res)
       status: operation.status,
     });
   } catch (error) {
-    const publicError = publicTrimError(error);
+    const publicError = error.code?.startsWith("VIDEO_FRAME_EXTRACT") || error.message?.startsWith("VIDEO_FRAME_EXTRACT")
+      ? publicFrameExtractionError(error)
+      : publicTrimError(error);
     return res.status(error.status || (publicError.code === "VIDEO_TRIM_FAILED" ? 500 : 400)).json({
       error: publicError.code,
     });
@@ -232,6 +237,36 @@ router.post("/:user/:project/video/:videoId/frame-tool", requireAuth, async (req
   }
 });
 
+router.post("/:user/:project/video/:videoId/frame-extract", requireAuth, async (req, res) => {
+  const callerId = getCallerId(req);
+  if (String(callerId) !== String(req.params.user)) {
+    return res.status(403).json({ error: "VIDEO_FRAME_EXTRACT_UNAUTHORIZED" });
+  }
+  try {
+    const operation = await createFrameExtractionOperation({
+      userId: req.params.user,
+      projectId: req.params.project,
+      videoId: req.params.videoId,
+      targetProjectId: req.body?.targetProjectId,
+      startSeconds: req.body?.startSeconds,
+      endSeconds: req.body?.endSeconds,
+      maxFrames: req.body?.maxFrames,
+      outputFormat: req.body?.outputFormat,
+      profile: await trimProfile(req),
+    });
+    return res.status(202).json({
+      operationId: String(operation._id),
+      status: operation.status,
+      estimatedFrames: operation.estimated_frames,
+      maxFrames: operation.max_frames,
+      outputFormat: operation.output_format,
+    });
+  } catch (error) {
+    const publicError = publicFrameExtractionError(error);
+    return res.status(error.status || 400).json({ error: publicError.code });
+  }
+});
+
 router.get("/:user/:project/video-operations/:operationId", requireAuth, async (req, res) => {
   const callerId = getCallerId(req);
   if (String(callerId) !== String(req.params.user)) {
@@ -248,12 +283,20 @@ router.get("/:user/:project/video-operations/:operationId", requireAuth, async (
       startSeconds: operation.start_seconds,
       endSeconds: operation.end_seconds,
       outputFps: operation.output_fps,
+      targetProjectId: operation.target_project_id ? String(operation.target_project_id) : null,
+      maxFrames: operation.max_frames,
+      estimatedFrames: operation.estimated_frames,
+      extractedFrames: operation.extracted_frames,
+      outputFormat: operation.output_format,
+      frameResults: operation.status === "completed" ? operation.frame_results : [],
       tools: operation.tools,
       resultVideoId: operation.result_video_id ? String(operation.result_video_id) : null,
       errorCode: operation.error_code,
     });
   } catch (error) {
-    const publicError = publicTrimError(error);
+    const publicError = error.code?.startsWith("VIDEO_FRAME_EXTRACT") || error.message?.startsWith("VIDEO_FRAME_EXTRACT")
+      ? publicFrameExtractionError(error)
+      : publicTrimError(error);
     return res.status(error.status || 404).json({ error: publicError.code });
   }
 });
@@ -267,13 +310,17 @@ router.post("/:user/:project/video-operations/:operationId/cancel", requireAuth,
     const existing = await getOperation(req.params.user, req.params.project, req.params.operationId);
     const operation = existing.type === "frame_tool"
       ? await cancelFrameToolOperation(req.params.user, req.params.project, req.params.operationId)
-      : await cancelTrimOperation(req.params.user, req.params.project, req.params.operationId);
+      : existing.type === "frame_extract"
+        ? await cancelFrameExtractionOperation(req.params.user, req.params.project, req.params.operationId)
+        : await cancelTrimOperation(req.params.user, req.params.project, req.params.operationId);
     return res.status(202).json({
       operationId: String(operation._id),
       status: operation.status,
     });
   } catch (error) {
-    const publicError = publicTrimError(error);
+    const publicError = error.code?.startsWith("VIDEO_FRAME_EXTRACT") || error.message?.startsWith("VIDEO_FRAME_EXTRACT")
+      ? publicFrameExtractionError(error)
+      : publicTrimError(error);
     return res.status(error.status || 400).json({ error: publicError.code });
   }
 });
