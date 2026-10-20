@@ -15,8 +15,7 @@ const { operationEvent } = require("../utils/videoOperationMsg");
 const { send_msg_project_op } = require("../utils/project_msg");
 const { send_rabbit_msg } = require("../utils/rabbit_mq");
 const {
-  supportedConversion,
-  maxResolution,
+  conversionOptionsResponse,
   validateConversionOptions,
   estimateOutputSize,
 } = require("./videoConversionValidation");
@@ -146,26 +145,7 @@ async function getVideoConversionOptions({ userId, projectId, videoId, profile }
     error.status = 404;
     throw error;
   }
-  return {
-    source: {
-      id: String(video._id),
-      name: video.name,
-      container: video.container,
-      videoCodec: video.videoCodec,
-      audioCodec: video.audioCodec,
-      duration: video.duration,
-      width: video.width,
-      height: video.height,
-      fps: video.fps,
-      size: video.size ?? null,
-    },
-    containers: Object.entries(supportedConversion).map(([name, codecs]) => ({
-      name,
-      videoCodecs: codecs.videoCodecs,
-      audioCodecs: codecs.audioCodecs.filter((codec) => codec !== null),
-    })),
-    resolutionLimits: maxResolution(profile),
-  };
+  return conversionOptionsResponse(video, profile);
 }
 
 async function createVideoConversionOperation({

@@ -71,7 +71,9 @@ def convert(channel, payload):
         raise ValueError("VIDEO_CONVERSION_INVALID_OPTIONS")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     output_container = options["outputContainer"].lower()
-    output_codec = options["outputVideoCodec"].lower()
+    output_codec = {"h264": "libx264"}.get(options["outputVideoCodec"].lower())
+    if output_codec is None:
+        raise ValueError("VIDEO_CONVERSION_INVALID_OPTIONS")
     output_audio = options.get("outputAudioCodec")
     extension = "mp4" if output_container == "mp4" else output_container
     if not output_path.endswith(f".{extension}"):

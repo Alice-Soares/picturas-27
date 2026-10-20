@@ -34,14 +34,17 @@ for (const file of [
   "videoFrameTool.integration.test.js",
   "videoFrameExtractionValidation.test.js",
   "videoConversionValidation.test.js",
+  "videoConversion.contract.test.js",
 ]) require(`./${file}`);
 
 async function run() {
   let failures = 0;
+  let passed = 0;
   for (const { name, callback } of suite) {
     try {
       await callback();
       console.log(`ok - ${name}`);
+      passed += 1;
     } catch (error) {
       failures += 1;
       console.error(`not ok - ${name}`);
@@ -49,7 +52,7 @@ async function run() {
     }
   }
   if (failures) process.exitCode = 1;
-  else console.log(`\n${suite.length} tests passed`);
+  else console.log(`\n${passed} tests passed`);
 }
 
 run().catch((error) => {
