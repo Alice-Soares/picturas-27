@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const videoOperationSchema = new mongoose.Schema(
   {
-    type: { type: String, enum: ["trim", "frame_tool", "frame_extract", "conversion", "audio"], required: true },
+    type: { type: String, enum: ["trim", "frame_tool", "frame_extract", "conversion", "audio", "merge"], required: true },
     audio_action: { type: String, enum: ["remove", "replace", "extract"], required: function requiredForAudio() { return this.type === "audio"; }, default: null },
     replacement_audio_key: { type: String, default: null },
     replacement_audio_name: { type: String, default: null },
@@ -13,9 +13,27 @@ const videoOperationSchema = new mongoose.Schema(
     audio_output: { container: { type: String, default: null }, audioCodec: { type: String, default: null }, sampleRate: { type: Number, default: null }, channels: { type: Number, default: null }, duration: { type: Number, default: null } },
     user_id: { type: mongoose.Schema.Types.ObjectId, required: true },
     project_id: { type: mongoose.Schema.Types.ObjectId, required: true },
-    source_video_id: { type: mongoose.Schema.Types.ObjectId, required: true },
-    start_seconds: { type: Number, required: function requiredForLegacy() { return this.type !== "audio"; }, min: 0, default: 0 },
-    end_seconds: { type: Number, required: function requiredForLegacy() { return this.type !== "audio"; }, default: null },
+    source_video_id: { type: mongoose.Schema.Types.ObjectId, required: function requiredForSingleVideo() { return this.type !== "merge"; } },
+    start_seconds: { type: Number, required: function requiredForLegacy() { return this.type !== "audio" && this.type !== "merge"; }, min: 0, default: 0 },
+    end_seconds: { type: Number, required: function requiredForLegacy() { return this.type !== "audio" && this.type !== "merge"; }, default: null },
+    // UC-VID-006: manter a ordem solicitada e preservar os videos originais.
+    source_video_ids: {
+      type: [{ type: mongoose.Schema.Types.ObjectId }],
+      default: [],
+      validate: {
+        validator: function validateMergeSourceIds(ids) {
+          if (this.type !== "merge") return true;
+          return Array.isArray(ids) && ids.length >= 2 && ids.length <= 15 &&
+            new Set(ids.map(String)).size === ids.length;
+        },
+        message: "VIDEO_MERGE_INVALID_SOURCE_IDS",
+      },
+    },
+    total_duration_seconds: {
+      type: Number,
+      min: 0,
+      required: function requiredForMerge() { return this.type === "merge"; },
+    },
     output_fps: { type: Number, default: null, min: 0 },
     target_project_id: { type: mongoose.Schema.Types.ObjectId, default: null },
     max_frames: { type: Number, default: null, min: 1 },

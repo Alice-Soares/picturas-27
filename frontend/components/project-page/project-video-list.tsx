@@ -13,10 +13,11 @@ import { VideoFrameToolDialog } from "./video-frame-tool-dialog";
 import { VideoFrameExtractionDialog } from "./video-frame-extraction-dialog";
 import { VideoConversionDialog } from "./video-conversion-dialog";
 import { VideoAudioDialog } from "./video-audio-dialog";
+import { VideoMergeDialog } from "./video-merge-dialog";
 import { ProjectVideoPlayer } from "./project-video-player";
 
 export function ProjectVideoList({
-  videos, audios = [], uid, pid, token, projectVersion, ownerId, shareId, canEdit, tools, destinationProjects = [],
+  videos, audios = [], uid, pid, token, projectVersion, ownerId, shareId, canEdit, tools, destinationProjects = [], profile,
 }: {
   videos: ProjectVideo[];
   audios?: ProjectAudio[];
@@ -29,6 +30,7 @@ export function ProjectVideoList({
   canEdit?: boolean;
   tools: ProjectToolResponse[];
   destinationProjects?: Project[];
+  profile: "anonymous" | "free" | "premium";
 }) {
   const [selectedVideo, setSelectedVideo] = useState<ProjectVideo | null>(null);
   const [playbackAudio, setPlaybackAudio] = useState<Record<string, string>>({});
@@ -45,6 +47,18 @@ export function ProjectVideoList({
       <div>
         <h2 className="font-semibold">Vídeos do projeto</h2>
         <p className="text-sm text-muted-foreground">Seleciona um vídeo para o reproduzir ou editar.</p>
+        {videos.length >= 2 && (
+          <VideoMergeDialog
+            videos={videos}
+            uid={uid}
+            pid={pid}
+            token={token}
+            profile={profile}
+            ownerId={ownerId}
+            shareId={shareId}
+            canEdit={canEdit}
+          />
+        )}
       </div>
       {!!audios.length && <div className="space-y-2"><h3 className="font-medium">Áudios extraídos</h3>{audios.map((audio) => <Card key={audio._id} className="flex items-center justify-between gap-4 p-3"><div><p className="font-medium">{audio.name}</p><p className="text-xs text-muted-foreground">M4A · AAC · {audio.duration.toFixed(2)} s</p></div><audio controls src={audio.url} className="max-w-full" /></Card>)}</div>}
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

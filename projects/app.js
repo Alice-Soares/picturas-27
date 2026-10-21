@@ -39,6 +39,9 @@ process_msg();
 startTrimWorker();
 startFrameToolWorker();
 startFrameExtractionWorker();
+require('./services/videoMergeWorker').startMergeWorker().ready.catch((error) => {
+  console.error('UC-VID-006: não foi possível iniciar o consumidor video_merge:', error.message);
+});
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

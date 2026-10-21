@@ -1540,3 +1540,47 @@ export async function setProjectDirty({
 
   return { newVersionHeader: resp.headers?.["x-project-version"] };
 }
+
+// UC-VID-006: a criação aceita os IDs na ordem escolhida pelo utilizador.
+export interface VideoMergeOperation {
+  id: string;
+  type: "merge";
+  status: VideoTrimOperation["status"];
+  progress: number;
+  sourceVideoIds: string[];
+  totalDurationSeconds: number;
+  resultVideoId: string | null;
+  errorCode: string | null;
+}
+
+export const createProjectVideoMerge = async (params: {
+  uid: string; pid: string; token: string; videoIds: string[];
+}) => {
+  const response = await api.post<{ operationId: string; status: VideoMergeOperation["status"] }>(
+    `/projects/${params.uid}/${params.pid}/video-merge`,
+    { videoIds: params.videoIds },
+    { headers: { Authorization: `Bearer ${params.token}` } },
+  );
+  return response.data;
+};
+
+export const getProjectVideoMerge = async (params: {
+  uid: string; pid: string; token: string; operationId: string;
+}) => {
+  const response = await api.get<VideoMergeOperation>(
+    `/projects/${params.uid}/${params.pid}/video-operations/${params.operationId}`,
+    { headers: { Authorization: `Bearer ${params.token}` } },
+  );
+  return response.data;
+};
+
+export const cancelProjectVideoMerge = async (params: {
+  uid: string; pid: string; token: string; operationId: string;
+}) => {
+  const response = await api.post<{ operationId: string; status: VideoMergeOperation["status"] }>(
+    `/projects/${params.uid}/${params.pid}/video-operations/${params.operationId}/cancel`,
+    {},
+    { headers: { Authorization: `Bearer ${params.token}` } },
+  );
+  return response.data;
+};
