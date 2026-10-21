@@ -330,11 +330,18 @@ router.post("/:user/:project/video/:videoId/conversion", requireAuth, async (req
   }
 });
 
-for (const action of ["remove", "extract"]) {
+for (const action of ["remove", "extract", "playback"]) {
   router.post(`/:user/:project/video/:videoId/audio/${action}`, requireAuth, async (req, res) => {
     if (String(getCallerId(req)) !== String(req.params.user)) return res.status(403).json({ error: "VIDEO_AUDIO_UNAUTHORIZED" });
     try {
-      const operation = await createAudioOperation({ userId: req.params.user, projectId: req.params.project, videoId: req.params.videoId, action, profile: await trimProfile(req) });
+      const operation = await createAudioOperation({
+        userId: req.params.user,
+        projectId: req.params.project,
+        videoId: req.params.videoId,
+        action: action === "playback" ? "extract" : action,
+        purpose: action === "playback" ? "playback" : "user",
+        profile: await trimProfile(req),
+      });
       return res.status(202).json({ operationId: String(operation._id), status: operation.status });
     } catch (error) { const safe = publicAudioError(error); return res.status(safe.status).json({ error: safe.code }); }
   });

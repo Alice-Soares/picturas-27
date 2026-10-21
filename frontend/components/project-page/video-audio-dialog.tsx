@@ -14,6 +14,7 @@ function audioErrorMessage(error: unknown) {
     : (responseError as { code?: string } | undefined)?.code;
   if (code === "VIDEO_AUDIO_NO_TRACK") return "O vídeo escolhido não contém uma faixa de áudio.";
   if (code === "VIDEO_AUDIO_FORMAT_UNSUPPORTED") return "Formato não suportado. Escolhe MP3, M4A/AAC ou um vídeo válido com áudio.";
+  if (code === "VIDEO_AUDIO_QUOTA_EXCEEDED") return "A quota diária de operações avançadas está esgotada. Tenta novamente quando for renovada.";
   return (error as Error)?.message || "Não foi possível processar o áudio.";
 }
 

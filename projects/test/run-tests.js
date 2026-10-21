@@ -37,6 +37,7 @@ for (const file of [
   "videoConversion.contract.test.js",
   "videoAudio.contract.test.js",
   "videoAudioValidation.test.js",
+  "videoQuotaPolicy.test.js",
   "videoErrorMapping.test.js",
   "videoProjectAuthorization.test.js",
 ]) require(`./${file}`);

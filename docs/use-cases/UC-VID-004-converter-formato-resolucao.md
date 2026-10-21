@@ -40,7 +40,7 @@ A conversão de vídeo permite adaptar conteúdos a diferentes dispositivos e co
 | **Objetivo**                  | Permitir ao utilizador converter um vídeo para um formato, codec e resolução compatíveis com o seu perfil e necessidade de uso.                                                                                                                                                                                                            |
 | **Âmbito**                    | Módulo de processamento de vídeo do PictuRAS, integração com transcodificação e armazenamento de resultados                                                                                                                                                                                                                                |
 | **Ator Principal**            | Utilizador registado ou premium                                                                                                                                                                                                                                                                                                            |
-| **Stakeholders e Interesses** | - **Utilizador**: pretende adaptar vídeos para diferentes dispositivos, plataformas e tamanhos de ficheiro<br>- **Proprietário do Sistema**: deseja manter controlo de qualidade, quota e compatibilidade do conteúdo<br>- **Equipa de Desenvolvimento**: valida o fluxo assíncrono de transcodificação e a integração com o armazenamento |
+| **Stakeholders e Interesses** | - **Utilizador**: pretende adaptar vídeos para diferentes dispositivos, plataformas e tamanhos de ficheiro<br>- **Proprietário do Sistema**: deseja manter controlo de qualidade e compatibilidade do conteúdo<br>- **Equipa de Desenvolvimento**: valida a integração com FFmpeg, filas RabbitMQ e armazenamento |
 | **Pré-condições**             | - O utilizador tem acesso a um projeto com um vídeo válido carregado<br>- O vídeo está no formato e codec suportados pelo sistema<br>- O serviço de transcodificação está disponível                                                                                                                                                       |
 | **Trigger**                   | O utilizador seleciona um vídeo e escolhe a opção de conversão no painel de ferramentas.                                                                                                                                                                                                                                                   |
 
@@ -73,7 +73,6 @@ A conversão de vídeo permite adaptar conteúdos a diferentes dispositivos e co
 | -------------------------------------- | ----------------------------------------------------------------------------------------- |
 | Formato de origem não suportado        | O sistema rejeita a conversão e informa o utilizador dos formatos aceites.                |
 | Combinação de formato e codec inválida | O sistema bloqueia a configuração e solicita uma combinação compatível.                   |
-| Quota de operações avançadas esgotada   | O sistema impede a conversão e informa que o limite do perfil foi atingido.               |
 | Falha durante a transcodificação       | O sistema marca o operação como falhado, elimina ficheiros temporários e informa o utilizador. |
 
 ### 2.5 Pós-condições
@@ -89,7 +88,7 @@ A conversão de vídeo permite adaptar conteúdos a diferentes dispositivos e co
 | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | RN1    | O MVP aceita MP4 com vídeo H.264 e áudio AAC; outros formatos só são aceites se forem explicitamente adicionados à lista de combinações suportadas.                |
 | RN2    | A resolução de saída não pode exceder 1920×1080 para registados nem 3840×2160 para premium.                                                                       |
-| RN3    | Cada operação de conversão aceite conta como uma operação avançada; utilizadores premium não têm limite diário.                                                        |
+| RN3    | A conversão usa FFmpeg sem IA e não consome quota diária; está disponível sem limite diário para utilizadores autenticados.                                                        |
 | RN4    | O áudio de saída deve ser AAC quando o contentor de saída for MP4.                                                                                                |
 | RN5    | O vídeo original deve permanecer inalterado após a conversão.                                                                                                   |
 
@@ -143,7 +142,7 @@ Requisitos normativos: `REQ-VID-CONV-001` a `REQ-VID-CONV-011` e requisitos comu
 
 | **Elemento existente afetado** | **Impacto (Manter / Estender / Alterar)** | **Descrição do impacto** | **Requisitos relacionados** |
 |--------------------------------|-------------------------------------------|--------------------------|------------------------------|
-| Projects Service e quota | Estender | Registar conversões como operações e aplicar a política existente de operações avançadas. | CONV-001, CONV-002 |
+| Projects Service | Estender | Registar conversões como operações assíncronas, sem reserva de quota diária. | CONV-001, CONV-002 |
 | RabbitMQ e workers | Estender | Criar worker de transcodificação sem alterar as filas das ferramentas de imagem. | CONV-002 |
 | SeaweedFS / Image Storage Service | Estender | Guardar resultados de vídeo como novos objetos. | CONV-002, CONV-003 |
 | FFmpeg/FFprobe | Novo | Validar streams e executar a transcodificação. | CONV-001, CONV-003 |
@@ -156,4 +155,4 @@ Requisitos normativos: `REQ-VID-CONV-001` a `REQ-VID-CONV-011` e requisitos comu
 | Combinações e limites de perfil | `REQ-VID-CONV-005` a `REQ-VID-CONV-007` |
 | Estimativa | `REQ-VID-CONV-008` |
 | Execução, resultado e progresso | `REQ-VID-CONV-009` a `REQ-VID-CONV-011`, `REQ-VID-COM-017` |
-| Autorização, quota e limpeza | `REQ-VID-COM-001` a `REQ-VID-COM-008`, `REQ-VID-COM-014` a `REQ-VID-COM-016` |
+| Autorização e limpeza | `REQ-VID-COM-001` a `REQ-VID-COM-003`, `REQ-VID-COM-014` a `REQ-VID-COM-016` |

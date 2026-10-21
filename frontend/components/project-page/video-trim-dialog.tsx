@@ -64,11 +64,16 @@ export function VideoTrimDialog({
     }
     create.mutate({ videoId: video._id, startSeconds, endSeconds, projectVersion }, {
       onSuccess: (result) => setOperationId(result.operationId),
-      onError: (error) => toast({
-        title: "Não foi possível criar o recorte",
-        description: error instanceof Error ? error.message : "Verifique o acesso, intervalo e quota.",
-        variant: "destructive",
-      }),
+      onError: (error) => {
+        const code = (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
+        toast({
+          title: "Não foi possível criar o recorte",
+          description: code === "VIDEO_TRIM_QUOTA_EXCEEDED"
+            ? "A quota diária de operações avançadas está esgotada. Tenta novamente quando for renovada."
+            : code || (error instanceof Error ? error.message : "Verifique o acesso e o intervalo."),
+          variant: "destructive",
+        });
+      },
     });
   }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ProjectVideo, createProjectVideoAudio, fetchProjectVideoAudio, getProjectVideoAudio } from "@/lib/projects";
+import { ProjectVideo, createProjectVideoAudioPlayback, fetchProjectVideoAudio, getProjectVideoAudio } from "@/lib/projects";
 
 type Props = {
   video: ProjectVideo;
@@ -29,7 +29,7 @@ export function ProjectVideoPlayer({ video, uid, pid, token, projectVersion, aud
     async function prepareAudio() {
       try {
         setAudioStatus("A preparar a faixa de áudio para reprodução…");
-        const accepted = await createProjectVideoAudio({ ...params, videoId: video._id, action: "extract", projectVersion });
+        const accepted = await createProjectVideoAudioPlayback({ ...params, videoId: video._id, projectVersion });
         operationId = accepted.operationId;
         let operation = await getProjectVideoAudio({ ...params, operationId });
         while (!["completed", "failed", "cancelled"].includes(operation.status)) {

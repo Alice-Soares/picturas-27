@@ -40,8 +40,8 @@ O recorte temporal é uma operação central de edição de vídeo e permite tra
 | **Objetivo**                  | Permitir ao utilizador selecionar um intervalo temporal de um vídeo e gerar um novo ficheiro com apenas esse segmento.                                                                                                                                                                           |
 | **Âmbito**                    | Módulo de processamento de vídeo do PictuRAS                                                                                                                                                                                                                                                     |
 | **Ator Principal**            | Utilizador registado ou premium                                                                                                                                                                                                                                                                  |
-| **Stakeholders e Interesses** | - **Utilizador**: pretende cortar um vídeo para manter apenas o trecho relevante.<br>- **Proprietário do Sistema**: pretende validar a funcionalidade de edição de vídeo e o controlo de quotas.<br>- **Equipa de Desenvolvimento**: valida a integração com FFmpeg, filas RabbitMQ e WebSocket. |
-| **Pré-condições**             | - O utilizador está autenticado com perfil registado ou premium.<br>- O vídeo existe no projeto e está armazenado e acessível.<br>- O vídeo tem formato e codec suportados pelo sistema.<br>- O utilizador registado tem quota de operações avançadas disponível. |
+| **Stakeholders e Interesses** | - **Utilizador**: pretende cortar um vídeo para manter apenas o trecho relevante.<br>- **Proprietário do Sistema**: pretende validar a funcionalidade de edição de vídeo.<br>- **Equipa de Desenvolvimento**: valida a integração com FFmpeg, filas RabbitMQ e WebSocket. |
+| **Pré-condições**             | - O utilizador está autenticado com perfil registado ou premium.<br>- O vídeo existe no projeto e está armazenado e acessível.<br>- O vídeo tem formato e codec suportados pelo sistema. |
 | **Trigger**                   | O utilizador seleciona um vídeo e escolhe a opção de recorte temporal.                                                                                                                                                                                                                           |
 
 ### 2.2 Fluxo Principal
@@ -52,7 +52,7 @@ O recorte temporal é uma operação central de edição de vídeo e permite tra
 | 2         | O utilizador seleciona um vídeo e escolhe a ferramenta de recorte temporal. | —                                                                                                 |
 | 3         | —                                                                           | O sistema carrega a pré-visualização do vídeo e apresenta controles para selecionar início e fim. |
 | 4         | O utilizador define o início e o fim do segmento.                           | O sistema valida que os valores são coerentes e pertencem à duração do vídeo.                     |
-| 5         | O utilizador confirma a operação.                                           | O sistema valida quota, parâmetros e estado do ficheiro.                                          |
+| 5         | O utilizador confirma a operação.                                           | O sistema valida os parâmetros e o estado do ficheiro.                                          |
 | 6         | —                                                                           | O sistema cria um operação de processamento e publica a operação numa fila de vídeo a acrescentar ao RabbitMQ. |
 | 7         | —                                                                           | O sistema informa o utilizador que o processo está em fila e em curso.                            |
 | 8         | —                                                                           | O microsserviço de trim processa o vídeo com FFmpeg e comunica o progresso.       |
@@ -77,7 +77,6 @@ O recorte temporal é uma operação central de edição de vídeo e permite tra
 | Segmento com duração inferior a 1 segundo       | O sistema não inicia o processamento e solicita um intervalo válido.                 |
 | Formato ou codec não suportado                  | O sistema rejeita o vídeo e informa que o ficheiro não pode ser processado por trim. |
 | Falha no FFmpeg durante o processamento         | O sistema marca o operação como falhado, limpa temporários e não consome quota.           |
-| Quota de operações avançadas excedida            | O sistema bloqueia a operação e informa o utilizador sobre o limite do seu perfil.   |
 
 ### 2.5 Pós-condições
 
@@ -92,7 +91,7 @@ O recorte temporal é uma operação central de edição de vídeo e permite tra
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | RN1    | A duração mínima do segmento recortado é de 1 segundo.                                                                                                        |
 | RN2    | O vídeo original não pode ser alterado nem eliminado como resultado do recorte.                                                                               |
-| RN3    | Cada operação de recorte aceite conta como uma operação avançada para o utilizador registado; utilizadores premium não têm limite diário.                           |
+| RN3    | O recorte usa FFmpeg sem IA e não consome quota diária; está disponível sem limite diário para utilizadores autenticados.                           |
 | RN4    | Utilizadores anónimos não têm acesso à funcionalidade de recorte temporal.                                                                                    |
 | RN5    | O vídeo recortado mantém a faixa de áudio do segmento correspondente.                                                                                         |
 | RN6    | O processamento é assíncrono e exige o registo do operação na base de dados.                                                                                       |

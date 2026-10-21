@@ -29,7 +29,7 @@ Como utilizador registado ou premium, quero remover a faixa sonora de um vídeo 
 
 1. **Dado** um utilizador autorizado, um projeto acessível e um vídeo com áudio, **Quando** escolhe “Remover Áudio” e confirma, **Então** o sistema cria uma operação de processamento e disponibiliza um novo vídeo sem faixa sonora quando a operação termina.
 2. **Dado** um vídeo sem faixa sonora, **Quando** o utilizador escolhe “Remover Áudio”, **Então** o sistema informa que o vídeo já não tem áudio, não cria resultado e não consome quota.
-3. **Dado** uma operação de remoção em curso, **Quando** o utilizador a cancela, **Então** a operação fica cancelada, os temporários são removidos, o vídeo original permanece inalterado e a quota reservada é devolvida.
+3. **Dado** uma operação de remoção em curso, **Quando** o utilizador a cancela, **Então** a operação fica cancelada, os temporários são removidos e o vídeo original permanece inalterado.
 
 ### User Story 2 - Substituir áudio de um vídeo (Priority: P1)
 
@@ -47,7 +47,7 @@ Como utilizador registado ou premium, quero substituir a faixa sonora de um víd
 4. **Dado** uma entrada de substituição apenas de áudio fora de MP3/M4A/AAC, sem faixa sonora ou cujo conteúdo não pode ser descodificado, **Quando** o utilizador a seleciona, **Então** o sistema rejeita-a com uma mensagem segura e não inicia o processamento.
 5. **Dado** um áudio de substituição mais curto do que o vídeo, **Quando** a substituição termina, **Então** o restante do vídeo fica sem áudio.
 6. **Dado** um áudio de substituição mais longo do que o vídeo, **Quando** a substituição termina, **Então** o áudio é cortado no fim do vídeo.
-7. **Dado** uma substituição em curso, **Quando** o utilizador a cancela, **Então** não é apresentado um resultado parcial e a quota reservada é devolvida.
+7. **Dado** uma substituição em curso, **Quando** o utilizador a cancela, **Então** não é apresentado um resultado parcial.
 
 ### User Story 3 - Extrair a faixa de áudio (Priority: P2)
 
@@ -66,8 +66,8 @@ Como utilizador registado ou premium, quero extrair a faixa sonora de um vídeo 
 
 - Um utilizador anónimo ou com sessão inválida não pode iniciar, acompanhar ou obter resultados de uma operação de áudio.
 - Uma referência de vídeo que não pertença ao projeto autorizado deve ser rejeitada antes de qualquer leitura do conteúdo.
-- Uma quota de operações avançadas esgotada deve impedir o início da operação e comunicar o estado da quota.
-- Uma falha técnica, ficheiro corrompido ou resultado parcial deve marcar a operação como falhada, limpar temporários, preservar o original e devolver a quota reservada.
+- As operações de áudio usam FFmpeg sem IA e não consomem quota diária.
+- Uma falha técnica, ficheiro corrompido ou resultado parcial deve marcar a operação como falhada, limpar temporários e preservar o original.
 - Uma operação concluída de remoção/substituição deve aparecer como novo vídeo; uma extração concluída deve iniciar o download M4A/AAC sem criar item de biblioteca. O original nunca é substituído.
 - A escolha de múltiplas faixas de áudio não faz parte do MVP; o processamento considera a faixa aplicável do vídeo de origem.
 
@@ -97,7 +97,7 @@ Como utilizador registado ou premium, quero extrair a faixa sonora de um vídeo 
 As operações deste caso de uso também devem cumprir os requisitos transversais já definidos para UC-VID-001 a UC-VID-007, sem os duplicar:
 
 - **Autorização e isolamento**: `REQ-VID-COM-001` a `REQ-VID-COM-003`, `REQ-VID-COM-013`, `REQ-VID-Q-005`, `REQ-VID-Q-010` a `REQ-VID-Q-012`.
-- **Quota**: `REQ-VID-COM-004` a `REQ-VID-COM-008`, incluindo reserva para utilizadores registados, ausência de limite diário para premium e devolução em falha, cancelamento ou operação sem efeito.
+- **Quota**: as operações de áudio não consomem quota diária por não usarem IA.
 - **Estado e comunicação**: `REQ-VID-COM-009` a `REQ-VID-COM-012`, `REQ-VID-COM-018` e `REQ-VID-COM-020`.
 - **Limpeza e integridade**: `REQ-VID-COM-014` a `REQ-VID-COM-017`, `REQ-VID-Q-004`, `REQ-VID-Q-007`, `REQ-VID-Q-013` e `REQ-VID-Q-014`; `REQ-VID-COM-018` usa o destino específico da operação, incluindo o download em UC-VID-007/RN6.
 - **Qualidade**: `REQ-VID-Q-002`, `REQ-VID-Q-003` e `REQ-VID-Q-008`.
@@ -136,7 +136,7 @@ As operações deste caso de uso também devem cumprir os requisitos transversai
 | Use-case element | Requirements | Planned validation evidence |
 |---|---|---|
 | UC-VID-007, steps 1-2 | `REQ-VID-AUD-001` to `REQ-VID-AUD-010`, `REQ-VID-AUD-013`, `REQ-VID-AUD-014` | Focused acceptance tests for options, authorization, input formats, intervals and no-audio handling |
-| UC-VID-007, steps 3-5 | `REQ-VID-COM-004` to `REQ-VID-COM-013`, `REQ-VID-Q-002`, `REQ-VID-Q-003` | Operation-state, quota and authorized-progress tests |
+| UC-VID-007, steps 3-5 | `REQ-VID-COM-009` to `REQ-VID-COM-013`, `REQ-VID-Q-002`, `REQ-VID-Q-003` | Operation-state and authorized-progress tests |
 | UC-VID-007, steps 6-9 | `REQ-VID-AUD-011`, `REQ-VID-AUD-012`, `REQ-VID-AUD-015`, `REQ-VID-AUD-016`, `REQ-VID-COM-018` | Codec/container, video persistence, authenticated audio download and absence-from-library tests |
 | UC-VID-007, FA1-FA3 and exceptions | `REQ-VID-AUD-008` to `REQ-VID-AUD-010`, `REQ-VID-COM-007`, `REQ-VID-COM-008`, `REQ-VID-COM-014` to `REQ-VID-COM-017` | No-audio, duration mismatch, cancellation, failure, cleanup and original-integrity tests |
 

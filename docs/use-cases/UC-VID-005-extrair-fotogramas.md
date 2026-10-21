@@ -54,7 +54,7 @@ A extração de fotogramas liga o domínio do vídeo ao domínio da imagem e per
 | 4 | O utilizador define os parâmetros da extração. | — |
 | 5 | — | O sistema calcula e apresenta a estimativa do número total de fotogramas. |
 | 6 | O utilizador confirma a operação. | — |
-| 7 | — | O sistema valida o perfil, o número de fotogramas e o espaço disponível. |
+| 7 | — | O sistema valida o perfil, o número de fotogramas e o espaço disponível, sem consumir quota diária de operações avançadas. |
 | 8 | — | O sistema cria um operação de processamento e publica a operação na fila de extração. |
 | 9 | O utilizador acompanha o progresso. | O sistema atualiza o estado por WebSocket. |
 | 10 | — | O sistema extrai cada fotograma e guarda-o no armazenamento como imagem do projeto. |
@@ -76,7 +76,7 @@ A extração de fotogramas liga o domínio do vídeo ao domínio da imagem e per
 | Codec do vídeo não suportado | O sistema rejeita a operação e informa o utilizador dos codecs aceitáveis. |
 | Número de fotogramas excede o limite do perfil | O sistema bloqueia a extração e pede que o utilizador reduza o intervalo ou o volume. |
 | Espaço de armazenamento insuficiente | O sistema informa que não há espaço suficiente e não inicia o processamento. |
-| Falha a meio do processamento | O sistema elimina os fotogramas temporários, marca o operação como falhado, devolve qualquer quota reservada e notifica o utilizador. |
+| Falha a meio do processamento | O sistema elimina os fotogramas temporários, marca a operação como falhada e notifica o utilizador; a extração não reservou quota diária. |
 
 ### 2.5 Pós-condições
 
@@ -91,7 +91,7 @@ A extração de fotogramas liga o domínio do vídeo ao domínio da imagem e per
 |--------|-----------|
 | RN1 | O perfil anónimo não tem acesso a esta funcionalidade até existir uma regra de vídeo aprovada. |
 | RN2 | O limite é de 1000 fotogramas por operação para registados e 5000 para premium; os fotogramas são guardados em JPEG. |
-| RN3 | Cada operação de extração aceite conta como uma operação avançada; utilizadores premium não têm limite diário. |
+| RN3 | A extração de fotogramas não conta como operação avançada e não consome quota diária; os limites de quantidade por perfil continuam aplicáveis. |
 | RN4 | Os fotogramas extraídos devem ser armazenados como imagens normais do projeto. |
 | RN5 | O vídeo original não pode ser alterado por esta funcionalidade. |
 
@@ -139,7 +139,7 @@ A extração de fotogramas liga o domínio do vídeo ao domínio da imagem e per
 
 ### 4.1 Requisitos de Sistema
 
-Requisitos normativos: `REQ-VID-FEX-001` a `REQ-VID-FEX-011` e requisitos comuns aplicáveis em `docs/RAS-requisitos-video.md`. Os identificadores locais anteriormente usados são retirados por colidirem com os da baseline consolidada.
+Requisitos normativos: `REQ-VID-FEX-001` a `REQ-VID-FEX-012` e requisitos comuns aplicáveis em `docs/RAS-requisitos-video.md`. Os identificadores locais anteriormente usados são retirados por colidirem com os da baseline consolidada.
 
 ### 4.2 Impacto no sistema existente
 
@@ -156,6 +156,7 @@ Requisitos normativos: `REQ-VID-FEX-001` a `REQ-VID-FEX-011` e requisitos comuns
 |---|---|
 | Intervalo, quantidade e formato | `REQ-VID-FEX-001` a `REQ-VID-FEX-005` |
 | Limites por perfil | `REQ-VID-FEX-006`, `REQ-VID-FEX-007` |
+| Quota diária | `REQ-VID-FEX-012` |
 | Espaço e destino | `REQ-VID-FEX-008`, `REQ-VID-FEX-010` |
 | Persistência das imagens e imutabilidade | `REQ-VID-FEX-009`, `REQ-VID-COM-017` |
 | Cancelamento e limpeza | `REQ-VID-FEX-011`, `REQ-VID-COM-014` a `REQ-VID-COM-016` |

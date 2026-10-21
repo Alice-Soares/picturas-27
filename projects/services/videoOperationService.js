@@ -22,6 +22,7 @@ const {
 const { dispatchConversion, cancelConversion } = require("./videoConversionDispatcher");
 const { dispatchAudio, cancelAudio } = require("./videoAudioDispatcher");
 const { validateReplacement } = require("./videoAudioValidation");
+const { shouldReserveVideoQuota } = require("./videoQuotaPolicy");
 
 const usersUrl = "https://users:10001";
 const httpsAgent = new https.Agent({ rejectUnauthorized: false });
@@ -44,6 +45,16 @@ async function reserveQuota(userId, profile, quotaErrorCode = "VIDEO_TRIM_QUOTA_
     }
     throw error;
   }
+}
+
+async function reserveQuotaForOperation(type, userId, profile, quotaErrorCode) {
+  if (profile === "anonymous") {
+    const error = new Error("VIDEO_ANONYMOUS_NOT_ALLOWED");
+    error.status = 403;
+    throw error;
+  }
+  if (!shouldReserveVideoQuota({ type })) return false;
+  return reserveQuota(userId, profile, quotaErrorCode);
 }
 
 function publish(operation, overrides = {}) {
@@ -112,7 +123,7 @@ async function createTrimOperation({ userId, projectId, videoId, startSeconds, e
     endSeconds: Number(endSeconds),
     duration: video.duration,
   });
-  const quotaReserved = await reserveQuota(userId, profile, "VIDEO_TRIM_QUOTA_EXCEEDED");
+  const quotaReserved = await reserveQuotaForOperation("trim", userId, profile, "VIDEO_TRIM_QUOTA_EXCEEDED");
   const operation = await VideoOperation.create({
     type: "trim",
     user_id: userId,
@@ -217,7 +228,8 @@ async function createVideoConversionOperation({
     height: output.outputHeight,
     bitrate: options.bitrate,
   });
-  const quotaReserved = await reserveQuota(
+  const quotaReserved = await reserveQuotaForOperation(
+    "conversion",
     userId,
     profile,
     "VIDEO_CONVERSION_QUOTA_EXCEEDED",
@@ -269,7 +281,12 @@ async function cancelVideoConversionOperation(userId, projectId, operationId) {
   return cancelled;
 }
 
-async function createAudioOperation({ userId, projectId, videoId, action, profile, file, startSeconds, endSeconds }) {
+async function createAudioOperation({ userId, projectId, videoId, action, profile, file, startSeconds, endSeconds, purpose = "user" }) {
+  if (!["user", "playback"].includes(purpose) || (purpose === "playback" && action !== "extract")) {
+    const error = new Error("VIDEO_AUDIO_INVALID");
+    error.status = 400;
+    throw error;
+  }
   const project = await Project.getOne(userId, projectId);
   if (!project) { const e = new Error("VIDEO_AUDIO_UNAUTHORIZED"); e.status = 403; throw e; }
   const source = (project.videos || []).id(videoId);
@@ -278,7 +295,7 @@ async function createAudioOperation({ userId, projectId, videoId, action, profil
   if (action !== "replace" && !source.audioCodec) throw new Error("VIDEO_AUDIO_NO_TRACK");
   let audio = null;
   if (action === "replace") audio = await validateReplacement(file, startSeconds, endSeconds);
-  const quotaReserved = await reserveQuota(userId, profile, "VIDEO_AUDIO_QUOTA_EXCEEDED");
+  const quotaReserved = await reserveQuotaForOperation("audio", userId, profile, "VIDEO_AUDIO_QUOTA_EXCEEDED");
   let operation;
   try {
     operation = await VideoOperation.create({ type: "audio", audio_action: action, user_id: userId, project_id: projectId, source_video_id: source._id, start_seconds: 0, end_seconds: source.duration, audio_start_seconds: audio?.startSeconds ?? null, audio_end_seconds: audio?.endSeconds ?? null, quota_reserved: quotaReserved });
@@ -329,7 +346,7 @@ async function createFrameToolOperation({ userId, projectId, videoId, tools, sta
     duration: video.duration,
     sourceFps: video.fps,
   });
-  const quotaReserved = await reserveQuota(userId, profile, "VIDEO_FRAME_TOOL_QUOTA_EXCEEDED");
+  const quotaReserved = await reserveQuotaForOperation("frame_tool", userId, profile, "VIDEO_FRAME_TOOL_QUOTA_EXCEEDED");
   const operation = await VideoOperation.create({
     type: "frame_tool",
     user_id: userId,
@@ -433,7 +450,9 @@ async function createFrameExtractionOperation({
     profile,
     outputFormat,
   });
-  const quotaReserved = await reserveQuota(userId, profile, "VIDEO_FRAME_EXTRACT_QUOTA_EXCEEDED");
+  // The profile-specific frame count limit still applies; frame extraction
+  // does not consume the daily quota for advanced tools.
+  const quotaReserved = await reserveQuotaForOperation("frame_extract", userId, profile, "VIDEO_FRAME_EXTRACT_QUOTA_EXCEEDED");
   const operation = await VideoOperation.create({
     type: "frame_extract",
     user_id: userId,

@@ -14,7 +14,7 @@
 - Cada JPEG é enviado individualmente para o stage `src`; o worker não acumula o lote completo em memória.
 - As referências só são adicionadas a `project.imgs` depois de todos os uploads concluírem.
 - Em falha/cancelamento, as chaves carregadas são eliminadas de forma best-effort e o staging local é removido.
-- A quota registada usa o mecanismo existente de reserva/refund; premium não reserva quota.
+- A extração de fotogramas não consome a quota diária de operações avançadas; os limites de quantidade por perfil são aplicados antes da fila.
 
 ## Limitações conhecidas
 

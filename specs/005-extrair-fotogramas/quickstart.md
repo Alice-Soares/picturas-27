@@ -22,7 +22,7 @@ and pass TypeScript validation; existing lint warnings may remain.
    registered limit; confirm no operation is queued.
 4. Try a project/video without authorization; confirm rejection without
    metadata disclosure.
-5. Cancel during processing; confirm `cancelled`, quota refund, no public
+5. Cancel during processing; confirm `cancelled`, no quota consumption, no public
    partial images and cleanup of temporary objects.
 6. Force a worker/storage failure after at least one upload; confirm `failed`,
    public error, cleanup and unchanged source-video hash.
@@ -44,4 +44,4 @@ resulting image keys and pass/fail evidence for each scenario.
   were deleted after the scenario.
 - The video extraction end-to-end scenarios below were not run. UC-VID-005
   acceptance remains pending; this smoke scenario is not evidence for frame
-  extraction, quota, cancellation, storage cleanup or project destination.
+  extraction, quota non-consumption, cancellation, storage cleanup or project destination.

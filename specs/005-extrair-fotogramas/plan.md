@@ -9,7 +9,7 @@
 
 Estender o fluxo assíncrono de operações de vídeo para extrair uma sequência de
 fotogramas JPEG de um vídeo autorizado e associá-los a um projeto. O Projects
-Service continuará responsável por autorização, validação, quota, ciclo de vida
+Service continuará responsável por autorização, validação, limites por perfil e ciclo de vida
 da operação e associação dos resultados. FFmpeg fará a extração para staging em
 disco; os JPEG serão enviados incrementalmente para o Image Storage Service,
 sem acumular até 5000 imagens em memória.
@@ -18,7 +18,7 @@ A operação terá um tipo próprio, fila e worker próprios. O vídeo original 
 será alterado. Resultados parciais não serão apresentados na biblioteca: a
 associação visível às imagens será feita apenas depois da extração e dos uploads
 terem terminado com sucesso. Em cancelamento ou falha, a operação será marcada
-com o estado correspondente, a quota será devolvida e os objetos temporários ou
+com o estado correspondente, não haverá consumo de quota e os objetos temporários ou
 já carregados serão removidos de forma idempotente.
 
 ## Baseline e fontes
@@ -90,7 +90,7 @@ _GATE: PASS antes da investigação e repetir após o design._
   extração, persistência, progresso, cancelamento e limpeza.
 - **Rastreabilidade**: PASS — a matriz abaixo liga requisitos a componentes e
   testes; os resultados serão registados no quickstart e nos testes executados.
-- **Requisitos verificáveis**: PASS — limites, formato, estados e quota vêm da
+- **Requisitos verificáveis**: PASS — limites, formato e estados vêm da
   especificação e do catálogo consolidado.
 - **Arquitetura baseada em evidência**: PASS — reutiliza os serviços, filas,
   eventos e modelos presentes no baseline; as alterações necessárias são
@@ -106,7 +106,7 @@ _GATE: PASS antes da investigação e repetir após o design._
 
 Adicionar o tipo de operação `frame_extract` ao modelo de operações e publicar
 numa fila dedicada de extração de fotogramas. O `videoOperationService` mantém
-a autorização, a reserva/devolução de quota, a criação da operação e a
+a autorização, a criação da operação e a
 publicação do evento inicial; um worker dedicado executa a extração.
 
 **Realiza**: `REQ-VID-FEX-006`, `REQ-VID-FEX-007`, `REQ-VID-FEX-011` e
@@ -222,14 +222,14 @@ estendendo a configuração para intervalo, quantidade, estimativa e destino.
 3. A validação obtém duração e FPS dos metadados existentes, normaliza o
    intervalo, rejeita parâmetros inválidos e calcula a estimativa de frames.
 4. O sistema aplica o limite de 1000/5000 ao valor solicitado e à estimativa,
-   rejeita uma estimativa de zero e verifica o espaço disponível antes de
-   reservar quota.
+   rejeita uma estimativa de zero e verifica o espaço disponível; a extração
+   não reserva quota diária.
 5. Depois da validação, cria `frame_extract` com a configuração, o projeto de
-   origem/destino, a estimativa e a quota reservada; só então publica a
+   origem/destino e a estimativa; só então publica a
    mensagem RabbitMQ e o evento `project-op`.
 
-A criação deve ser transacional do ponto de vista do contrato: se quota,
-criação, publicação ou validação falhar, não deve existir operação executável
+A criação deve ser transacional do ponto de vista do contrato: se criação,
+publicação ou validação falhar, não deve existir operação executável
 nem referência de resultado.
 
 ### Execução do worker
@@ -280,8 +280,8 @@ quebrar operações `trim` ou `frame_tool` já existentes.
 
 1. Confirmar no Projects Service o contrato atual de criação, consulta e
    cancelamento e a máquina de estados de `VideoOperation`.
-2. Confirmar o mecanismo de quota e refund no Users Service, incluindo a
-   semântica para premium e operações canceladas.
+2. Confirmar que a extração respeita os limites por perfil sem consumir a quota
+   diária de operações avançadas.
 3. Confirmar como o Image Storage Service pode receber ficheiros/streams e
    apagar objetos por chave sem alterar o upload de imagens existente.
 4. Confirmar a forma de consultar espaço disponível no storage e definir a
@@ -330,11 +330,10 @@ quebrar operações `trim` ou `frame_tool` já existentes.
 | Requirement group                                                                              | Components                                                                     | Planned validation                                                               |
 | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
 | `REQ-VID-FEX-001`, `REQ-VID-FEX-002`, `REQ-VID-FEX-003`, `REQ-VID-FEX-004` e `REQ-VID-FEX-005` | Frontend, `videoFrameExtractionValidation`, `VideoOperation`                   | Configuração, formato, cálculo de estimativa e rejeição de intervalo/zero frames |
-| `REQ-VID-FEX-006`, `REQ-VID-FEX-007` e `REQ-VID-FEX-008`                                       | `videoOperationService`, Users Service, storage adapter                        | Limites por perfil, quota e espaço insuficiente antes da fila                    |
+| `REQ-VID-FEX-006`, `REQ-VID-FEX-007`, `REQ-VID-FEX-008` e `REQ-VID-FEX-012`                  | `videoOperationService`, storage adapter                                       | Limites por perfil, ausência de quota diária e espaço insuficiente antes da fila |
 | `REQ-VID-FEX-009` e `010`                                                                      | Extraction worker, Image Storage Service, `Project` model/controller, frontend | JPEG persistido no projeto atual/novo e visibilidade apenas após conclusão       |
 | `REQ-VID-FEX-011`                                                                              | Extraction worker, cleanup/storage, operation service                          | Falha e cancelamento removem staging, objetos e resultados não publicados        |
 | `REQ-VID-COM-001` a `003`                                                                      | Projects routes/service, API Gateway, WebSocket/project events                 | Acesso cruzado a projeto, vídeo, imagens e eventos                               |
-| `REQ-VID-COM-004` a `008`                                                                      | `videoOperationService`, Users Service                                         | Reserva/refund de quota em sucesso, falha e cancelamento                         |
 | `REQ-VID-COM-009` a `013`                                                                      | `VideoOperation`, RabbitMQ, WebSocket Gateway                                  | Estados, erro persistido, eventos e isolamento do projeto                        |
 | `REQ-VID-COM-014` a `020`                                                                      | Worker, storage, project model, frontend                                       | Limpeza, ausência de resultado parcial, preservação e publicação final           |
 | `REQ-VID-Q-001` a `005`                                                                        | Todos os componentes integrados                                                | Cenários de aceitação, hash, progresso e autorização                             |

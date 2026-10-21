@@ -32,7 +32,7 @@ Stories 2 e 3 completam autorização, limites, destino, cancelamento e falhas.
 - **US2 (P1)**: O sistema valida acesso, codec, limites por perfil, espaço e
   projeto de destino antes de criar uma operação executável.
 - **US3 (P1)**: O utilizador acompanha, cancela ou recupera de falhas sem
-  resultados parciais acessíveis e com devolução da quota aplicável.
+  resultados parciais acessíveis e sem consumo de quota diária.
 
 ## Dependencies and Order
 
@@ -71,7 +71,7 @@ extração que bloqueiam todas as histórias.
 - [x] T012 [P] Criar [projects/services/videoFrameExtractionValidation.js](../../projects/services/videoFrameExtractionValidation.js) para validar intervalo, quantidade positiva, estimativa não nula, formato JPEG, duração, FPS e limites de 1000/5000
 - [x] T013 [P] Criar [projects/services/videoFrameExtractionErrors.js](../../projects/services/videoFrameExtractionErrors.js) com mensagens públicas para autorização, codec, parâmetros, limite, espaço, cancelamento e falha sem paths ou comandos internos
 - [x] T014 Criar testes unitários dos validadores, erros e transições em [projects/test/videoFrameExtractionValidation.test.js](../../projects/test/videoFrameExtractionValidation.test.js) e [projects/test/videoOperationState.test.js](../../projects/test/videoOperationState.test.js)
-- [x] T015 Estender [projects/services/videoOperationService.js](../../projects/services/videoOperationService.js) com o tipo `frame_extract`, publicação da mensagem, consulta autorizada e integração com reserva/refund de quota
+- [x] T015 Estender [projects/services/videoOperationService.js](../../projects/services/videoOperationService.js) com o tipo `frame_extract`, publicação da mensagem, consulta autorizada e limites por perfil sem reserva de quota diária
 - [x] T016 [P] Criar uma API de storage baseada em ficheiro/stream para JPEG e eliminação idempotente em [imageStorageService/services/uploadImage.js](../../imageStorageService/services/uploadImage.js) e [projects/utils/videoStorage.js](../../projects/utils/videoStorage.js), sem remover o contrato de imagens existente
 - [x] T017 [P] Estender o modelo e controlador de projeto em [projects/models/project.js](../../projects/models/project.js) e [projects/controllers/project.js](../../projects/controllers/project.js) para associar imagens extraídas com operação, vídeo de origem, índice e timestamp
 - [x] T018 Refatorar [projects/services/videoFramePipeline.js](../../projects/services/videoFramePipeline.js) para disponibilizar extração reutilizável com formato configurável (`png`/`jpeg`), mantendo a recomposição e o comportamento de `frame_tool`
@@ -153,7 +153,7 @@ eventos e preservação do vídeo original.
 
 - [ ] T043 [P] [US3] Criar testes de cancelamento em fila, durante extração e durante upload em [projects/test/videoFrameExtractionCancellation.integration.test.js](../../projects/test/videoFrameExtractionCancellation.integration.test.js)
 - [ ] T044 [P] [US3] Criar testes de falha, cleanup de staging, remoção de objetos carregados e ausência de referências parciais em [projects/test/videoFrameExtractionFailure.integration.test.js](../../projects/test/videoFrameExtractionFailure.integration.test.js)
-- [ ] T045 [P] [US3] Criar teste de quota reservada, refund em falha/cancelamento e ausência de limite diário premium em [projects/test/videoFrameExtractionQuota.test.js](../../projects/test/videoFrameExtractionQuota.test.js)
+- [ ] T045 [P] [US3] Criar teste de ausência de consumo de quota diária em sucesso, falha e cancelamento em [projects/test/videoFrameExtractionQuota.test.js](../../projects/test/videoFrameExtractionQuota.test.js)
 - [ ] T046 [P] [US3] Criar teste de eventos `project-op`, progresso e isolamento por projeto em [wsGateway/test/project_events.test.js](../../wsGateway/test/project_events.test.js) ou no teste de contrato correspondente
 
 ### Implementation for User Story 3

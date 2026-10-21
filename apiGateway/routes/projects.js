@@ -585,7 +585,7 @@ router.post("/:user/:project/video/:videoId/conversion", auth.checkToken, async 
   }
 });
 
-for (const action of ["remove", "extract"]) {
+for (const action of ["remove", "extract", "playback"]) {
   router.post(`/:user/:project/video/:videoId/audio/${action}`, auth.checkToken, async (req, res) => {
     const ownerId = req.query.owner || req.params.user; const callerId = req.authUserId || req.params.user;
     try {

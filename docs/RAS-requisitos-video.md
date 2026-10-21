@@ -18,7 +18,7 @@ Os requisitos específicos de cada caso de uso estão identificados pelo prefixo
 | UC-VID-002 | Recorte temporal | `TRIM-001` a `TRIM-013` | `COM-001` a `COM-020`, `Q-001` a `Q-016` |
 | UC-VID-003 | Aplicar ferramenta aos fotogramas | `FRM-001` a `FRM-014` | `COM-001` a `COM-020`, `Q-001` a `Q-016` |
 | UC-VID-004 | Converter formato e resolução | `CONV-001` a `CONV-011` | `COM-001` a `COM-020`, `Q-001` a `Q-016` |
-| UC-VID-005 | Extrair fotogramas | `FEX-001` a `FEX-011` | `COM-001` a `COM-020`, `Q-001` a `Q-016` |
+| UC-VID-005 | Extrair fotogramas | `FEX-001` a `FEX-012` | `COM-001` a `COM-020`, `Q-001` a `Q-016` |
 | UC-VID-006 | Concatenar vídeos | `MERGE-001` a `MERGE-015` | `COM-001` a `COM-020`, `Q-001` a `Q-016` |
 | UC-VID-007 | Gerir áudio | `AUD-001` a `AUD-016` | `COM-001` a `COM-020`, `Q-001` a `Q-016` |
 
@@ -133,6 +133,7 @@ Os requisitos específicos de cada caso de uso estão identificados pelo prefixo
 | REQ-VID-FEX-009 | O sistema deve guardar cada fotograma extraído como imagem JPEG no projeto escolhido. | F | Deve ter | ALT | UC-VID-005, passos 10-12, RN4 | Verificar imagens, formato e projeto. |
 | REQ-VID-FEX-010 | O sistema deve permitir escolher o projeto atual ou um projeto novo para os fotogramas. | F | Deveria ter | ALT | UC-VID-005, FA3, Q2 | Executar as duas opções. |
 | REQ-VID-FEX-011 | O sistema deve eliminar os fotogramas temporários quando a extração for cancelada ou falhar. | F | Deve ter | NOVO | UC-VID-005, FA2, exceção | Cancelar e provocar falha durante a extração. |
+| REQ-VID-FEX-012 | O sistema não deve contabilizar a extração de fotogramas na quota diária de operações avançadas. | F | Deve ter | NOVO | UC-VID-005, RN3 | Comparar a quota diária antes e depois de uma extração válida. |
 
 #### Concatenação de vídeos — UC-VID-006
 
@@ -181,11 +182,11 @@ Os requisitos específicos de cada caso de uso estão identificados pelo prefixo
 | REQ-VID-COM-001 | O sistema deve verificar que o utilizador tem acesso ao projeto antes de ler qualquer vídeo. | F | Deve ter | ALT | Pré-condições, UC-VID-002 a UC-VID-007 | Tentar aceder a projeto de outro utilizador. |
 | REQ-VID-COM-002 | O sistema deve verificar que o vídeo de entrada pertence ao projeto autorizado. | F | Deve ter | ALT | Pré-condições, UC-VID-002 a UC-VID-007 | Enviar referência de vídeo de outro projeto. |
 | REQ-VID-COM-003 | O sistema deve limitar os resultados de vídeo ao utilizador autorizado no projeto. | F | Deve ter | ALT | UC-VID-001 a UC-VID-007 | Tentar consultar ou transferir um resultado de outro projeto. |
-| REQ-VID-COM-004 | O sistema deve reservar uma operação avançada antes de iniciar uma operação de processamento para um utilizador registado. | F | Deve ter | ALT | RN3 dos UC-VID-002 a UC-VID-007 | Verificar a quota antes do processamento. |
-| REQ-VID-COM-005 | O sistema deve rejeitar uma operação de processamento quando a quota do utilizador registado estiver esgotada. | F | Deve ter | ALT | Exceções dos UC-VID-002 a UC-VID-007 | Tentar iniciar sem quota. |
-| REQ-VID-COM-006 | O sistema não deve aplicar limite diário de operações de processamento a utilizadores premium. | F | Deve ter | ALT | RN3 dos UC-VID-002 a UC-VID-007 | Executar operações além do limite gratuito. |
-| REQ-VID-COM-007 | O sistema deve devolver a reserva de quota quando a operação falhar. | F | Deve ter | ALT | RN7, RN4/RN5 | Provocar falha e comparar a quota. |
-| REQ-VID-COM-008 | O sistema deve devolver a reserva de quota quando a operação for cancelada. | F | Deve ter | ALT | FA de cancelamento | Cancelar e comparar a quota. |
+| REQ-VID-COM-004 | O sistema deve reservar uma operação avançada antes de iniciar uma operação de vídeo que use ferramentas de IA para um utilizador registado. | F | Deve ter | ALT | RN2 do UC-VID-003 | Verificar a quota antes de aplicar ferramentas de IA. |
+| REQ-VID-COM-005 | O sistema deve rejeitar uma operação de vídeo que use ferramentas de IA quando a quota do utilizador registado estiver esgotada. | F | Deve ter | ALT | Exceções do UC-VID-003 | Tentar iniciar aplicação de IA sem quota. |
+| REQ-VID-COM-006 | O sistema não deve aplicar limite diário às operações de vídeo que usem ferramentas de IA para utilizadores premium. | F | Deve ter | ALT | RN2 do UC-VID-003 | Executar operações de IA além do limite gratuito. |
+| REQ-VID-COM-007 | O sistema deve devolver a reserva de quota quando uma operação sujeita a quota falhar. | F | Deve ter | ALT | RN7, RN4/RN5 | Provocar falha e comparar a quota. |
+| REQ-VID-COM-008 | O sistema deve devolver a reserva de quota quando uma operação sujeita a quota for cancelada. | F | Deve ter | ALT | FA de cancelamento | Cancelar e comparar a quota. |
 | REQ-VID-COM-009 | O sistema deve registar o identificador, tipo, origem, utilizador, projeto, estado e timestamps de cada operação de vídeo. | F | Deve ter | NOVO | Pós-condições dos UC | Inspecionar o registo em cada estado. |
 | REQ-VID-COM-010 | O sistema deve registar a mensagem de erro quando uma operação falhar. | F | Deve ter | NOVO | Exceções dos UC | Provocar falha e consultar o registo. |
 | REQ-VID-COM-011 | O sistema deve expor os estados `em fila`, `em processamento`, `concluída`, `falhada` e `cancelada` para operações assíncronas. | F | Deve ter | NOVO | UC-VID-002 a UC-VID-007 | Observar as transições de uma operação. |
@@ -241,7 +242,7 @@ recursos do projeto.
 | Estado, progresso, cancelamento e resultado | Sim | Todas as operações de processamento são assíncronas no MVP. | TRIM-009 a TRIM-012, CONV-009 a CONV-011, COM-009 a COM-020, Q-002, Q-003, Q-016 |
 | Falhas durante o processamento | Sim | Falhas de codec, armazenamento, ferramenta e FFmpeg devem deixar o sistema consistente. | SUB-008-SUB-009, FRM-012, COM-010, COM-014 a COM-016, Q-001 |
 | Persistência e expiração dos ficheiros | Sim | Resultados devem ser persistidos; temporários devem ser removidos. | SUB-015, FEX-009 a FEX-011, COM-014 a COM-018, Q-007 |
-| Perfis e contagem de operações | Sim | O baseline diferencia anónimo, registado e premium e limita operações avançadas. | SUB-001, SUB-016 a SUB-023, COM-004 a COM-008 |
+| Perfis e contagem de operações | Sim | O baseline diferencia anónimo, registado e premium; apenas operações que usam ferramentas de IA consomem quota diária. | SUB-001, SUB-016 a SUB-023, COM-004 a COM-008 |
 | Encadeamento de ferramentas e processamento em lote | Parcial | O encadeamento de ferramentas de imagem e a conversão em lote são suportados apenas quando explicitamente previstos nos UC-VID-003 e UC-VID-004; transições e edição avançada ficam fora do MVP. | FRM-011, CONV-009, MERGE-001 a MERGE-015 |
 | Gestão e manutenção de recursos | Sim | A biblioteca deve permitir remover recursos e gerir vários itens sem repetir a operação individualmente. | REQ-VID-MNT-001 a REQ-VID-MNT-003 |
 
@@ -250,7 +251,7 @@ recursos do projeto.
 | Elemento existente afetado | Impacto | Descrição do impacto | Requisitos relacionados |
 |---|---|---|---|
 | JWT, autenticação e perfis | Alterar | Reutilizar autenticação e autorização existentes, acrescentando a regra de vídeo para anónimos e os limites por perfil. | SUB-001, SUB-016 a SUB-023, COM-001 a COM-006 |
-| Quota de ferramentas avançadas | Alterar | Reutilizar a política de operações avançadas, reservando uma unidade por operação de processamento de vídeo aceite. | COM-004 a COM-008 |
+| Quota de ferramentas avançadas | Alterar | Reservar quota apenas para operações de vídeo que usam ferramentas de IA; processamento com FFmpeg sem IA é ilimitado. | COM-004 a COM-008 |
 | Projects Service e modelos de projeto | Estender | Adicionar referências de vídeo, metadados, operações, estados, resultados e associação ao projeto sem quebrar imagens. | SUB-010 a SUB-015, COM-009, COM-018 |
 | API Gateway | Estender | Expor submissão, consulta, cancelamento, resultados e validação de autorização para vídeo. | SUB-001, TRIM-001, COM-001 a COM-003 |
 | Image Storage Service / SeaweedFS | Estender | Reutilizar a fachada S3, acrescentando content-types, convenção de objetos de vídeo, objetos temporários e limpeza. | SUB-015, COM-014 a COM-017, Q-007 |
@@ -258,7 +259,7 @@ recursos do projeto.
 | WebSocket Gateway | Estender | Encaminhar estados e progresso de vídeo apenas para clientes autorizados do projeto. | COM-011 a COM-013, Q-002, Q-003 |
 | Workers de ferramentas de imagem | Manter / Estender | Manter o contrato atual para imagens e permitir que UC-VID-003 entregue fotogramas isolados às ferramentas compatíveis. | FRM-001, FRM-008, Q-006 |
 | FFmpeg/FFprobe | Novo | Introduzir análise de metadados, validação de streams, recorte, extração, recomposição, conversão e áudio. | SUB-005 a SUB-014, SUB-024 a SUB-025, TRIM-005, FRM-007 a FRM-010, CONV-002 a CONV-011, FEX-001 a FEX-009, MERGE-005 a MERGE-013, AUD-001 a AUD-016 |
-| Frontend da biblioteca | Estender | Apresentar vídeos, metadados, parâmetros, estados, progresso, cancelamento, resultados, mensagens de erro e ações de gestão da biblioteca. | SUB-001 a SUB-004, TRIM-001 a TRIM-013, CONV-001 a CONV-011, FEX-001 a FEX-011, MERGE-001 a MERGE-015, AUD-001 a AUD-016, MNT-001 a MNT-003 |
+| Frontend da biblioteca | Estender | Apresentar vídeos, metadados, parâmetros, estados, progresso, cancelamento, resultados, mensagens de erro e ações de gestão da biblioteca. | SUB-001 a SUB-004, TRIM-001 a TRIM-013, CONV-001 a CONV-011, FEX-001 a FEX-012, MERGE-001 a MERGE-015, AUD-001 a AUD-016, MNT-001 a MNT-003 |
 
 ## 4.3 Matriz de rastreabilidade consolidada
 
@@ -287,7 +288,7 @@ recursos do projeto.
 | UC-VID-007, passos 3-9 | Processar, persistir e notificar | AUD-011, AUD-012, COM-009 a COM-018 |
 | UC-VID-007, FA1-FA3 e exceções | Sem áudio, durações diferentes, cancelamento e falha | AUD-007 a AUD-010, COM-007, COM-008, COM-014 a COM-017 |
 | UC-VID-001 a UC-VID-007, autorização | Acesso a projeto e conteúdo | COM-001 a COM-003, Q-005 |
-| UC-VID-001 a UC-VID-007, quota | Reserva, consumo e devolução | SUB-015, COM-004 a COM-008 |
+| UC-VID-003, ferramentas de IA e quota | Reserva, consumo e devolução | COM-004 a COM-008 |
 | UC-VID-001 a UC-VID-007, estados | Registo, eventos, limpeza e resultados | COM-009 a COM-018, Q-002, Q-003, Q-007 |
 | Manutenção corretiva T-VID-MNT-001 | Apagar vídeo autorizado | MNT-001 |
 | Manutenção corretiva T-VID-MNT-002 | Selecionar e apagar várias imagens | MNT-002 |

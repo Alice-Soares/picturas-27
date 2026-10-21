@@ -95,23 +95,23 @@ receber um resultado claro quando ocorrer uma falha, sem ficar com ficheiros
 parciais acessíveis.
 
 **Why this priority**: A extração pode gerar muitos ficheiros e precisa de
-terminar com estado, limpeza e quota consistentes.
+terminar com estado e limpeza consistentes, sem reservar quota diária.
 
 **Independent Test**: Criar uma operação suficientemente demorada para observar
 estados, cancelá-la durante a execução e provocar uma falha; confirmar a limpeza,
-a devolução da quota e a preservação do vídeo original.
+a ausência de consumo de quota e a preservação do vídeo original.
 
 **Acceptance Scenarios**:
 
 1. **Given** uma operação em fila ou em processamento, **When** o utilizador a
    cancela, **Then** o sistema interrompe o trabalho, elimina os fotogramas
-   temporários, marca a operação como `cancelada` e devolve a quota reservada.
+   temporários e marca a operação como `cancelada`, sem alterar a quota diária.
 2. **Given** uma operação em processamento, **When** o sistema atualiza o
    estado, **Then** apenas clientes autorizados do projeto recebem a
    atualização por WebSocket.
 3. **Given** uma falha durante a extração, **When** a operação termina, **Then**
-   fica `falhada`, os temporários são removidos, não existe resultado parcial
-   na biblioteca e a quota reservada é devolvida.
+   fica `falhada`, os temporários são removidos e não existe resultado parcial
+   na biblioteca nem consumo de quota diária.
 
 ### Edge Cases
 
@@ -148,12 +148,13 @@ Os requisitos abaixo preservam o catálogo oficial do caso de uso.
 - **REQ-VID-FEX-009**: O sistema deve guardar cada fotograma extraído como imagem JPEG no projeto escolhido.
 - **REQ-VID-FEX-010**: O sistema deve permitir escolher o projeto atual ou um projeto novo para os fotogramas.
 - **REQ-VID-FEX-011**: O sistema deve eliminar os fotogramas temporários quando a extração for cancelada ou falhar.
+- **REQ-VID-FEX-012**: O sistema não deve contabilizar a extração de fotogramas na quota diária de operações avançadas.
 
-Os requisitos transversais aplicáveis são `REQ-VID-COM-001` a
-`REQ-VID-COM-020` e `REQ-VID-Q-001` a `REQ-VID-Q-005`, conforme o catálogo
-consolidado. Em particular, a funcionalidade deve verificar o acesso ao projeto
-e ao vídeo, reservar e devolver quota conforme o resultado, registar estados e
-erros, proteger resultados e eventos contra acesso cruzado, impedir resultados
+Os requisitos transversais aplicáveis são `REQ-VID-COM-001` a `REQ-VID-COM-020`
+e `REQ-VID-Q-001` a `REQ-VID-Q-005`, conforme o catálogo consolidado, exceto
+as regras de quota diária `REQ-VID-COM-004` a `REQ-VID-COM-008`. A funcionalidade
+deve verificar o acesso ao projeto e ao vídeo, registar estados e erros,
+proteger resultados e eventos contra acesso cruzado, impedir resultados
 parciais e preservar o vídeo de origem.
 
 ### Non-Functional Requirements
@@ -224,4 +225,4 @@ parciais e preservar o vídeo de origem.
 | FA3                                   | `REQ-VID-FEX-010`                                                                 |
 | RN1–RN5                               | `REQ-VID-FEX-004`, `REQ-VID-FEX-006`, `REQ-VID-FEX-007`, `REQ-VID-FEX-009`        |
 | Pré-condições e acesso                | `REQ-VID-COM-001`, `REQ-VID-COM-002`, `REQ-VID-COM-003`, `REQ-VID-FEX-NF-003`     |
-| Estados, quota, limpeza e preservação | `REQ-VID-COM-004` a `REQ-VID-COM-020`, `REQ-VID-FEX-NF-001`, `REQ-VID-FEX-NF-002` |
+| Estados, limpeza e preservação | `REQ-VID-COM-009` a `REQ-VID-COM-020`, `REQ-VID-FEX-012`, `REQ-VID-FEX-NF-001`, `REQ-VID-FEX-NF-002` |

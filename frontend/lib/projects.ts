@@ -796,6 +796,18 @@ export async function createProjectVideoAudio(params: {
   return response.data;
 }
 
+export async function createProjectVideoAudioPlayback(params: {
+  uid: string; pid: string; token: string; videoId: string; projectVersion: number; ownerId?: string; shareId?: string;
+}) {
+  const pathUid = params.ownerId ?? params.uid; const query = buildQuery(params);
+  const response = await api.post<{ operationId: string; status: string }>(
+    `/projects/${pathUid}/${params.pid}/video/${params.videoId}/audio/playback${query}`,
+    {},
+    { headers: { Authorization: `Bearer ${params.token}`, "X-Project-Version": String(params.projectVersion) } },
+  );
+  return response.data;
+}
+
 export async function getProjectVideoAudio(params: { uid: string; pid: string; token: string; operationId: string; ownerId?: string; shareId?: string }) {
   const pathUid = params.ownerId ?? params.uid; const query = buildQuery(params);
   const response = await api.get<VideoAudioOperation>(`/projects/${pathUid}/${params.pid}/video-operations/${params.operationId}${query}`, { headers: { Authorization: `Bearer ${params.token}` } });

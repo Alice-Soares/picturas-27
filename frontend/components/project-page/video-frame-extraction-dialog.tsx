@@ -59,7 +59,12 @@ export function VideoFrameExtractionDialog({
     create.mutate({ videoId: video._id, startSeconds, endSeconds, maxFrames: requestedFrames,
       targetProjectId: targetProjectId === pid ? undefined : targetProjectId, projectVersion }, {
       onSuccess: (result) => setOperationId(result.operationId),
-      onError: () => toast({ title: "Não foi possível iniciar a extração", description: "Verifique o acesso, os limites e a quota.", variant: "destructive" }),
+      onError: (error) => toast({
+        title: "Não foi possível iniciar a extração",
+        description: (error as { response?: { data?: { error?: string } } })?.response?.data?.error
+          || "Verifique o acesso, os limites por perfil e o espaço disponível.",
+        variant: "destructive",
+      }),
     });
   }
 
