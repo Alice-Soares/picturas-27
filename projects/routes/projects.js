@@ -57,6 +57,7 @@ const { publicFrameExtractionError } = require("../services/videoFrameExtraction
 const { publicConversionError } = require("../services/videoConversionErrors");
 const { publicAudioError } = require("../services/videoAudioErrors");
 const {
+  get_image_internal_url,
   get_image_public_url,
   post_image,
   delete_image,
@@ -1862,7 +1863,18 @@ router.post("/:user/:project/process", checkSharePermission, requireEditPermissi
               img.og_img_key
             );
             url = resp.data.url;
+          } catch (error) {
+            console.error("[PROCESS][SOURCE_URL_ERROR]", {
+              imageId: String(img._id),
+              code: error.code,
+              status: error.response?.status,
+              message: error.message,
+            });
+            res.status(400).jsonp("Error acquiring source images");
+            return;
+          }
 
+          try {
             const img_resp = await axios.get(url, { responseType: "stream" });
             const writer = fs.createWriteStream(img.og_uri);
 
@@ -1871,7 +1883,13 @@ router.post("/:user/:project/process", checkSharePermission, requireEditPermissi
               writer.on("error", reject);
               img_resp.data.pipe(writer);
             });
-          } catch (_) {
+          } catch (error) {
+            console.error("[PROCESS][SOURCE_DOWNLOAD_ERROR]", {
+              imageId: String(img._id),
+              code: error.code,
+              status: error.response?.status,
+              message: error.message,
+            });
             res.status(400).jsonp("Error acquiring source images");
             return;
           }

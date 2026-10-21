@@ -223,6 +223,10 @@ useEffect(() => {
                           });
                         }}
                         onKeyDown={(event) => {
+                          // The image checkbox is interactive too. Let its
+                          // Space/Enter keys toggle selection without opening
+                          // the carousel through the parent role=button.
+                          if (event.target !== event.currentTarget) return;
                           if (event.key === "Enter" || event.key === " ") {
                             event.preventDefault();
                             event.currentTarget.click();
@@ -270,6 +274,7 @@ useEffect(() => {
                           });
                         }}
                         onKeyDown={(event) => {
+                          if (event.target !== event.currentTarget) return;
                           if (event.key === "Enter" || event.key === " ") {
                             event.preventDefault();
                             event.currentTarget.click();
