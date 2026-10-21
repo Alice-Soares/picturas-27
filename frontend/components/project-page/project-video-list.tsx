@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Trash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ProjectVideo, ProjectToolResponse } from "@/lib/projects";
+import { Project, ProjectVideo, ProjectToolResponse } from "@/lib/projects";
 import { useDeleteProjectVideo } from "@/lib/mutations/projects";
 import { VideoTrimDialog } from "./video-trim-dialog";
 import { VideoFrameToolDialog } from "./video-frame-tool-dialog";
@@ -14,7 +14,7 @@ import { VideoFrameExtractionDialog } from "./video-frame-extraction-dialog";
 import { VideoConversionDialog } from "./video-conversion-dialog";
 
 export function ProjectVideoList({
-  videos, uid, pid, token, projectVersion, ownerId, shareId, canEdit, tools,
+  videos, uid, pid, token, projectVersion, ownerId, shareId, canEdit, tools, destinationProjects = [],
 }: {
   videos: ProjectVideo[];
   uid: string;
@@ -25,6 +25,7 @@ export function ProjectVideoList({
   shareId?: string;
   canEdit?: boolean;
   tools: ProjectToolResponse[];
+  destinationProjects?: Project[];
 }) {
   const [selectedVideo, setSelectedVideo] = useState<ProjectVideo | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -73,7 +74,7 @@ export function ProjectVideoList({
               <div className="grid grid-cols-2 gap-2">
                 <VideoTrimDialog video={selectedVideo} uid={uid} pid={pid} token={token} projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
                 <VideoFrameToolDialog video={selectedVideo} tools={tools} uid={uid} pid={pid} token={token} projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
-                <VideoFrameExtractionDialog video={selectedVideo} uid={uid} pid={pid} token={token} projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
+                <VideoFrameExtractionDialog video={selectedVideo} uid={uid} pid={pid} token={token} projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} destinationProjects={destinationProjects} canEdit={canEdit} />
                 <VideoConversionDialog video={selectedVideo} uid={uid} pid={pid} token={token} projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
               </div>
               {canEdit && (

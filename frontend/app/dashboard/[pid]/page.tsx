@@ -12,6 +12,7 @@ import { Toolbar } from "@/components/toolbar/toolbar";
 import { ShareProjectDialog } from "@/components/projects/share-dialog";
 import {
   useGetProject,
+  useGetProjects,
   useGetProjectResults,
   useGetSocket,
 } from "@/lib/queries/projects";
@@ -66,6 +67,7 @@ export default function Project({
   const ownerId = searchParams.get("owner") ?? session.user._id;
   const shareId = searchParams.get("share") ?? undefined;
   const project = useGetProject(session.user._id, pid, session.token, ownerId, shareId);
+  const projects = useGetProjects(session.user._id, session.token);
   const downloadProjectImages = useDownloadProject();
   const processProject = useProcessProject(
     session.user._id,
@@ -842,6 +844,7 @@ const handleCancel = () => {
           ownerId={ownerId}
           shareId={shareId}
           canEdit={canEdit && mode !== "results"}
+          destinationProjects={shareId ? [] : projects.data ?? []}
         />
         <ProjectImageList
           setCurrentImageId={setCurrentImage}

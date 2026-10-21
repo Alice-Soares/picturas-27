@@ -27,7 +27,11 @@ export function VideoConversionDialog(props: {
   const get = useGetProjectVideoConversion(uid, pid, token, ownerId, shareId);
   const cancel = useCancelProjectVideoConversion(uid, pid, token, ownerId, shareId);
   const operation = get.data;
-  const limit = options.data?.resolutionLimit;
+  const limit = options.data?.resolutionLimits;
+  const source = options.data?.source;
+  const outputSizeEstimate = source?.size && source.width && source.height
+    ? Math.round(source.size * (Number(width) * Number(height)) / (source.width * source.height))
+    : null;
 
   useEffect(() => {
     if (!open || operation?.status === "completed" || operation?.status === "failed" || operation?.status === "cancelled") return;
@@ -64,7 +68,12 @@ export function VideoConversionDialog(props: {
                   <label className="text-sm">Largura<Input type="number" min={1} max={limit?.width} value={width} onChange={(e) => setWidth(e.target.value)} /></label>
                   <label className="text-sm">Altura<Input type="number" min={1} max={limit?.height} value={height} onChange={(e) => setHeight(e.target.value)} /></label>
                 </div>
-                <p className="text-xs text-muted-foreground">Limite do perfil: {limit ? `${limit.width}×${limit.height}` : "a carregar"}. Estimativa: indisponível.</p>
+                <p className="text-xs text-muted-foreground">
+                  Limite do perfil: {limit ? `${limit.width}×${limit.height}` : "a carregar"}.
+                  {" "}Estimativa: {outputSizeEstimate
+                    ? `${(outputSizeEstimate / (1024 * 1024)).toFixed(1)} MB`
+                    : "indisponível"}.
+                </p>
               </>
             ) : (
               <>
@@ -77,7 +86,12 @@ export function VideoConversionDialog(props: {
               <Button variant="outline" onClick={() => setOpen(false)}>Fechar</Button>
               {operationId && !["completed", "failed", "cancelled"].includes(operation?.status ?? "") &&
                 <Button variant="outline" onClick={() => cancel.mutate(operationId)}>Cancelar</Button>}
-              {!operationId && <Button onClick={start} disabled={create.isPending || !limit || Number(width) > limit.width || Number(height) > limit.height}>Iniciar conversão</Button>}
+              {!operationId && <Button onClick={start} disabled={create.isPending || !limit ||
+                !Number.isInteger(Number(width)) || !Number.isInteger(Number(height)) ||
+                Number(width) <= 0 || Number(height) <= 0 ||
+                Number(width) > limit.width || Number(height) > limit.height}>
+                Iniciar conversão
+              </Button>}
             </div>
           </div>
         </div>

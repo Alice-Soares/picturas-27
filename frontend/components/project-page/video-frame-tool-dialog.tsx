@@ -31,8 +31,11 @@ export function VideoFrameToolDialog({
 }) {
   const compatibleTools = tools.filter((tool) => compatibleVideoTools.includes(tool.procedure));
   const [open, setOpen] = useState(false);
-  const [procedure, setProcedure] = useState(compatibleTools[0]?.procedure ?? "");
-  const [params, setParams] = useState(JSON.stringify(compatibleTools[0]?.params ?? {}, null, 2));
+  const [chain, setChain] = useState<Array<{ procedure: ToolNames; params: string }>>(
+    compatibleTools[0]
+      ? [{ procedure: compatibleTools[0].procedure, params: JSON.stringify(compatibleTools[0].params ?? {}, null, 2) }]
+      : [],
+  );
   const [start, setStart] = useState("0");
   const [end, setEnd] = useState(String(Math.max(1, video.duration)));
   const [fps, setFps] = useState(String(video.fps || 25));
@@ -54,12 +57,21 @@ export function VideoFrameToolDialog({
     const startSeconds = Number(start);
     const endSeconds = Number(end);
     const outputFps = Number(fps);
-    let parsedParams: Record<string, unknown>;
-    try { parsedParams = JSON.parse(params); } catch (_) {
-      toast({ title: "Parâmetros inválidos", description: "Use um objeto JSON válido.", variant: "destructive" });
+    let parsedTools: Array<{ procedure: ToolNames; position: number; params: Record<string, unknown> }>;
+    try {
+      parsedTools = chain.map((item, position) => ({
+        procedure: item.procedure,
+        position,
+        params: JSON.parse(item.params),
+      }));
+      if (parsedTools.some((item) => !item.params || Array.isArray(item.params) || typeof item.params !== "object")) {
+        throw new Error("invalid params");
+      }
+    } catch (_) {
+      toast({ title: "Parâmetros inválidos", description: "Use um objeto JSON válido em cada ferramenta.", variant: "destructive" });
       return;
     }
-    if (!procedure || !Number.isFinite(startSeconds) || !Number.isFinite(endSeconds) ||
+    if (chain.length === 0 || !Number.isFinite(startSeconds) || !Number.isFinite(endSeconds) ||
       !Number.isFinite(outputFps) || startSeconds < 0 || endSeconds > video.duration ||
       endSeconds <= startSeconds || outputFps <= 0) {
       toast({ title: "Configuração inválida", description: "Confirme o intervalo, a taxa e a ferramenta.", variant: "destructive" });
@@ -67,7 +79,7 @@ export function VideoFrameToolDialog({
     }
     create.mutate({
       videoId: video._id,
-      tools: [{ procedure, position: 0, params: parsedParams }],
+      tools: parsedTools,
       startSeconds,
       endSeconds,
       outputFps,
@@ -93,10 +105,37 @@ export function VideoFrameToolDialog({
           <DialogDescription>Processa os fotogramas e cria um novo vídeo.</DialogDescription>
         </DialogHeader>
         {!operationId ? <div className="space-y-3">
-          <label className="text-sm">Ferramenta<select className="mt-1 w-full rounded-md border bg-background p-2" value={procedure} onChange={(event) => setProcedure(event.target.value as ToolNames)}>
-            {compatibleTools.map((tool) => <option key={`${tool.position}-${tool.procedure}`} value={tool.procedure}>{tool.procedure}</option>)}
-          </select></label>
-          <label className="text-sm">Parâmetros JSON<textarea className="mt-1 min-h-20 w-full rounded-md border bg-background p-2 font-mono text-xs" value={params} onChange={(event) => setParams(event.target.value)} /></label>
+          <div className="space-y-2">
+            <p className="text-sm">Cadeia de ferramentas</p>
+            {chain.map((item, index) => <div className="space-y-1 rounded-md border p-2" key={`${index}-${item.procedure}`}>
+              <div className="flex gap-2">
+                <select className="w-full rounded-md border bg-background p-2" value={item.procedure}
+                  onChange={(event) => setChain((current) => current.map((entry, entryIndex) =>
+                    entryIndex === index ? { ...entry, procedure: event.target.value as ToolNames } : entry))}>
+                  {compatibleTools.map((tool) => <option key={`${tool.position}-${tool.procedure}`} value={tool.procedure}>{tool.procedure}</option>)}
+                </select>
+                <Button type="button" variant="outline" disabled={index === 0}
+                  onClick={() => setChain((current) => current.map((entry, entryIndex) =>
+                    entryIndex === index - 1 ? current[index] : entryIndex === index ? current[index - 1] : entry))}>↑</Button>
+                <Button type="button" variant="outline" disabled={index === chain.length - 1}
+                  onClick={() => setChain((current) => current.map((entry, entryIndex) =>
+                    entryIndex === index ? current[index + 1] : entryIndex === index + 1 ? current[index] : entry))}>↓</Button>
+                <Button type="button" variant="outline" disabled={chain.length === 1}
+                  onClick={() => setChain((current) => current.filter((_, entryIndex) => entryIndex !== index))}>Remover</Button>
+              </div>
+              <textarea className="min-h-16 w-full rounded-md border bg-background p-2 font-mono text-xs"
+                value={item.params}
+                onChange={(event) => setChain((current) => current.map((entry, entryIndex) =>
+                  entryIndex === index ? { ...entry, params: event.target.value } : entry))} />
+            </div>)}
+            <Button type="button" variant="outline" onClick={() => {
+              const first = compatibleTools[0];
+              if (first) setChain((current) => [...current, {
+                procedure: first.procedure,
+                params: JSON.stringify(first.params ?? {}, null, 2),
+              }]);
+            }}>Adicionar ferramenta</Button>
+          </div>
           <div className="grid grid-cols-3 gap-2">
             <label className="text-sm">Início<Input type="number" min={0} value={start} onChange={(event) => setStart(event.target.value)} /></label>
             <label className="text-sm">Fim<Input type="number" max={video.duration} value={end} onChange={(event) => setEnd(event.target.value)} /></label>
