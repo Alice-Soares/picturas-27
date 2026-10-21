@@ -61,13 +61,12 @@ Registar cada cenário como `pass`/`fail`, incluindo perfil, projeto,
 
 ## Evidência da implementação
 
-- `projects`: imagem Docker construída com Node 20 e FFmpeg/FFprobe 5.1.9.
-- Testes focados: 11 testes passaram no container `picturas-projects`.
-- Frontend: `next build` passou no container, com apenas warnings pré-existentes
-  e o warning de dependência do polling do diálogo.
-- Compose: `docker compose config` passou.
-- Runtime: `projects` e `frontend` foram recriados e ficaram em estado
-  `running`; a entrada HTTPS respondeu `200 OK` através do Nginx.
-- A validação interativa no browser não foi executada nesta sessão porque o
-  certificado local é autoassinado e a ferramenta de browser recusou a ligação.
-  Deve ser repetida no ambiente da equipa aceitando o certificado local.
+Os resultados anteriormente registados antecedem esta revisão do fluxo de
+operação e não contam como validação do estado atual. Executar os cenários,
+testes e comandos acima e registar os resultados atuais antes de fechar `T039`
+e `T041`.
+
+Em 2026-10-21, `docker compose config -q`, o build do frontend e a suíte Projects
+(36 testes) passaram. Estes controlos não executaram um recorte end-to-end; os
+cenários de criação, progresso, cancelamento e persistência deste UC permanecem
+pendentes.

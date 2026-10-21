@@ -6,7 +6,7 @@ preservados.
 
 ## Contrato interno da Tool
 
-O Projects Service publica pedidos na fila `video_conversion`. A Tool não
+O Projects Service publica pedidos na fila `video_conversion_queue`. A Tool não
 recebe pedidos HTTP, não acede à MongoDB ou ao Image Storage Service e não
 aplica autorização ou quota.
 
@@ -21,10 +21,11 @@ Pedido:
     "inputVideoURI": "/app/images/.../source.mp4",
     "outputVideoURI": "/app/images/.../result.mp4",
     "outputContainer": "mp4",
-    "outputVideoCodec": "libx264",
+    "outputVideoCodec": "h264",
     "outputAudioCodec": "aac",
     "outputWidth": 1280,
-    "outputHeight": 720
+    "outputHeight": 720,
+    "duration": 12.5
   }
 }
 ```
@@ -49,7 +50,11 @@ Resposta de sucesso:
 }
 ```
 
-A Tool pode publicar mensagens de progresso com o mesmo `correlationId`.
+A Tool pode publicar mensagens de progresso com o mesmo `correlationId`; a
+percentagem deriva do tempo de saída FFmpeg face à duração da origem. O
+Projects Service publica cancelamentos em `video_conversion_cancel_queue` e a
+Tool termina o processo FFmpeg associado. A Tool pode receber o cancelamento
+antes do pedido de conversão e descarta esse pedido quando chegar.
 Falhas devem usar um código estável e não incluir comandos, caminhos internos
 ou detalhes de sistema desnecessários.
 
@@ -81,8 +86,8 @@ Resposta `200`:
     }
   ],
   "resolutionLimits": {
-    "maxWidth": 1920,
-    "maxHeight": 1080
+    "width": 1920,
+    "height": 1080
   }
 }
 ```

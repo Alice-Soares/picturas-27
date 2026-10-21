@@ -127,7 +127,7 @@ cancelamento, falhas e concorrência.
 **Purpose**: Fechar documentação, regressão e validação end-to-end da feature.
 
 - [X] T038 [P] Atualizar o catálogo de ferramentas e a secção `Adding a new tool` em `README.md` para documentar `video_conversion_tool`, a fila, o volume, o comando de rebuild e a fronteira de responsabilidades.
-- [ ] T039 [P] Atualizar a documentação de configuração da fila em `rabbitMQ/` e qualquer inventário de serviços necessário para refletir `video_conversion`.
+- [X] T039 [P] Atualizar a configuração RabbitMQ e o inventário de serviços para refletir `video_conversion_queue` e `video_conversion_cancel_queue` em `rabbitMQ/definitions.json`, `README.md` e [contrato](./contracts/video-conversion.md).
 - [X] T040 [P] Adicionar ou atualizar testes de regressão para submissão, recorte, frame-tool e ferramentas de imagem em `projects/test/`, garantindo que as filas e operações existentes não mudam.
 - [ ] T041 Executar a validação automatizada de `projects/test/run-tests.js`, o build/teste do frontend, `docker compose config`, `docker compose exec video_conversion_tool ffmpeg -version` e `docker compose exec video_conversion_tool ffprobe -version`, registando resultados por cenário em `specs/004-video-conversion/quickstart.md`.
 - [X] T042 [P] Executar `git diff --check` e rever a rastreabilidade `UC-VID-004 -> REQ-VID-CONV-* -> componentes -> testes -> resultados`, corrigindo apenas lacunas diretamente relacionadas em `specs/004-video-conversion/`.

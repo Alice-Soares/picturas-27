@@ -26,10 +26,14 @@ async function dispatchConversion(operation, source) {
   const inputPath = path.join(directory, "input");
   const outputPath = path.join(directory, `output.${operation.output.outputContainer}`);
   await download_video(operation.user_id, operation.project_id, source.object_key, inputPath);
+  const current = await VideoOperation.findById(operation._id).select("status");
+  if (!current || current.status === "cancelled") {
+    await cleanup(directory);
+    return;
+  }
   activeProcesses.set(String(operation._id), directory);
 
   const message = conversionRequest({ operation, inputVideoURI: inputPath, outputVideoURI: outputPath });
-  send_rabbit_msg(message, "video_conversion");
   const timeout = setTimeout(async () => {
     const entry = pending.get(String(operation._id));
     if (!entry) return;
@@ -38,6 +42,14 @@ async function dispatchConversion(operation, source) {
     await require("./videoOperationService").failConversionOperation(operation, new Error("VIDEO_CONVERSION_FAILED"));
   }, Number(process.env.VIDEO_CONVERSION_TIMEOUT_MS || 30 * 60 * 1000));
   pending.set(String(operation._id), { directory, outputPath, source, operation, timeout });
+  const queued = await send_rabbit_msg(message, "video_conversion_queue");
+  if (!queued) {
+    clearTimeout(timeout);
+    pending.delete(String(operation._id));
+    activeProcesses.delete(String(operation._id));
+    await cleanup(directory);
+    throw new Error("VIDEO_CONVERSION_QUEUE_UNAVAILABLE");
+  }
 }
 
 async function handleToolResponse(message) {
@@ -51,10 +63,15 @@ async function handleToolResponse(message) {
     return true;
   }
   if (message.status === "processing") {
-    operation.status = "processing";
-    operation.progress = Math.max(operation.progress || 1, Number(message.progress) || 1);
-    await operation.save();
-    publish(operation);
+    const updated = await VideoOperation.findOneAndUpdate(
+      { _id: operation._id, status: { $in: ["queued", "processing"] }, commit_locked: { $ne: true } },
+      { $set: {
+        status: "processing",
+        progress: Math.max(operation.progress || 1, Number(message.progress) || 1),
+      } },
+      { new: true },
+    );
+    if (updated) publish(updated);
     return true;
   }
   try {
@@ -65,6 +82,12 @@ async function handleToolResponse(message) {
     }
     const metadata = message.output?.metadata;
     if (!metadata) throw new Error("VIDEO_CONVERSION_FAILED");
+    const finalizing = await VideoOperation.findOneAndUpdate(
+      { _id: operation._id, status: { $in: ["queued", "processing"] }, commit_locked: { $ne: true } },
+      { $set: { status: "processing", commit_locked: true } },
+      { new: true },
+    );
+    if (!finalizing) return true;
     const form = new (require("form-data"))();
     form.append("video", fs.createReadStream(entry.outputPath), {
       filename: `converted.${operation.output.outputContainer}`,
@@ -81,16 +104,21 @@ async function handleToolResponse(message) {
       name: `${path.parse(entry.source.name).name}-converted.${operation.output.outputContainer}`,
       ...metadata,
     };
-    const updatedProject = await Project.appendVideoIfVersion(
-      operation.user_id, operation.project_id, reference, project.version,
+    const updatedProject = await Project.appendVideo(
+      operation.user_id, operation.project_id, reference,
     );
     if (!updatedProject) throw new Error("PROJECT_VERSION_CONFLICT");
-    operation.status = "completed";
-    operation.progress = 100;
-    operation.result_video_id = updatedProject.videos.at(-1)?._id || null;
-    operation.finished_at = new Date();
-    await operation.save();
-    publish(operation);
+    const completed = await VideoOperation.findOneAndUpdate(
+      { _id: finalizing._id, status: "processing", commit_locked: true },
+      { $set: {
+        status: "completed",
+        progress: 100,
+        result_video_id: updatedProject.videos.at(-1)?._id || null,
+        finished_at: new Date(),
+      } },
+      { new: true },
+    );
+    if (completed) publish(completed);
   } catch (error) {
     await require("./videoOperationService").failConversionOperation(operation, error);
   } finally {
@@ -106,16 +134,18 @@ async function cleanup(directory) {
 }
 
 function cancelConversion(operationId) {
+  const cancellation = send_rabbit_msg({ correlationId: String(operationId) }, "video_conversion_cancel_queue");
   const directory = activeProcesses.get(String(operationId));
   const entry = pending.get(String(operationId));
   if (entry) {
     clearTimeout(entry.timeout);
     pending.delete(String(operationId));
   }
-  if (!directory) return false;
-  cleanup(directory).catch(() => {});
-  activeProcesses.delete(String(operationId));
-  return true;
+  if (directory) {
+    cleanup(directory).catch(() => {});
+    activeProcesses.delete(String(operationId));
+  }
+  return cancellation;
 }
 
 module.exports = { dispatchConversion, handleToolResponse, cancelConversion };

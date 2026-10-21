@@ -1,5 +1,7 @@
 # UC-VID-007 — Gerir Áudio do Vídeo (Remover, Substituir ou Extrair)
 
+> **Estado de implementação:** Especificado, mas não implementado nesta fase. Não iniciar a implementação de UC-VID-007 sem decisão explícita de âmbito.
+
 ---
 
 ## 0. Identificação

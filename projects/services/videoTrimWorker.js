@@ -108,11 +108,19 @@ async function runTrimOperation(operationId) {
       await delete_video(operation.user_id, operation.project_id, storedObjectKey);
       return;
     }
-    const updatedProject = await Project.appendVideoIfVersion(
+    const finalizing = await VideoOperation.findOneAndUpdate(
+      { _id: operationId, status: "processing", commit_locked: { $ne: true } },
+      { $set: { commit_locked: true } },
+      { new: true },
+    );
+    if (!finalizing) {
+      await delete_video(operation.user_id, operation.project_id, storedObjectKey);
+      return;
+    }
+    const updatedProject = await Project.appendVideo(
       operation.user_id,
       operation.project_id,
       reference,
-      project.version,
     );
     if (!updatedProject) {
       await delete_video(operation.user_id, operation.project_id, storedObjectKey);
@@ -120,7 +128,7 @@ async function runTrimOperation(operationId) {
     }
     const result = updatedProject.videos[updatedProject.videos.length - 1];
     const completed = await VideoOperation.findOneAndUpdate(
-      { _id: operationId, status: "processing" },
+      { _id: operationId, status: "processing", commit_locked: true },
       { $set: { status: "completed", progress: 100, finished_at: new Date(), result_video_id: result?._id || null } },
       { new: true },
     );

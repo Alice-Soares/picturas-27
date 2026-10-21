@@ -27,7 +27,7 @@ export function VideoConversionDialog(props: {
   const get = useGetProjectVideoConversion(uid, pid, token, ownerId, shareId);
   const cancel = useCancelProjectVideoConversion(uid, pid, token, ownerId, shareId);
   const operation = get.data;
-  const limit = options.data?.resolutionLimit;
+  const limit = options.data?.resolutionLimits;
 
   useEffect(() => {
     if (!open || operation?.status === "completed" || operation?.status === "failed" || operation?.status === "cancelled") return;

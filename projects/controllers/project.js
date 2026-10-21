@@ -89,9 +89,23 @@ module.exports.appendVideoIfVersion = async (user_id, project_id, video, expecte
     { new: true }
   ).exec();
 
+module.exports.appendVideo = async (user_id, project_id, video) =>
+  ProjectModel.findOneAndUpdate(
+    { user_id, _id: project_id },
+    { $push: { videos: video }, $inc: { version: 1 } },
+    { new: true },
+  ).exec();
+
 module.exports.appendImagesIfVersion = async (user_id, project_id, images, expectedVersion) =>
   ProjectModel.findOneAndUpdate(
     { user_id, _id: project_id, version: expectedVersion },
+    { $push: { imgs: { $each: images } }, $inc: { version: 1 } },
+    { new: true },
+  ).exec();
+
+module.exports.appendImages = async (user_id, project_id, images) =>
+  ProjectModel.findOneAndUpdate(
+    { user_id, _id: project_id },
     { $push: { imgs: { $each: images } }, $inc: { version: 1 } },
     { new: true },
   ).exec();

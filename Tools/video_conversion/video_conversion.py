@@ -2,6 +2,8 @@ import datetime
 import json
 import os
 import subprocess
+import threading
+import time
 import uuid
 
 import pika
@@ -9,6 +11,7 @@ import pytz
 
 
 QUEUE = "video_conversion_queue"
+CANCEL_QUEUE = "video_conversion_cancel_queue"
 RESPONSE_QUEUE = "project_queue"
 ROOT = os.path.realpath("/app/images")
 EXCHANGE = "picturas"
@@ -16,6 +19,8 @@ RABBIT_HOST = os.getenv("RABBITMQ_HOST", "rabbitmq")
 RABBIT_PORT = int(os.getenv("RABBITMQ_PORT", "5672"))
 RABBIT_USER = os.getenv("RABBITMQ_USERNAME", os.getenv("RABBITMQ_USER", "user"))
 RABBIT_PASSWORD = os.getenv("RABBITMQ_PASSWORD", os.getenv("RABBITMQ_PASS", "password"))
+active_processes = {}
+cancelled_operations = {}
 
 
 def utc_now():
@@ -53,6 +58,9 @@ def publish(channel, message):
 
 
 def convert(channel, payload):
+    correlation_id = payload["correlationId"]
+    if cancelled_operations.pop(correlation_id, None) is not None:
+        return
     parameters = payload["parameters"]
     input_path = parameters["inputVideoURI"]
     output_path = parameters["outputVideoURI"]
@@ -81,8 +89,10 @@ def convert(channel, payload):
 
     command = [
         "ffmpeg", "-y", "-i", input_path,
-        "-c:v", output_codec, "-vf",
-        f"scale={options['outputWidth']}:{options['outputHeight']}",
+        "-c:v", output_codec, "-pix_fmt", "yuv420p", "-vf",
+        (f"scale={options['outputWidth']}:{options['outputHeight']}:flags=lanczos,"
+         "pad=ceil(iw/2)*2:ceil(ih/2)*2"),
+        "-progress", "pipe:1", "-nostats", "-stats_period", "1",
     ]
     if output_audio:
         command.extend(["-c:a", output_audio])
@@ -90,29 +100,37 @@ def convert(channel, payload):
         command.append("-an")
     command.extend(["-movflags", "+faststart", output_path])
 
-    process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
-    stderr = []
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+    active_processes[correlation_id] = process
+    output_time = 0
     last_progress = 0
-    while True:
-        line = process.stderr.readline()
-        if not line:
-            break
-        stderr.append(line)
-        now = datetime.datetime.now().timestamp()
-        if now - last_progress >= 5:
-            last_progress = now
-            publish(channel, {
-                "messageId": f"video-conversion-progress-{uuid.uuid4()}",
-                "correlationId": payload["correlationId"],
-                "timestamp": utc_now(),
-                "procedure": "video_conversion",
-                "status": "processing",
-                "progress": 50,
-                "metadata": {"microservice": "picturas-video-conversion-tool"},
-            })
+    for line in process.stdout:
+        channel.connection.process_data_events(time_limit=0)
+        key, _, value = line.strip().partition("=")
+        if key == "out_time":
+            try:
+                hours, minutes, seconds = value.split(":")
+                output_time = int(hours) * 3600 + int(minutes) * 60 + float(seconds)
+            except (TypeError, ValueError):
+                continue
+            now = datetime.datetime.now().timestamp()
+            if now - last_progress >= 2:
+                last_progress = now
+                duration = max(float(options.get("duration") or 0), 0.001)
+                progress = min(99, max(1, int(output_time * 100 / duration)))
+                publish(channel, {
+                    "messageId": f"video-conversion-progress-{uuid.uuid4()}",
+                    "correlationId": payload["correlationId"],
+                    "timestamp": utc_now(),
+                    "procedure": "video_conversion",
+                    "status": "processing",
+                    "progress": progress,
+                    "metadata": {"microservice": "picturas-video-conversion-tool"},
+                })
     code = process.wait()
+    active_processes.pop(correlation_id, None)
     if code != 0:
-        raise RuntimeError(f"VIDEO_FFMPEG_FAILED:{''.join(stderr)[-500:]}")
+        raise RuntimeError("VIDEO_FFMPEG_FAILED")
 
     metadata = probe(output_path)
     publish(channel, {
@@ -151,14 +169,43 @@ def callback(channel, method, properties, body):
             "metadata": {"microservice": "picturas-video-conversion-tool"},
         })
     finally:
+        if "payload" in locals() and payload.get("correlationId"):
+            active_processes.pop(payload["correlationId"], None)
         try:
             if not completed and output_path and os.path.exists(output_path):
                 os.remove(output_path)
         except OSError:
             pass
+        channel.basic_ack(method.delivery_tag)
+
+
+def cancel_callback(channel, method, properties, body):
+    try:
+        correlation_id = json.loads(body.decode()).get("correlationId")
+        if correlation_id:
+            cancelled_operations[correlation_id] = time.time()
+            process = active_processes.get(correlation_id)
+            if process and process.poll() is None:
+                process.terminate()
+    finally:
+        channel.basic_ack(method.delivery_tag)
+
+
+def consume_cancellations():
+    credentials = pika.PlainCredentials(RABBIT_USER, RABBIT_PASSWORD)
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(RABBIT_HOST, RABBIT_PORT, "/", credentials)
+    )
+    channel = connection.channel()
+    channel.exchange_declare(exchange=EXCHANGE, exchange_type="direct", durable=True)
+    channel.queue_declare(queue=CANCEL_QUEUE, durable=True)
+    channel.queue_bind(queue=CANCEL_QUEUE, exchange=EXCHANGE, routing_key=CANCEL_QUEUE)
+    channel.basic_consume(queue=CANCEL_QUEUE, on_message_callback=cancel_callback, auto_ack=False)
+    channel.start_consuming()
 
 
 def main():
+    threading.Thread(target=consume_cancellations, daemon=True).start()
     credentials = pika.PlainCredentials(RABBIT_USER, RABBIT_PASSWORD)
     connection = pika.BlockingConnection(
         pika.ConnectionParameters(RABBIT_HOST, RABBIT_PORT, "/", credentials)
@@ -168,7 +215,8 @@ def main():
     channel.queue_declare(queue=QUEUE, durable=True)
     channel.queue_declare(queue=RESPONSE_QUEUE, durable=True)
     channel.queue_bind(queue=QUEUE, exchange=EXCHANGE, routing_key=QUEUE)
-    channel.basic_consume(queue=QUEUE, on_message_callback=callback, auto_ack=True)
+    channel.basic_qos(prefetch_count=1)
+    channel.basic_consume(queue=QUEUE, on_message_callback=callback, auto_ack=False)
     channel.start_consuming()
 
 

@@ -2,6 +2,8 @@
 
 == UC-VID-006 — Concatenar Múltiplos Vídeos (Merge)
 
+#block(fill: luma(94%), inset: 8pt)[*Estado nesta fase:* Especificado, mas não implementado. Fora do MVP entregue.]
+
 === Cabeçalho
 
 #tab([Caso de uso UC-VID-006 — Concatenar Múltiplos Vídeos (Merge)],

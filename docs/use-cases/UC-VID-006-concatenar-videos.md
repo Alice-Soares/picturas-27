@@ -1,5 +1,7 @@
 # UC-VID-006 — Concatenar Múltiplos Vídeos (Merge)
 
+> **Estado de implementação:** Especificado, mas não implementado nesta fase. Não iniciar a implementação de UC-VID-006 sem decisão explícita de âmbito.
+
 ---
 
 ## 0. Identificação

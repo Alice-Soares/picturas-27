@@ -85,9 +85,9 @@ confirmando ausência de operação e de alterações no projeto.
 
 ### Tests for User Story 2
 
-- [X] T025 [P] [US2] Criar testes de autorização para sessão ausente/inválida, projeto não autorizado e vídeo de outro projeto em [projects/routes/projects.js](../../projects/routes/projects.js), cobrindo `REQ-VID-COM-001` a `REQ-VID-COM-003`
+- [ ] T025 [P] [US2] Criar testes automatizados de autorização para sessão ausente/inválida, projeto não autorizado e vídeo de outro projeto. O caminho anteriormente indicado apontava para código de produção, não para um teste; falta um teste de rota que cubra estes cenários e `REQ-VID-COM-001` a `REQ-VID-COM-003`.
 - [X] T026 [P] [US2] Criar testes de intervalos inválidos em [projects/test/videoTrimValidation.test.js](../../projects/test/videoTrimValidation.test.js), cobrindo limites negativos, além da duração, início igual/posterior ao fim e segmentos sub-segundo
-- [X] T027 [P] [US2] Criar teste de quota esgotada e premium sem limite diário em [projects/services/videoOperationService.js](../../projects/services/videoOperationService.js), cobrindo `REQ-VID-COM-004` a `REQ-VID-COM-006`
+- [ ] T027 [P] [US2] Criar testes automatizados de quota esgotada e perfil premium sem limite diário. O caminho anteriormente indicado apontava para código de produção, não para um teste; falta evidência de teste para `REQ-VID-COM-004` a `REQ-VID-COM-006`.
 
 ### Implementation for User Story 2
 
@@ -128,11 +128,11 @@ falhas limpam recursos e todos os estados/progressos respeitam autorização.
 
 **Purpose**: Fechar rastreabilidade, regressão e validação end-to-end.
 
-- [X] T039 [P] Executar regressão do fluxo de imagens e atualizar a evidência em [specs/002-video-trim/quickstart.md](./quickstart.md)
+- [ ] T039 [P] Executar regressão do fluxo de imagens e atualizar a evidência em [specs/002-video-trim/quickstart.md](./quickstart.md)
 - [X] T040 [P] Atualizar a documentação do delta arquitetural, decisões e limitações em [specs/002-video-trim/plan.md](./plan.md), [specs/002-video-trim/research.md](./research.md) e [TODO.md](../../TODO.md)
-- [X] T041 Executar `git diff --check`, testes focados, `docker compose config` e build Docker/frontend conforme [specs/002-video-trim/quickstart.md](./quickstart.md)
-- [X] T042 Executar todos os cenários do quickstart no browser, registar `pass`/`fail`, perfis, `operationId`, intervalo, estado final e resultado em [specs/002-video-trim/quickstart.md](./quickstart.md)
-- [X] T043 Confirmar a matriz de rastreabilidade `UC-VID-002 -> REQ-VID-TRIM-* -> componentes -> testes -> resultados` e só então fechar o `UC-VID-002` em [specs/002-video-trim/tasks.md](./tasks.md)
+- [ ] T041 Executar `git diff --check`, testes focados, `docker compose config` e build Docker/frontend conforme [specs/002-video-trim/quickstart.md](./quickstart.md)
+- [ ] T042 Executar todos os cenários do quickstart no browser, registar `pass`/`fail`, perfis, `operationId`, intervalo, estado final e resultado em [specs/002-video-trim/quickstart.md](./quickstart.md)
+- [ ] T043 Confirmar a matriz de rastreabilidade `UC-VID-002 -> REQ-VID-TRIM-* -> componentes -> testes -> resultados` após a execução dos cenários end-to-end.
 
 ## Dependencies & Execution Order
 

@@ -10,7 +10,6 @@ const { publicFrameToolError } = require("./videoFrameToolErrors");
 const { validateExtraction } = require("./videoFrameExtractionValidation");
 const { publicFrameExtractionError } = require("./videoFrameExtractionErrors");
 const { publicConversionError } = require("./videoConversionErrors");
-const { assertTransition } = require("./videoOperationState");
 const { operationEvent } = require("../utils/videoOperationMsg");
 const { send_msg_project_op } = require("../utils/project_msg");
 const { send_rabbit_msg } = require("../utils/rabbit_mq");
@@ -26,6 +25,11 @@ const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
 async function reserveQuota(userId, profile, quotaErrorCode = "VIDEO_TRIM_QUOTA_EXCEEDED") {
   if (profile === "premium") return false;
+  if (profile === "anonymous") {
+    const error = new Error("VIDEO_ANONYMOUS_NOT_ALLOWED");
+    error.status = 403;
+    throw error;
+  }
   try {
     await axios.get(`${usersUrl}/${userId}/process/1`, { httpsAgent });
     return true;
@@ -47,11 +51,44 @@ function publish(operation, overrides = {}) {
   });
 }
 
+async function enqueueOperation(operation, queue) {
+  if (await send_rabbit_msg({ operationId: String(operation._id) }, queue)) return;
+  const failed = await VideoOperation.findOneAndUpdate(
+    { _id: operation._id, status: "queued" },
+    { $set: {
+      status: "failed",
+      error_code: "VIDEO_OPERATION_QUEUE_UNAVAILABLE",
+      error_message: "The processing service is unavailable. Please try again.",
+      finished_at: new Date(),
+    } },
+    { new: true },
+  );
+  if (failed) {
+    await refundQuota(failed);
+    publish(failed);
+  }
+  const error = new Error("VIDEO_OPERATION_QUEUE_UNAVAILABLE");
+  error.status = 503;
+  throw error;
+}
+
 async function refundQuota(operation) {
-  if (!operation.quota_reserved || operation.quota_refunded) return;
-  await axios.post(`${usersUrl}/${operation.user_id}/process/refund/1`, null, { httpsAgent });
-  operation.quota_refunded = true;
-  await operation.save();
+  if (!operation.quota_reserved) return;
+  const claimed = await VideoOperation.findOneAndUpdate(
+    { _id: operation._id, quota_reserved: true, quota_refunded: false },
+    { $set: { quota_refunded: true } },
+    { new: true },
+  );
+  if (!claimed) return;
+  try {
+    await axios.post(`${usersUrl}/${claimed.user_id}/process/refund/1`, null, { httpsAgent });
+  } catch (error) {
+    await VideoOperation.updateOne(
+      { _id: claimed._id, quota_refunded: true },
+      { $set: { quota_refunded: false } },
+    );
+    throw error;
+  }
 }
 
 async function createTrimOperation({ userId, projectId, videoId, startSeconds, endSeconds, profile }) {
@@ -83,7 +120,7 @@ async function createTrimOperation({ userId, projectId, videoId, startSeconds, e
     quota_reserved: quotaReserved,
   });
   publish(operation);
-  send_rabbit_msg({ operationId: String(operation._id) }, "video_trim");
+  await enqueueOperation(operation, "video_trim");
   return operation;
 }
 
@@ -104,35 +141,42 @@ async function getOperation(userId, projectId, operationId) {
 async function cancelTrimOperation(userId, projectId, operationId) {
   const operation = await getOperation(userId, projectId, operationId);
   if (["completed", "failed", "cancelled"].includes(operation.status)) return operation;
-  assertTransition(operation.status, "cancelled");
-  operation.status = "cancelled";
-  operation.cancelled_at = new Date();
-  operation.finished_at = operation.cancelled_at;
-  await operation.save();
+  const cancelledAt = new Date();
+  const cancelled = await VideoOperation.findOneAndUpdate(
+    { _id: operation._id, status: { $in: ["queued", "processing"] }, commit_locked: { $ne: true } },
+    { $set: { status: "cancelled", cancelled_at: cancelledAt, finished_at: cancelledAt } },
+    { new: true },
+  );
+  if (!cancelled) return getOperation(userId, projectId, operationId);
   try {
     require("./videoTrimWorker").cancelTrimProcess(String(operation._id));
   } catch (error) {
     console.error("Failed to stop video trim process:", error.message);
   }
-  await refundQuota(operation);
-  publish(operation);
-  return operation;
+  await refundQuota(cancelled);
+  publish(cancelled);
+  return cancelled;
 }
 
 async function failOperation(operation, error) {
-  const current = await VideoOperation.findById(operation._id);
-  if (!current || ["completed", "cancelled", "failed"].includes(current.status)) return current;
-  current.status = "failed";
-  current.error_code = publicTrimError(error).code;
-  current.error_message = publicTrimError(error).message;
-  current.finished_at = new Date();
-  await current.save();
+  const publicError = publicTrimError(error);
+  const current = await VideoOperation.findOneAndUpdate(
+    { _id: operation._id, status: { $in: ["queued", "processing"] } },
+    { $set: { status: "failed", error_code: publicError.code, error_message: publicError.message, finished_at: new Date() } },
+    { new: true },
+  );
+  if (!current) return VideoOperation.findById(operation._id);
   await refundQuota(current);
   publish(current);
   return current;
 }
 
 async function getVideoConversionOptions({ userId, projectId, videoId, profile }) {
+  if (profile === "anonymous") {
+    const error = new Error("VIDEO_ANONYMOUS_NOT_ALLOWED");
+    error.status = 403;
+    throw error;
+  }
   const project = await Project.getOne(userId, projectId);
   if (!project) {
     const error = new Error("VIDEO_CONVERSION_UNAUTHORIZED");
@@ -191,14 +235,13 @@ async function createVideoConversionOperation({
 }
 
 async function failConversionOperation(operation, error) {
-  const current = await VideoOperation.findById(operation._id);
-  if (!current || ["completed", "cancelled", "failed"].includes(current.status)) return current;
   const publicError = publicConversionError(error);
-  current.status = "failed";
-  current.error_code = publicError.code;
-  current.error_message = publicError.message;
-  current.finished_at = new Date();
-  await current.save();
+  const current = await VideoOperation.findOneAndUpdate(
+    { _id: operation._id, status: { $in: ["queued", "processing"] } },
+    { $set: { status: "failed", error_code: publicError.code, error_message: publicError.message, finished_at: new Date() } },
+    { new: true },
+  );
+  if (!current) return VideoOperation.findById(operation._id);
   await refundQuota(current);
   publish(current);
   return current;
@@ -210,15 +253,17 @@ async function cancelVideoConversionOperation(userId, projectId, operationId) {
       ["completed", "failed", "cancelled"].includes(operation.status)) {
     return operation;
   }
-  assertTransition(operation.status, "cancelled");
-  operation.status = "cancelled";
-  operation.cancelled_at = new Date();
-  operation.finished_at = operation.cancelled_at;
-  await operation.save();
-  cancelConversion(operationId);
-  await refundQuota(operation);
-  publish(operation);
-  return operation;
+  const cancelledAt = new Date();
+  const cancelled = await VideoOperation.findOneAndUpdate(
+    { _id: operation._id, status: { $in: ["queued", "processing"] }, commit_locked: { $ne: true } },
+    { $set: { status: "cancelled", cancelled_at: cancelledAt, finished_at: cancelledAt } },
+    { new: true },
+  );
+  if (!cancelled) return getOperation(userId, projectId, operationId);
+  await cancelConversion(operationId);
+  await refundQuota(cancelled);
+  publish(cancelled);
+  return cancelled;
 }
 
 async function createFrameToolOperation({ userId, projectId, videoId, tools, startSeconds, endSeconds, outputFps, profile }) {
@@ -256,7 +301,7 @@ async function createFrameToolOperation({ userId, projectId, videoId, tools, sta
     quota_reserved: quotaReserved,
   });
   publish(operation);
-  send_rabbit_msg({ operationId: String(operation._id) }, "video_frame_tool");
+  await enqueueOperation(operation, "video_frame_tool");
   return operation;
 }
 
@@ -264,30 +309,31 @@ async function cancelFrameToolOperation(userId, projectId, operationId) {
   const operation = await getOperation(userId, projectId, operationId);
   if (operation.type !== "frame_tool") return operation;
   if (["completed", "failed", "cancelled"].includes(operation.status)) return operation;
-  assertTransition(operation.status, "cancelled");
-  operation.status = "cancelled";
-  operation.cancelled_at = new Date();
-  operation.finished_at = operation.cancelled_at;
-  await operation.save();
+  const cancelledAt = new Date();
+  const cancelled = await VideoOperation.findOneAndUpdate(
+    { _id: operation._id, status: { $in: ["queued", "processing"] } },
+    { $set: { status: "cancelled", cancelled_at: cancelledAt, finished_at: cancelledAt } },
+    { new: true },
+  );
+  if (!cancelled) return getOperation(userId, projectId, operationId);
   try {
     require("./videoFrameToolWorker").cancelFrameToolProcess(String(operation._id));
   } catch (error) {
     console.error("Failed to stop video frame tool process:", error.message);
   }
-  await refundQuota(operation);
-  publish(operation);
-  return operation;
+  await refundQuota(cancelled);
+  publish(cancelled);
+  return cancelled;
 }
 
 async function failFrameToolOperation(operation, error) {
-  const current = await VideoOperation.findById(operation._id);
-  if (!current || ["completed", "cancelled", "failed"].includes(current.status)) return current;
   const publicError = publicFrameToolError(error);
-  current.status = "failed";
-  current.error_code = publicError.code;
-  current.error_message = publicError.message;
-  current.finished_at = new Date();
-  await current.save();
+  const current = await VideoOperation.findOneAndUpdate(
+    { _id: operation._id, status: { $in: ["queued", "processing"] } },
+    { $set: { status: "failed", error_code: publicError.code, error_message: publicError.message, finished_at: new Date() } },
+    { new: true },
+  );
+  if (!current) return VideoOperation.findById(operation._id);
   await refundQuota(current);
   publish(current);
   return current;
@@ -347,7 +393,7 @@ async function createFrameExtractionOperation({
     quota_reserved: quotaReserved,
   });
   publish(operation);
-  send_rabbit_msg({ operationId: String(operation._id) }, "video_frame_extract");
+  await enqueueOperation(operation, "video_frame_extract");
   return operation;
 }
 
@@ -355,30 +401,31 @@ async function cancelFrameExtractionOperation(userId, projectId, operationId) {
   const operation = await getOperation(userId, projectId, operationId);
   if (operation.type !== "frame_extract") return operation;
   if (["completed", "failed", "cancelled"].includes(operation.status)) return operation;
-  assertTransition(operation.status, "cancelled");
-  operation.status = "cancelled";
-  operation.cancelled_at = new Date();
-  operation.finished_at = operation.cancelled_at;
-  await operation.save();
+  const cancelledAt = new Date();
+  const cancelled = await VideoOperation.findOneAndUpdate(
+    { _id: operation._id, status: { $in: ["queued", "processing"] }, commit_locked: { $ne: true } },
+    { $set: { status: "cancelled", cancelled_at: cancelledAt, finished_at: cancelledAt } },
+    { new: true },
+  );
+  if (!cancelled) return getOperation(userId, projectId, operationId);
   try {
     require("./videoFrameExtractionWorker").cancelFrameExtractionProcess(String(operation._id));
   } catch (error) {
     console.error("Failed to stop frame extraction process:", error.message);
   }
-  await refundQuota(operation);
-  publish(operation);
-  return operation;
+  await refundQuota(cancelled);
+  publish(cancelled);
+  return cancelled;
 }
 
 async function failFrameExtractionOperation(operation, error) {
-  const current = await VideoOperation.findById(operation._id);
-  if (!current || ["completed", "cancelled", "failed"].includes(current.status)) return current;
   const publicError = publicFrameExtractionError(error);
-  current.status = "failed";
-  current.error_code = publicError.code;
-  current.error_message = publicError.message;
-  current.finished_at = new Date();
-  await current.save();
+  const current = await VideoOperation.findOneAndUpdate(
+    { _id: operation._id, status: { $in: ["queued", "processing"] } },
+    { $set: { status: "failed", error_code: publicError.code, error_message: publicError.message, finished_at: new Date() } },
+    { new: true },
+  );
+  if (!current) return VideoOperation.findById(operation._id);
   await refundQuota(current);
   publish(current);
   return current;

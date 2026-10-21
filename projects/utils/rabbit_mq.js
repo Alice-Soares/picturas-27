@@ -9,24 +9,51 @@ const exchange = "picturas";
 const rabbit_mq_sv = `amqp://${rabbit_username}:${rabbit_password}@${rabbit_host}:${rabbit_port}`;
 
 function send_rabbit_msg(msg, queue) {
-    amqp.connect(rabbit_mq_sv, (err_sv, connection) => {
-        if (err_sv) throw err_sv;
-        
-        connection.createChannel( (err_conn, channel) => {
-            if (err_conn) throw err_conn;
-            
-            channel.assertExchange(exchange, 'direct', {
-                durable: true
+    return new Promise((resolve) => {
+        amqp.connect(rabbit_mq_sv, (connectError, connection) => {
+            if (connectError) {
+                console.error("RabbitMQ publish connection failed:", connectError.message);
+                return resolve(false);
+            }
+            connection.on("error", (error) => {
+                console.error("RabbitMQ publish connection error:", error.message);
+                resolve(false);
             });
-
-            channel.publish(exchange, queue, Buffer.from(JSON.stringify(msg)));
+            connection.createConfirmChannel((channelError, channel) => {
+                if (channelError) {
+                    console.error("RabbitMQ publish channel failed:", channelError.message);
+                    connection.close();
+                    return resolve(false);
+                }
+                channel.on("error", (error) => {
+                    console.error("RabbitMQ publish channel error:", error.message);
+                    resolve(false);
+                });
+                channel.assertExchange(exchange, "direct", { durable: true }, (exchangeError) => {
+                    if (exchangeError) {
+                        console.error("RabbitMQ exchange assertion failed:", exchangeError.message);
+                        channel.close();
+                        connection.close();
+                        return resolve(false);
+                    }
+                    try {
+                        channel.publish(exchange, queue, Buffer.from(JSON.stringify(msg)), { persistent: true });
+                        channel.waitForConfirms((publishError) => {
+                            if (publishError) console.error("RabbitMQ publish failed:", publishError.message);
+                            channel.close();
+                            connection.close();
+                            resolve(!publishError);
+                        });
+                    } catch (publishError) {
+                        console.error("RabbitMQ publish failed:", publishError.message);
+                        channel.close();
+                        connection.close();
+                        resolve(false);
+                    }
+                });
+            });
         });
-        
-        setTimeout(() => {
-            connection.close();
-        }, 500);
     });
-    
 }
 
 function read_rabbit_msg(queue, callback) {

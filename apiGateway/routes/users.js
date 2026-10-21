@@ -68,13 +68,6 @@ router.post("/", function (req, res, next) {
     .post(usersURL, req.body, { httpsAgent })
     .then((resp) => res.status(201).jsonp(resp.data))
     .catch((err) => {
-      console.error("GATEWAY REGISTER ERROR FULL OBJECT:");
-      console.error(err);                // <-- log total
-      console.error("GATEWAY REGISTER ERROR RESPONSE:");
-      console.error(err.response?.data); // <-- resposta do users-ms
-      console.error("GATEWAY REGISTER ERROR STATUS:");
-      console.error(err.response?.status);
-
       if (err.response) {
         // devolve o status e body reais do microserviço de users
         return res.status(err.response.status).jsonp(err.response.data);
@@ -104,8 +97,11 @@ router.post("/:email/login", function (req, res, next) {
  * @returns Empty
  */
 router.put("/:user", auth.checkToken, function (req, res, next) {
+  // Account plans are changed by the subscription service, never by a
+  // profile update coming from the public API.
+  const { type, ...profile } = req.body || {};
   axios
-    .put(usersURL + `${req.params.user}`, req.body, { httpsAgent: httpsAgent })
+    .put(usersURL + `${req.params.user}`, profile, { httpsAgent: httpsAgent })
     .then((_) => res.sendStatus(204))
     .catch((err) => res.status(500).jsonp("Error updating user's information"));
 });

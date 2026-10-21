@@ -1,17 +1,18 @@
 const jwt = require("jsonwebtoken");
 
 function getCallerId(req) {
-  const forwarded = req.headers["x-caller-id"];
-  if (forwarded) return String(forwarded);
-
   const auth = req.headers["authorization"];
   if (auth && auth.startsWith("Bearer ")) {
     const token = auth.slice("Bearer ".length);
-    const payload = jwt.decode(token);
+    let payload;
+    try {
+      payload = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    } catch (_) {
+      return null;
+    }
     if (payload?.id) return String(payload.id);
   }
-
-return null;
+  return null;
 }
 
 module.exports = { getCallerId };

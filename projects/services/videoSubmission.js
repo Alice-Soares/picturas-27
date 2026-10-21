@@ -1,7 +1,6 @@
 const FormData = require("form-data");
 const fs = require("fs");
 const path = require("path");
-const crypto = require("crypto");
 const { readVideoMetadata } = require("./videoMetadata");
 const { validateVideo } = require("./videoValidation");
 const { cleanupVideoFile } = require("./videoCleanup");
@@ -9,11 +8,17 @@ const { toPublicVideoError } = require("./videoErrors");
 const Project = require("../controllers/project");
 const { post_video } = require("../utils/videoStorage");
 
-function getProfile(req) {
-  return req.headers["x-user-profile"] === "premium" ? "premium" : "registered";
+function toSubmissionResponse(projectId, updatedProject) {
+  const storedReference = updatedProject.videos.at(-1);
+  return {
+    id: String(storedReference._id),
+    projectId: String(projectId),
+    metadata: storedReference,
+    version: updatedProject.version,
+  };
 }
 
-async function submitVideo({ req, project, expectedVersion }) {
+async function submitVideo({ req, project, expectedVersion, profile = "registered" }) {
   const file = req.file;
   let storedObjectKey;
   try {
@@ -24,7 +29,7 @@ async function submitVideo({ req, project, expectedVersion }) {
       error.status = 409;
       throw error;
     }
-    const metadata = validateVideo(await readVideoMetadata(file), getProfile(req));
+    const metadata = validateVideo(await readVideoMetadata(file), profile === "premium" ? "premium" : "registered");
     const form = new FormData();
     form.append("video", fs.createReadStream(file.path), {
       filename: file.originalname,
@@ -59,7 +64,7 @@ async function submitVideo({ req, project, expectedVersion }) {
       error.status = 409;
       throw error;
     }
-    return { id: String(reference._id || crypto.randomUUID()), projectId: String(project._id), metadata: reference, version: updatedProject.version };
+    return toSubmissionResponse(project._id, updatedProject);
   } catch (error) {
     if (storedObjectKey) {
       try {
@@ -79,4 +84,4 @@ async function submitVideo({ req, project, expectedVersion }) {
   }
 }
 
-module.exports = { submitVideo };
+module.exports = { submitVideo, toSubmissionResponse };

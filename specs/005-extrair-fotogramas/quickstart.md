@@ -34,10 +34,14 @@ resulting image keys and pass/fail evidence for each scenario.
 
 ## Current validation evidence
 
-- Backend syntax checks: passed.
-- Projects test runner: 24 tests passed.
-- Frontend `npm run lint`: passed with existing hook/image warnings and one
-  analogous warning in the new polling dialog.
-- Frontend `npm run build`: passed; font download retries occurred because the
-  build environment could not reach Google Fonts.
-- Docker end-to-end execution: not run in this implementation pass.
+- `docker compose config -q`: passed on 2026-10-21.
+- `docker compose run --rm --no-deps projects node test/run-tests.js`: 36 tests
+  passed, including the extraction validation tests.
+- `npx tsc --noEmit`: passed; Docker frontend production build passed with
+  existing hook/image lint warnings.
+- Docker smoke scenario for the baseline image tool list: add, delete, then
+  fetch the project and confirm the tool is absent. Temporary account/project
+  were deleted after the scenario.
+- The video extraction end-to-end scenarios below were not run. UC-VID-005
+  acceptance remains pending; this smoke scenario is not evidence for frame
+  extraction, quota, cancellation, storage cleanup or project destination.

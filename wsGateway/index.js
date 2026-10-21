@@ -1,4 +1,5 @@
 const http = require("http");
+const https = require("https");
 const socketIo = require('socket.io');
 const jwt = require("jsonwebtoken");
 
@@ -15,34 +16,58 @@ const io = socketIo(httpServer, {
     // options
 });
 
+io.use((socket, next) => {
+    const token = socket.handshake.auth?.token;
+    if (!token) return next(new Error("Authentication required"));
+    jwt.verify(token, process.env.JWT_SECRET_KEY, (error, payload) => {
+        if (error || !payload?.id) return next(new Error("Invalid token"));
+        socket.data.userId = String(payload.id);
+        socket.data.token = token;
+        next();
+    });
+});
+
+function authorizeProjectRoom(socket, project) {
+    return new Promise((resolve, reject) => {
+        const ownerId = encodeURIComponent(project?.ownerId || "");
+        const projectId = encodeURIComponent(project?.projectId || "");
+        if (!ownerId || !projectId) return reject(new Error("Invalid project"));
+        const share = project.shareId ? `?share=${encodeURIComponent(project.shareId)}` : "";
+        const request = https.request({
+            hostname: "projects",
+            port: 9001,
+            path: `/projects/${ownerId}/${projectId}/ws-access${share}`,
+            method: "GET",
+            rejectUnauthorized: false,
+            headers: { Authorization: `Bearer ${socket.data.token}` },
+        }, (response) => {
+            response.resume();
+            if (response.statusCode === 204) resolve();
+            else reject(new Error("Project access denied"));
+        });
+        request.setTimeout(5000, () => request.destroy(new Error("Project authorization timed out")));
+        request.on("error", reject);
+        request.end();
+    });
+}
+
 io.on("connection", (socket) => {
     console.log("a user connected");
+    socket.join(socket.data.userId);
 
-    const token = socket.handshake.auth.token;
-    if (token != null) {
-        jwt.verify(token, process.env.JWT_SECRET_KEY, (e, payload) => {
-            if (e) {
-                socket.emit('authError', e);
-                return;
-            }
-
-            console.log("Connecting to room:", payload.id)
-            socket.join(payload.id);
-        });
-    }
-
-    socket.on("join-project", (projectId) => {
-        if (typeof projectId === "string" && projectId.length > 0) {
-            socket.join(`project:${projectId}`);
+    socket.on("join-project", async (project) => {
+        try {
+            await authorizeProjectRoom(socket, project);
+            socket.join(`project:${project.projectId}`);
+        } catch (error) {
+            socket.emit("project-join-error", { projectId: project?.projectId, message: error.message });
         }
-        });
+    });
 
-
-    socket.on("leave-project", (projectId) => {
-        if (typeof projectId === "string" && projectId.length > 0) {
-            socket.leave(`project:${projectId}`);
-        }
-        });
+    socket.on("leave-project", (project) => {
+        const projectId = typeof project === "string" ? project : project?.projectId;
+        if (typeof projectId === "string" && projectId.length > 0) socket.leave(`project:${projectId}`);
+    });
         
     socket.on("disconnect", () => {
         console.log("A user disconnected");

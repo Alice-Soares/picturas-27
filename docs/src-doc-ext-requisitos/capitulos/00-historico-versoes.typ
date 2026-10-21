@@ -2,15 +2,10 @@
 
 #heading(numbering: none, outlined: false)[Histórico de versões]
 
-#orientacao[
-  Secção opcional. Registem as versões relevantes do documento (e.g., primeira versão de um caso de uso, primeira versão da
-  especificação de requisitos, …, versão entregue).
-]
-
 #tabela(
   colunas: (1.5cm, 2.3cm, 1fr, 3.5cm),
   [Versão], [Data], [Alterações], [Autores],
-  [v1.0], [2026-09-30], [#preencher[e.g., Caso de uso UC-VID-001]], [#preencher[iniciais]],
-  [v1.1], [2026-10-07], [#preencher[e.g., Especificação de requisitos de UC-VID-001]], [#preencher[…]],
-  [v2.0], [2026-10-23], [#preencher[Versão entregue da Fase 1]], [#preencher[…]],
+  [v1.0], [2026-10-14], [Especificações iniciais dos casos de uso de vídeo.], [Grupo 5 — PL3],
+  [v1.1], [2026-10-17], [Consolidação dos requisitos de vídeo em RAS-requisitos-video.md.], [Grupo 5 — PL3],
+  [v1.2], [2026-10-21], [Correções de implementação, evidência Docker e atualização dos estados do relatório. Validação E2E de vídeo permanece pendente.], [Grupo 5 — PL3],
 )

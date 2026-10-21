@@ -58,25 +58,33 @@ Registar cada cenário como `pass`/`fail`, com perfil, ficheiro e motivo da
 rejeição. Comparar o resultado com o [contrato](contracts/video-submission.md)
 e o [modelo](data-model.md).
 
-## Validação automatizada realizada
+## Validação automatizada
 
-- Testes focados de limites, codecs, autorização, limpeza, contrato e falhas:
-  `pass`.
-- Type-check do frontend (`cd frontend && npx tsc --noEmit`): `pass`.
-- Sintaxe dos serviços JavaScript e `git diff --check`: `pass`.
-- `docker compose config`: `pass`.
-- Build Next.js: pendente no host local porque o Node disponível é 16.14.0 e
-  o Next.js da baseline exige Node.js 18.18 ou superior; deve ser executado no
-  ambiente Docker ou num host com a versão suportada.
+Os resultados só devem ser preenchidos depois de executar cada comando neste
+estado do código. Alguns testes anteriores eram helpers isolados ou dados
+literais e não demonstravam os fluxos de integração descritos.
+
+```bash
+docker compose run --rm projects node test/run-tests.js
+docker compose up -d --build projects users api_gateway ws_gateway frontend
+```
+
+Estado desta revisão (2026-10-21): `docker compose config -q` passou, a suíte
+`docker compose run --rm --no-deps projects node test/run-tests.js` passou com
+36 testes e o build do frontend terminou. Foi também executado um cenário
+isolado de regressão do fluxo de imagem (criar conta/projeto temporários,
+adicionar uma ferramenta, removê-la e confirmar a ausência após nova leitura),
+com limpeza dos dados temporários. Estes resultados não validam a submissão de
+vídeo; os cenários end-to-end de `UC-VID-001` continuam pendentes.
 
 ### Matriz de aceitação focada
 
 | Requisitos | Evidência | Resultado |
 |---|---|---|
-| `REQ-VID-SUB-001` a `REQ-VID-SUB-004` | `videoAuthorization.integration.test.js` | pass |
-| `REQ-VID-SUB-005` a `REQ-VID-SUB-015` | `videoValidation.integration.test.js`, `videoMetadata.test.js` | pass |
-| `REQ-VID-SUB-016` a `REQ-VID-SUB-023` | `videoLimits.test.js`, `videoValidation.integration.test.js` | pass |
-| `REQ-VID-SUB-024` a `REQ-VID-SUB-029` | `videoCleanup.test.js`, `videoSubmission.contract.test.js` | pass |
-| `REQ-VID-SUB-030` e `REQ-VID-SUB-031` | `videoFailure.integration.test.js` e fluxo de duplicados do cliente | pass |
-| `REQ-VID-SUB-032` e `REQ-VID-SUB-033` | `videoLimits.test.js` e inspeção do parsing em disco | pass |
-| Validação end-to-end com Docker | Upload válido HTTP 201; ficheiro inválido HTTP 400; duplicado HTTP 409; upload de imagem concluído; cancelamento do browser abortado, mas a submissão grande terminou HTTP 201 no backend | pendente — resolver a corrida do cancelamento servidor |
+| `REQ-VID-SUB-001` a `REQ-VID-SUB-004` | Testes de autorização HTTP ponta a ponta | pendente |
+| `REQ-VID-SUB-005` a `REQ-VID-SUB-015` | Validação, metadados e fluxo Docker | pendente |
+| `REQ-VID-SUB-016` a `REQ-VID-SUB-023` | Limites, validação e fluxo Docker | pendente |
+| `REQ-VID-SUB-024` a `REQ-VID-SUB-029` | Limpeza e submissão HTTP com armazenamento | pendente |
+| `REQ-VID-SUB-030` e `REQ-VID-SUB-031` | Testes de integração de falhas, duplicados e lotes | pendente |
+| `REQ-VID-SUB-032` e `REQ-VID-SUB-033` | Inspeção dos limites de parsing em disco e fluxo Docker | pendente |
+| Validação end-to-end com Docker | Cenários de upload, rejeição, duplicados, lote, cancelamento e autorização listados acima | pendente — não executados nesta revisão |

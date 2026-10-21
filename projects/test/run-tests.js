@@ -35,6 +35,8 @@ for (const file of [
   "videoFrameExtractionValidation.test.js",
   "videoConversionValidation.test.js",
   "videoConversion.contract.test.js",
+  "videoErrorMapping.test.js",
+  "videoProjectAuthorization.test.js",
 ]) require(`./${file}`);
 
 async function run() {

@@ -2,6 +2,8 @@
 
 == UC-VID-007 — Gerir Áudio do Vídeo (Remover, Substituir ou Extrair)
 
+#block(fill: luma(94%), inset: 8pt)[*Estado nesta fase:* Especificado, mas não implementado. Fora do MVP entregue.]
+
 === Cabeçalho
 
 #tab([Caso de uso UC-VID-007 — Gerir Áudio do Vídeo],

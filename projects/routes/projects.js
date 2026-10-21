@@ -61,6 +61,7 @@ const {
   copy_image,
 } = require("../utils/imageStorage");
 const { delete_video } = require("../utils/videoStorage");
+const { canAccessProjectRoom } = require("../services/videoProjectAuthorization");
 
 const {
   checkSharePermission,
@@ -135,9 +136,7 @@ function requireAuth(req, res, next) {
 }
 
 async function trimProfile(req) {
-  if (req.headers["x-user-profile"] === "premium") return "premium";
-  const profile = await getUserType(getCallerId(req));
-  return profile === "premium" ? "premium" : "registered";
+  return getUserType(getCallerId(req));
 }
 
 /**
@@ -188,6 +187,16 @@ function toolsEqual(a, b) {
   return true;
 }
 
+
+router.get("/:user/:project/ws-access", requireAuth, checkSharePermission, async (req, res) => {
+  const caller = getCallerId(req);
+  if (!canAccessProjectRoom({ callerId: caller, ownerId: req.params.user, sharedPermission: req.sharedPermission })) {
+    return res.sendStatus(403);
+  }
+  const project = req.sharedProject || await Project.getOne(req.params.user, req.params.project);
+  if (!project) return res.sendStatus(404);
+  return res.sendStatus(204);
+});
 
 router.post("/:user/:project/video/:videoId/trim", requireAuth, async (req, res) => {
   const callerId = getCallerId(req);
@@ -437,7 +446,7 @@ function process_msg() {
             timestamp,
             runnerId,   
             msg_content.error.code,
-            msg_content.error.msg
+            msg_content.error.message || msg_content.error.msg
           );
         }
         return;
@@ -1537,11 +1546,16 @@ router.post(
   async (req, res) => {
     if (!req.file) return res.status(400).json({ error: "VIDEO_FILE_REQUIRED" });
     try {
+      const profile = await getUserType(getCallerId(req));
+      if (profile === "anonymous") {
+        return res.status(403).json({ error: "VIDEO_ANONYMOUS_NOT_ALLOWED" });
+      }
       const { submitVideo } = require("../services/videoSubmission");
       const result = await submitVideo({
         req,
         project: req.projectDoc,
         expectedVersion: req.expectedVersion,
+        profile,
       });
       res.set("X-Project-Version", String(result.version));
       return res.status(201).json(result);

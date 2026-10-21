@@ -14,6 +14,7 @@ function conversionRequest({ operation, inputVideoURI, outputVideoURI }) {
       outputAudioCodec: operation.output.outputAudioCodec,
       outputWidth: operation.output.outputWidth,
       outputHeight: operation.output.outputHeight,
+      duration: operation.end_seconds,
     },
   };
 }

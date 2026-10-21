@@ -71,6 +71,7 @@ describe("video conversion contract", () => {
     const message = conversionRequest({
       operation: {
         _id: "operation-1",
+        end_seconds: 12.5,
         output: {
           outputContainer: "mp4", outputVideoCodec: "h264", outputAudioCodec: "aac",
           outputWidth: 1280, outputHeight: 720,
@@ -85,7 +86,7 @@ describe("video conversion contract", () => {
     assert.deepStrictEqual(message.parameters, {
       inputVideoURI: "/app/images/input.mp4", outputVideoURI: "/app/images/output.mp4",
       outputContainer: "mp4", outputVideoCodec: "h264", outputAudioCodec: "aac",
-      outputWidth: 1280, outputHeight: 720,
+      outputWidth: 1280, outputHeight: 720, duration: 12.5,
     });
   });
 

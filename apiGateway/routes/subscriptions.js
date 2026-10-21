@@ -5,6 +5,7 @@ const axios = require("axios");
 
 const https = require("https");
 const fs = require("fs");
+const auth = require("../auth/auth");
 
 const key = fs.readFileSync(__dirname + "/../certs/selfsigned.key");
 const cert = fs.readFileSync(__dirname + "/../certs/selfsigned.crt");
@@ -17,6 +18,14 @@ const httpsAgent = new https.Agent({
 
 const subscriptionsURL = "https://subscriptions:11001/";
 const usersURL = "https://users:10001/";
+
+function requireSubscriptionOwner(req, res, next) {
+  const ownerId = req.params.user || req.body?.subscription?.user_id;
+  if (!ownerId || String(ownerId) !== String(req.authUserId)) {
+    return res.status(403).json({ error: "SUBSCRIPTION_ACCESS_DENIED" });
+  }
+  return next();
+}
 
 /*
 Subscription structure
@@ -52,7 +61,7 @@ function removeUncessaryInformationCard(card) {
  * Get subscription
  * @returns Subscription structure
  */
-router.get("/:user", function (req, res, next) {
+router.get("/:user", auth.checkToken, requireSubscriptionOwner, function (req, res, next) {
     axios
         .get(subscriptionsURL + req.params.user, {
             httpsAgent: httpsAgent,
@@ -65,7 +74,7 @@ router.get("/:user", function (req, res, next) {
  * Get subscription status
  * @returns { "status": String }
  */
-router.get("/:user/status", function (req, res, next) {
+router.get("/:user/status", auth.checkToken, requireSubscriptionOwner, function (req, res, next) {
     axios
         .get(subscriptionsURL + req.params.user + "/status", {
             httpsAgent: httpsAgent,
@@ -81,7 +90,7 @@ router.get("/:user/status", function (req, res, next) {
  * Only use this route if subsbcription is active, if not, it will return null
  */
 
-router.get("/:user/card", function (req, res, next) {
+router.get("/:user/card", auth.checkToken, requireSubscriptionOwner, function (req, res, next) {
     axios
         .get(subscriptionsURL + req.params.user + "/card", {
             httpsAgent: httpsAgent,
@@ -113,7 +122,7 @@ router.get("/:user/card", function (req, res, next) {
  * O frontend precisa de atualizar o type do user para premium se sucesso
 **/
 
-router.post("/", async function (req, res, next) {
+router.post("/", auth.checkToken, requireSubscriptionOwner, async function (req, res, next) {
     try {
       // Step 1: Create the subscription
       const subscriptionResponse = await axios.post(subscriptionsURL, req.body, {
@@ -159,7 +168,7 @@ router.post("/", async function (req, res, next) {
  *  "interval": 12
  * } 
 */
-router.put("/:user", function (req, res, next) {
+router.put("/:user", auth.checkToken, requireSubscriptionOwner, function (req, res, next) {
     axios
         .put(subscriptionsURL + req.params.user, req.body, {
             httpsAgent: httpsAgent,
@@ -175,7 +184,7 @@ router.put("/:user", function (req, res, next) {
  * 
  * O frontend precisa de atualizar o type do user para free se sucesso
  */
-router.put("/:user/cancel", async function (req, res, next) {
+router.put("/:user/cancel", auth.checkToken, requireSubscriptionOwner, async function (req, res, next) {
     try {
       // Step 1: Cancel the user's subscription
       const subscriptionResponse = await axios.put(
@@ -212,7 +221,7 @@ router.put("/:user/cancel", async function (req, res, next) {
     }
   });
 
-router.put("/:user/card", function (req, res, next) {
+router.put("/:user/card", auth.checkToken, requireSubscriptionOwner, function (req, res, next) {
   axios
     .put(subscriptionsURL + req.params.user + "/card", req.body, {
         httpsAgent: httpsAgent,
