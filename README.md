@@ -232,6 +232,18 @@ docker compose exec projects ffprobe -version
 The acceptance scenarios and profile limits are documented in
 `specs/001-video-submission/quickstart.md`.
 
+Video audio operations (remove, replace from MP3/M4A AAC or a video's audio
+track, and extract to M4A) are handled asynchronously by `video_audio_tool` through the durable
+`video_audio_queue`. Extraction downloads an M4A file to the user's device
+without adding an audio item to the project library. Start or rebuild the worker
+with `docker compose up -d --build video_audio_tool`; it uses the shared
+`image_data` volume and RabbitMQ. The focused backend contracts and input
+validation run with `node projects/test/run-tests.js`. The acceptance flow and
+remaining environment-dependent checks are described in
+`specs/007-gerir-audio/quickstart.md`.
+The FFmpeg worker contract tests run inside its image with
+`docker compose run --rm video_audio_tool python -m unittest test_video_audio.py`.
+
 ### First Steps
 
 1. Open <https://localhost:8080> and accept the certificate.

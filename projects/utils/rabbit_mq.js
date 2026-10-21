@@ -10,46 +10,51 @@ const rabbit_mq_sv = `amqp://${rabbit_username}:${rabbit_password}@${rabbit_host
 
 function send_rabbit_msg(msg, queue) {
     return new Promise((resolve) => {
-        amqp.connect(rabbit_mq_sv, (connectError, connection) => {
-            if (connectError) {
-                console.error("RabbitMQ publish connection failed:", connectError.message);
-                return resolve(false);
-            }
-            connection.on("error", (error) => {
-                console.error("RabbitMQ publish connection error:", error.message);
-                resolve(false);
-            });
-            connection.createConfirmChannel((channelError, channel) => {
-                if (channelError) {
-                    console.error("RabbitMQ publish channel failed:", channelError.message);
-                    connection.close();
-                    return resolve(false);
-                }
-                channel.on("error", (error) => {
-                    console.error("RabbitMQ publish channel error:", error.message);
-                    resolve(false);
-                });
+        let settled = false;
+        let connection;
+        let channel;
+
+        const finish = (success, error) => {
+            if (settled) return;
+            settled = true;
+            if (error) console.error("RabbitMQ publish failed:", error.message);
+            const closeConnection = () => {
+                if (!connection) return resolve(success);
+                try { connection.close(() => resolve(success)); }
+                catch (_) { resolve(success); }
+            };
+            if (!channel) return closeConnection();
+            try { channel.close(closeConnection); }
+            catch (_) { closeConnection(); }
+        };
+
+        amqp.connect(rabbit_mq_sv, (connectError, connected) => {
+            if (connectError) return finish(false, connectError);
+            connection = connected;
+            connection.on("error", (error) => finish(false, error));
+            connection.createConfirmChannel((channelError, createdChannel) => {
+                if (channelError) return finish(false, channelError);
+                channel = createdChannel;
+                channel.on("error", (error) => finish(false, error));
                 channel.assertExchange(exchange, "direct", { durable: true }, (exchangeError) => {
-                    if (exchangeError) {
-                        console.error("RabbitMQ exchange assertion failed:", exchangeError.message);
-                        channel.close();
-                        connection.close();
-                        return resolve(false);
-                    }
-                    try {
-                        channel.publish(exchange, queue, Buffer.from(JSON.stringify(msg)), { persistent: true });
-                        channel.waitForConfirms((publishError) => {
-                            if (publishError) console.error("RabbitMQ publish failed:", publishError.message);
-                            channel.close();
-                            connection.close();
-                            resolve(!publishError);
+                    if (settled) return;
+                    if (exchangeError) return finish(false, exchangeError);
+                    const publish = () => {
+                        if (settled) return;
+                        try {
+                            channel.publish(exchange, queue, Buffer.from(JSON.stringify(msg)), { persistent: true });
+                            channel.waitForConfirms((publishError) => finish(!publishError, publishError));
+                        } catch (publishError) { finish(false, publishError); }
+                    };
+                    if (queue !== "video_audio_queue") return publish();
+                    channel.assertQueue(queue, { durable: true }, (queueError) => {
+                        if (settled) return;
+                        if (queueError) return finish(false, queueError);
+                        channel.bindQueue(queue, exchange, queue, {}, (bindError) => {
+                            if (bindError) return finish(false, bindError);
+                            publish();
                         });
-                    } catch (publishError) {
-                        console.error("RabbitMQ publish failed:", publishError.message);
-                        channel.close();
-                        connection.close();
-                        resolve(false);
-                    }
+                    });
                 });
             });
         });

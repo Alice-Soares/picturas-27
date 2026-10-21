@@ -13,6 +13,10 @@ function operationEvent(operation, overrides = {}) {
     event.extractedFrames = overrides.extractedFrames ?? operation.extracted_frames ?? 0;
     event.outputFormat = overrides.outputFormat ?? operation.output_format ?? null;
   }
+  if (operation.type === "audio") {
+    event.audioAction = operation.audio_action;
+    event.resultAudioId = overrides.resultAudioId ?? operation.result_audio_id ?? null;
+  }
   return event;
 }
 

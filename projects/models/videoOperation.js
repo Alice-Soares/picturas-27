@@ -2,12 +2,20 @@ const mongoose = require("mongoose");
 
 const videoOperationSchema = new mongoose.Schema(
   {
-    type: { type: String, enum: ["trim", "frame_tool", "frame_extract", "conversion"], required: true },
+    type: { type: String, enum: ["trim", "frame_tool", "frame_extract", "conversion", "audio"], required: true },
+    audio_action: { type: String, enum: ["remove", "replace", "extract"], required: function requiredForAudio() { return this.type === "audio"; }, default: null },
+    replacement_audio_key: { type: String, default: null },
+    replacement_audio_name: { type: String, default: null },
+    audio_start_seconds: { type: Number, default: null, min: 0 },
+    audio_end_seconds: { type: Number, default: null, min: 0 },
+    result_audio_id: { type: mongoose.Schema.Types.ObjectId, default: null },
+    result_audio_path: { type: String, default: null, select: false },
+    audio_output: { container: { type: String, default: null }, audioCodec: { type: String, default: null }, sampleRate: { type: Number, default: null }, channels: { type: Number, default: null }, duration: { type: Number, default: null } },
     user_id: { type: mongoose.Schema.Types.ObjectId, required: true },
     project_id: { type: mongoose.Schema.Types.ObjectId, required: true },
     source_video_id: { type: mongoose.Schema.Types.ObjectId, required: true },
-    start_seconds: { type: Number, required: true, min: 0 },
-    end_seconds: { type: Number, required: true },
+    start_seconds: { type: Number, required: function requiredForLegacy() { return this.type !== "audio"; }, min: 0, default: 0 },
+    end_seconds: { type: Number, required: function requiredForLegacy() { return this.type !== "audio"; }, default: null },
     output_fps: { type: Number, default: null, min: 0 },
     target_project_id: { type: mongoose.Schema.Types.ObjectId, default: null },
     max_frames: { type: Number, default: null, min: 1 },

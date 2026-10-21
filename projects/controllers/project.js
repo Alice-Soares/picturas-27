@@ -89,6 +89,13 @@ module.exports.appendVideoIfVersion = async (user_id, project_id, video, expecte
     { new: true }
   ).exec();
 
+module.exports.appendAudioIfVersion = async (user_id, project_id, audio, expectedVersion) =>
+  ProjectModel.findOneAndUpdate(
+    { user_id, _id: project_id, version: expectedVersion },
+    { $push: { audios: audio }, $inc: { version: 1 } },
+    { new: true },
+  ).exec();
+
 module.exports.appendVideo = async (user_id, project_id, video) =>
   ProjectModel.findOneAndUpdate(
     { user_id, _id: project_id },

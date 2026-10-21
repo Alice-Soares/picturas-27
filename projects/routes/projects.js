@@ -47,12 +47,15 @@ const {
   getVideoConversionOptions,
   createVideoConversionOperation,
   cancelVideoConversionOperation,
+  createAudioOperation,
+  cancelAudioOperation,
 } = require("../services/videoOperationService");
 const { getUserType } = require("../utils/presence");
 const { publicTrimError } = require("../services/videoTrimErrors");
 const { publicFrameToolError } = require("../services/videoFrameToolErrors");
 const { publicFrameExtractionError } = require("../services/videoFrameExtractionErrors");
 const { publicConversionError } = require("../services/videoConversionErrors");
+const { publicAudioError } = require("../services/videoAudioErrors");
 const {
   get_image_internal_url,
   get_image_public_url,
@@ -61,6 +64,7 @@ const {
   copy_image,
 } = require("../utils/imageStorage");
 const { delete_video } = require("../utils/videoStorage");
+const VideoOperation = require("../models/videoOperation");
 const { canAccessProjectRoom } = require("../services/videoProjectAuthorization");
 
 const {
@@ -79,6 +83,8 @@ const videoUpload = multer({
   }),
   limits: { fileSize: 1_000_000_000 },
 });
+const audioUpload = multer({ dest: "/tmp/picturas-audio-projects", limits: { fileSize: 1_000_000_000 } });
+fs.mkdirSync("/tmp/picturas-audio-projects", { recursive: true });
 fs.mkdirSync("/tmp/picturas-video-projects", { recursive: true });
 function receiveVideo(req, res, next) {
   return videoUpload.single("video")(req, res, (error) => {
@@ -222,6 +228,8 @@ router.post("/:user/:project/video/:videoId/trim", requireAuth, async (req, res)
       ? publicFrameExtractionError(error)
       : error.code?.startsWith("VIDEO_CONVERSION") || error.message?.startsWith("VIDEO_CONVERSION")
         ? publicConversionError(error)
+        : error.code?.startsWith("VIDEO_AUDIO") || error.message?.startsWith("VIDEO_AUDIO")
+          ? publicAudioError(error)
         : publicTrimError(error);
     return res.status(error.status || (publicError.code === "VIDEO_TRIM_FAILED" ? 500 : 400)).json({
       error: publicError.code,
@@ -322,6 +330,31 @@ router.post("/:user/:project/video/:videoId/conversion", requireAuth, async (req
   }
 });
 
+for (const action of ["remove", "extract"]) {
+  router.post(`/:user/:project/video/:videoId/audio/${action}`, requireAuth, async (req, res) => {
+    if (String(getCallerId(req)) !== String(req.params.user)) return res.status(403).json({ error: "VIDEO_AUDIO_UNAUTHORIZED" });
+    try {
+      const operation = await createAudioOperation({ userId: req.params.user, projectId: req.params.project, videoId: req.params.videoId, action, profile: await trimProfile(req) });
+      return res.status(202).json({ operationId: String(operation._id), status: operation.status });
+    } catch (error) { const safe = publicAudioError(error); return res.status(safe.status).json({ error: safe.code }); }
+  });
+}
+
+router.post("/:user/:project/video/:videoId/audio/replace", requireAuth, (req, res, next) => {
+  audioUpload.single("audio")(req, res, (error) => {
+    if (!error) return next();
+    if (req.file?.path) fs.rm(req.file.path, { force: true }, () => {});
+    return res.status(error.code === "LIMIT_FILE_SIZE" ? 413 : 400).json({ error: error.code === "LIMIT_FILE_SIZE" ? "VIDEO_AUDIO_INVALID" : "VIDEO_AUDIO_INVALID" });
+  });
+}, async (req, res) => {
+  if (String(getCallerId(req)) !== String(req.params.user)) { if (req.file?.path) await fs.promises.rm(req.file.path, { force: true }); return res.status(403).json({ error: "VIDEO_AUDIO_UNAUTHORIZED" }); }
+  try {
+    const operation = await createAudioOperation({ userId: req.params.user, projectId: req.params.project, videoId: req.params.videoId, action: "replace", file: req.file, startSeconds: req.body?.startSeconds, endSeconds: req.body?.endSeconds, profile: await trimProfile(req) });
+    return res.status(202).json({ operationId: String(operation._id), status: operation.status });
+  } catch (error) { const safe = publicAudioError(error); return res.status(safe.status).json({ error: safe.code }); }
+  finally { if (req.file?.path) await fs.promises.rm(req.file.path, { force: true }); }
+});
+
 router.get("/:user/:project/video-operations/:operationId", requireAuth, async (req, res) => {
   const callerId = getCallerId(req);
   if (String(callerId) !== String(req.params.user)) {
@@ -347,6 +380,9 @@ router.get("/:user/:project/video-operations/:operationId", requireAuth, async (
       tools: operation.tools,
       output: operation.output,
       resultVideoId: operation.result_video_id ? String(operation.result_video_id) : null,
+      audioAction: operation.audio_action || null,
+      resultAudioId: operation.result_audio_id ? String(operation.result_audio_id) : null,
+      audioOutput: operation.audio_output || null,
       errorCode: operation.error_code,
     });
   } catch (error) {
@@ -359,6 +395,23 @@ router.get("/:user/:project/video-operations/:operationId", requireAuth, async (
   }
 });
 
+router.get("/:user/:project/video-operations/:operationId/audio-download", requireAuth, async (req, res) => {
+  if (String(getCallerId(req)) !== String(req.params.user)) return res.status(403).json({ error: "VIDEO_AUDIO_UNAUTHORIZED" });
+  const operation = await VideoOperation.findOne({ _id: req.params.operationId, user_id: req.params.user, project_id: req.params.project }).select("+result_audio_path").exec();
+  if (!operation || operation.type !== "audio" || operation.audio_action !== "extract") return res.status(404).json({ error: "VIDEO_AUDIO_NOT_FOUND" });
+  if (operation.status !== "completed" || !operation.result_audio_path || !fs.existsSync(operation.result_audio_path)) return res.status(410).json({ error: "VIDEO_AUDIO_DOWNLOAD_UNAVAILABLE" });
+  const resultPath = operation.result_audio_path;
+  const sharedMediaRoot = `${path.resolve("/app/images")}${path.sep}`;
+  if (!path.resolve(resultPath).startsWith(sharedMediaRoot)) return res.status(410).json({ error: "VIDEO_AUDIO_DOWNLOAD_UNAVAILABLE" });
+  const resultDirectory = path.dirname(resultPath);
+  return res.download(resultPath, "audio.m4a", async (error) => {
+    operation.result_audio_path = null;
+    await operation.save().catch(() => {});
+    await fs.promises.rm(resultDirectory, { recursive: true, force: true }).catch(() => {});
+    if (error && !res.headersSent) res.status(500).json({ error: "VIDEO_AUDIO_DOWNLOAD_FAILED" });
+  });
+});
+
 router.post("/:user/:project/video-operations/:operationId/cancel", requireAuth, async (req, res) => {
   const callerId = getCallerId(req);
   if (String(callerId) !== String(req.params.user)) {
@@ -366,7 +419,9 @@ router.post("/:user/:project/video-operations/:operationId/cancel", requireAuth,
   }
   try {
     const existing = await getOperation(req.params.user, req.params.project, req.params.operationId);
-    const operation = existing.type === "conversion"
+    const operation = existing.type === "audio"
+      ? await cancelAudioOperation(req.params.user, req.params.project, req.params.operationId)
+      : existing.type === "conversion"
       ? await cancelVideoConversionOperation(req.params.user, req.params.project, req.params.operationId)
       : existing.type === "frame_tool"
       ? await cancelFrameToolOperation(req.params.user, req.params.project, req.params.operationId)
@@ -382,6 +437,8 @@ router.post("/:user/:project/video-operations/:operationId/cancel", requireAuth,
       ? publicConversionError(error)
       : error.code?.startsWith("VIDEO_FRAME_EXTRACT") || error.message?.startsWith("VIDEO_FRAME_EXTRACT")
       ? publicFrameExtractionError(error)
+      : error.code?.startsWith("VIDEO_AUDIO") || error.message?.startsWith("VIDEO_AUDIO")
+      ? publicAudioError(error)
       : publicTrimError(error);
     return res.status(error.status || 400).json({ error: publicError.code });
   }
@@ -409,6 +466,10 @@ function process_msg() {
       }
       if (msg_content?.procedure === "video_conversion") {
         await require("../services/videoConversionDispatcher").handleToolResponse(msg_content);
+        return;
+      }
+      if (msg_content?.procedure === "video_audio") {
+        await require("../services/videoAudioDispatcher").handleToolResponse(msg_content);
         return;
       }
 
@@ -1066,6 +1127,7 @@ router.get("/:user/:project", checkSharePermission, async (req, res, next) => {
         tools: project.tools,
         imgs: [],
         videos: [],
+        audios: [],
         version: project.version,
       };
 
@@ -1115,6 +1177,13 @@ router.get("/:user/:project", checkSharePermission, async (req, res, next) => {
           console.error("Error acquiring video URL:", error.message);
           return res.status(404).jsonp("Error acquiring video's url");
         }
+      }
+
+      for (const audio of project.audios || []) {
+        try {
+          const resp = await get_image_public_url(req.params.user, req.params.project, "audio-src", path.basename(audio.object_key));
+          response.audios.push({ _id: audio._id, name: audio.name, duration: audio.duration, container: audio.container, audioCodec: audio.audioCodec, sourceVideoId: audio.sourceVideoId, url: resp.data.url });
+        } catch (_) { return res.status(404).jsonp("Error acquiring audio URL"); }
       }
 
       res.status(200).jsonp(response);
