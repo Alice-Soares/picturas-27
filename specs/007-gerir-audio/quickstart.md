@@ -43,8 +43,9 @@ is shorter and the input is clipped when longer.
 ### Extract
 
 Call `POST /:user/:project/video/:videoId/audio/extract` for a source with audio.
-Verify a new M4A/AAC library item and `resultAudioId`. Repeat without audio and
-verify safe rejection, no result and no quota use.
+Verify the M4A/AAC download starts on the client and no audio item is added to
+the project library. Repeat without audio and verify safe rejection, no result
+and no quota use.
 
 ## Failure and authorization
 

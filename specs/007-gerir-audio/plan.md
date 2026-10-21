@@ -9,9 +9,10 @@
 Implementar remover, substituir e extrair áudio preservando o vídeo original.
 A extensão reutiliza o ciclo de vida de operações assíncronas do Projects
 Service, acrescenta uma operação `audio` com ação explícita, usa uma ferramenta
-FFmpeg/RabbitMQ stateless e persiste resultados de áudio como conteúdo próprio
-do projeto. Autorização, quota, estados, eventos, limpeza e append versionado
-permanecem responsabilidade do Projects Service.
+FFmpeg/RabbitMQ stateless e transmite o resultado de extração ao dispositivo
+como download autenticado temporário. Autorização, quota, estados, eventos,
+limpeza e persistência dos vídeos resultantes permanecem responsabilidade do
+Projects Service.
 
 ## Technical Context
 
@@ -31,7 +32,7 @@ permanecem responsabilidade do Projects Service.
 
 **Constraints**: MP3 e M4A/AAC são os únicos formatos de substituição; original imutável; sem resultados parciais; quota devolvida em falha/cancelamento/sem efeito; acesso apenas ao projeto autorizado; sem múltiplas faixas no MVP.
 
-**Scale/Scope**: Um caso de uso de vídeo, três ações de áudio, uma nova operação assíncrona e um novo tipo de conteúdo de biblioteca; sem reescrita do pipeline de imagens.
+**Scale/Scope**: Um caso de uso de vídeo, três ações de áudio, uma nova operação assíncrona e um download temporário M4A/AAC; sem reescrita do pipeline de imagens.
 
 ## Constitution Check
 
@@ -107,7 +108,7 @@ FFmpeg e validação de segurança.
 | Gate | Status | Evidence |
 |---|---|---|
 | Incremental extension | PASS | Apenas componentes de vídeo/áudio e superfícies de biblioteca são estendidos; imagens permanecem compatíveis. |
-| MVP and explicit non-implementation | PASS | O design declara fora do âmbito múltiplas faixas, retoma e substituição do original. |
+| MVP and explicit non-implementation | PASS | O design declara fora do âmbito múltiplas faixas, retoma e substituição do original; áudio extraído é download, não item de biblioteca. |
 | End-to-end traceability | PASS | Cada grupo de requisitos AUD/COM/Q tem componente e validação no modelo, contratos e quickstart. |
 | Evidence-based architecture | PASS | O design segue os padrões observados no Projects Service, conversão existente, armazenamento e Compose. |
 | Security and validation | PASS | Contratos não expõem paths/segredos; quickstart inclui autorização cruzada, quota, falha, cancelamento e limpeza. |

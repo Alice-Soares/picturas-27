@@ -808,6 +808,17 @@ export async function cancelProjectVideoAudio(params: { uid: string; pid: string
   return response.data;
 }
 
+export async function downloadProjectVideoAudio(params: { uid: string; pid: string; token: string; operationId: string; ownerId?: string; shareId?: string }) {
+  const pathUid = params.ownerId ?? params.uid; const query = buildQuery(params);
+  const response = await api.get<Blob>(`/projects/${pathUid}/${params.pid}/video-operations/${params.operationId}/audio-download${query}`, {
+    headers: { Authorization: `Bearer ${params.token}` }, responseType: "blob",
+  });
+  const blobUrl = URL.createObjectURL(response.data);
+  const link = document.createElement("a"); link.href = blobUrl; link.download = "audio.m4a";
+  document.body.appendChild(link); link.click(); link.remove();
+  return blobUrl;
+}
+
 export const createProjectVideoFrameTool = async (params: {
   uid: string; pid: string; token: string; videoId: string;
   tools: ProjectToolResponse[]; startSeconds: number; endSeconds: number;

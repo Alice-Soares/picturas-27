@@ -17,17 +17,17 @@
 - **Alternatives considered**: Um worker Node.js no Projects Service reduziria ficheiros novos, mas misturaria processamento pesado com autorização e contrariaria o isolamento decidido em `DQ-002`.
 - **Requirements**: `REQ-VID-AUD-001`..`011`, `REQ-VID-COM-011`..`017`, `REQ-VID-Q-006`.
 
-## Decision 3: Modelar áudio como conteúdo de projeto próprio
+## Decision 3: Transferir o áudio extraído sem persistir na biblioteca
 
-- **Decision**: Adicionar `audios` ao projeto, com metadados de resultados M4A/AAC e referência ao vídeo de origem.
-- **Rationale**: O esquema de vídeo exige largura, altura, FPS e codec de vídeo. Um M4A extraído não deve ser representado como vídeo inválido; remove/substitui continuam a produzir novos vídeos.
-- **Alternatives considered**: Um modelo genérico de assets seria mais extensível, mas seria uma alteração transversal maior; `audios` é a extensão de menor risco para o MVP.
+- **Decision**: Extrair para M4A/AAC temporário, transmitir pelo endpoint autenticado ao dispositivo do utilizador e não criar referência de áudio no projeto.
+- **Rationale**: A decisão explícita do utilizador define o dispositivo como destino do áudio extraído; remoção/substituição continuam a produzir novos vídeos na biblioteca.
+- **Alternatives considered**: Persistir o áudio na biblioteca contradiz o destino solicitado; manter o temporário fora da biblioteca permite o download sem alterar o projeto.
 - **Requirements**: `REQ-VID-AUD-011`, `REQ-VID-AUD-012`, `REQ-VID-AUD-015`, `REQ-VID-AUD-016`, `REQ-VID-COM-018`.
 
-## Decision 4: Manter a fachada de armazenamento
+## Decision 4: Usar o volume partilhado para download temporário
 
-- **Decision**: Acrescentar upload/download/remoção de áudio à Image Storage Service, sem acesso direto do Projects Service ou worker ao SeaweedFS.
-- **Rationale**: Preserva autorização e convenções existentes, permite limpar temporários/resultados parciais e evita alterar o contrato de vídeo existente.
+- **Decision**: Transmitir o resultado temporário pelo API Gateway/Projects Service autenticados; manter a fachada de armazenamento para novos vídeos.
+- **Rationale**: Preserva autorização, remove o M4A após transferência e evita persistir um item de biblioteca não solicitado.
 - **Alternatives considered**: Generalizar vídeo para `media` alteraria uma API existente e aumentaria o risco de regressão.
 - **Requirements**: `REQ-VID-AUD-012`, `REQ-VID-AUD-015`, `REQ-VID-AUD-016`, `REQ-VID-COM-014`..`017`.
 

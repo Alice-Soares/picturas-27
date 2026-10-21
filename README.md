@@ -233,7 +233,9 @@ The acceptance scenarios and profile limits are documented in
 `specs/001-video-submission/quickstart.md`.
 
 Video audio operations (remove, replace with MP3/M4A AAC, and extract to M4A)
-are handled asynchronously by `video_audio_tool`. Start or rebuild the worker
+are handled asynchronously by `video_audio_tool` through the durable
+`video_audio_queue`. Extraction downloads an M4A file to the user's device
+without adding an audio item to the project library. Start or rebuild the worker
 with `docker compose up -d --build video_audio_tool`; it uses the shared
 `image_data` volume and RabbitMQ. The focused backend contracts and input
 validation run with `node projects/test/run-tests.js`. The acceptance flow and

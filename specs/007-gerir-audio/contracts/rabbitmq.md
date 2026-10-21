@@ -1,7 +1,9 @@
 # RabbitMQ Contract
 
-Routing key and procedure: `video_audio`. `correlationId` equals the operation
-identifier.
+Procedure: `video_audio`. The durable queue and direct-exchange routing key are
+`video_audio_queue`. `correlationId` equals the operation identifier. The
+Projects Service declares and binds this queue before publishing, and confirms
+the persistent request before closing its RabbitMQ connection.
 
 ```json
 {

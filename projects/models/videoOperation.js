@@ -9,6 +9,7 @@ const videoOperationSchema = new mongoose.Schema(
     audio_start_seconds: { type: Number, default: null, min: 0 },
     audio_end_seconds: { type: Number, default: null, min: 0 },
     result_audio_id: { type: mongoose.Schema.Types.ObjectId, default: null },
+    result_audio_path: { type: String, default: null, select: false },
     audio_output: { container: { type: String, default: null }, audioCodec: { type: String, default: null }, sampleRate: { type: Number, default: null }, channels: { type: Number, default: null }, duration: { type: Number, default: null } },
     user_id: { type: mongoose.Schema.Types.ObjectId, required: true },
     project_id: { type: mongoose.Schema.Types.ObjectId, required: true },

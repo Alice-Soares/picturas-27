@@ -11,22 +11,35 @@ const rabbit_mq_sv = `amqp://${rabbit_username}:${rabbit_password}@${rabbit_host
 function send_rabbit_msg(msg, queue) {
     amqp.connect(rabbit_mq_sv, (err_sv, connection) => {
         if (err_sv) throw err_sv;
-        
-        connection.createChannel( (err_conn, channel) => {
+
+        const close = () => connection.close();
+        connection.createConfirmChannel((err_conn, channel) => {
             if (err_conn) throw err_conn;
-            
+
             channel.assertExchange(exchange, 'direct', {
                 durable: true
             });
 
-            channel.publish(exchange, queue, Buffer.from(JSON.stringify(msg)));
+            const body = Buffer.from(JSON.stringify(msg));
+            if (queue === "video_audio_queue") {
+                channel.assertQueue(queue, { durable: true }, (err_queue) => {
+                    if (err_queue) { close(); throw err_queue; }
+                    channel.bindQueue(queue, exchange, queue, {}, (err_bind) => {
+                        if (err_bind) { close(); throw err_bind; }
+                        channel.publish(exchange, queue, body, { persistent: true }, (err_publish) => {
+                            close();
+                            if (err_publish) throw err_publish;
+                        });
+                    });
+                });
+            } else {
+                channel.publish(exchange, queue, body, {}, (err_publish) => {
+                    close();
+                    if (err_publish) throw err_publish;
+                });
+            }
         });
-        
-        setTimeout(() => {
-            connection.close();
-        }, 500);
     });
-    
 }
 
 function read_rabbit_msg(queue, callback) {

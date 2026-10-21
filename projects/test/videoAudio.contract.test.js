@@ -1,4 +1,4 @@
-const { audioRequest, isAudioMessage } = require("../utils/videoAudioMsg");
+const { AUDIO_QUEUE, audioRequest, isAudioMessage } = require("../utils/videoAudioMsg");
 const { operationEvent } = require("../utils/videoOperationMsg");
 const VideoOperation = require("../models/videoOperation");
 const Project = require("../models/project");
@@ -8,6 +8,7 @@ test("TST-AUD-001 audio worker request is correlated and exposes only the intern
   expect(request.procedure).toBe("video_audio");
   expect(request.correlationId).toBe("op1");
   expect(request.parameters.action).toBe("extract");
+  expect(AUDIO_QUEUE).toBe("video_audio_queue");
   expect(isAudioMessage(request)).toBe(true);
   expect(isAudioMessage({ procedure: "video_audio" })).toBe(false);
 });

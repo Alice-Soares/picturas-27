@@ -63,6 +63,7 @@ const {
   copy_image,
 } = require("../utils/imageStorage");
 const { delete_video } = require("../utils/videoStorage");
+const VideoOperation = require("../models/videoOperation");
 
 const {
   checkSharePermission,
@@ -382,6 +383,23 @@ router.get("/:user/:project/video-operations/:operationId", requireAuth, async (
         : publicTrimError(error);
     return res.status(error.status || 404).json({ error: publicError.code });
   }
+});
+
+router.get("/:user/:project/video-operations/:operationId/audio-download", requireAuth, async (req, res) => {
+  if (String(getCallerId(req)) !== String(req.params.user)) return res.status(403).json({ error: "VIDEO_AUDIO_UNAUTHORIZED" });
+  const operation = await VideoOperation.findOne({ _id: req.params.operationId, user_id: req.params.user, project_id: req.params.project }).select("+result_audio_path").exec();
+  if (!operation || operation.type !== "audio" || operation.audio_action !== "extract") return res.status(404).json({ error: "VIDEO_AUDIO_NOT_FOUND" });
+  if (operation.status !== "completed" || !operation.result_audio_path || !fs.existsSync(operation.result_audio_path)) return res.status(410).json({ error: "VIDEO_AUDIO_DOWNLOAD_UNAVAILABLE" });
+  const resultPath = operation.result_audio_path;
+  const sharedMediaRoot = `${path.resolve("/app/images")}${path.sep}`;
+  if (!path.resolve(resultPath).startsWith(sharedMediaRoot)) return res.status(410).json({ error: "VIDEO_AUDIO_DOWNLOAD_UNAVAILABLE" });
+  const resultDirectory = path.dirname(resultPath);
+  return res.download(resultPath, "audio.m4a", async (error) => {
+    operation.result_audio_path = null;
+    await operation.save().catch(() => {});
+    await fs.promises.rm(resultDirectory, { recursive: true, force: true }).catch(() => {});
+    if (error && !res.headersSent) res.status(500).json({ error: "VIDEO_AUDIO_DOWNLOAD_FAILED" });
+  });
 });
 
 router.post("/:user/:project/video-operations/:operationId/cancel", requireAuth, async (req, res) => {

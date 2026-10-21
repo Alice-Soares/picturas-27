@@ -2,12 +2,12 @@
 
 ## Project
 
-Agregado autorizado que contém vídeos e resultados de áudio do utilizador.
+Agregado autorizado que contém os vídeos do utilizador. O áudio extraído é um
+resultado temporário da operação e não é acrescentado ao projeto.
 
 | Field | Type/meaning | Rules |
 |---|---|---|
 | `videos` | Existing video references | Source videos remain immutable; result videos are appended. |
-| `audios` | Audio references | New MVP collection/list for extracted M4A/AAC results. |
 | `version` | Existing optimistic version | Result append uses the current version and fails safely on conflict. |
 
 ## Video
@@ -23,19 +23,20 @@ requer validação de extensão/MIME e conteúdo, e deve ser limpo após sucesso
 falha ou cancelamento. `audio_start_seconds`/`audio_end_seconds` são opcionais
 e devem estar dentro da duração detetada.
 
-## Audio result
+## Extracted audio download
 
-Novo conteúdo produzido por `extract`, com `sourceVideoId`, `stage: audio-src`,
-`object_key` interno, nome de biblioteca, tamanho, duração, `container: m4a`,
-`audioCodec: aac`, sample rate e canais. O objeto só é apresentado depois do
-append versionado ter concluído.
+Ficheiro temporário produzido por `extract` em M4A/AAC. A operação mantém um
+caminho interno não selecionado por omissão; um endpoint autenticado transmite
+o ficheiro ao cliente e elimina o temporário após a transferência ou expiração.
+O caminho não é exposto em REST ou WebSocket.
 
 ## Audio operation
 
 Operação assíncrona com `type: audio` e `audio_action: remove | replace |
 extract`. Inclui utilizador, projeto, vídeo de origem, estado, progresso,
 timestamps, quota e erro público; `result_video_id` é usado por remove/replace
-e `result_audio_id` por extract.
+e metadados de áudio por extract. O resultado de extração é transferido ao
+dispositivo e não recebe `result_audio_id` nem referência na biblioteca.
 
 ### State transitions
 
@@ -48,4 +49,5 @@ processing -> failed
 ```
 
 `completed`, `failed` e `cancelled` são terminais. Só uma operação concluída
-acrescenta conteúdo; o vídeo original nunca é alterado.
+acrescenta um vídeo resultante à biblioteca ou disponibiliza um download de
+áudio temporário; o vídeo original nunca é alterado.

@@ -22,21 +22,21 @@ without changing existing image processing.
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
-**Purpose**: Establish the shared operation, project-content, storage, error and
-message foundations required by all three user stories.
+**Purpose**: Establish the shared operation, authenticated download, temporary
+media, error and message foundations required by all three user stories.
 
 - [ ] T005 Extend `projects/models/videoOperation.js` with `type: "audio"` and required `audio_action: "remove" | "replace" | "extract"` while preserving all existing operation types and lifecycle states
-- [ ] T006 Extend `projects/models/videoOperation.js` with nullable replacement-input fields, `audio_start_seconds`, `audio_end_seconds`, `result_audio_id`, and audio output metadata; enforce `result_video_id` for remove/replace results and `result_audio_id` for extract results at service validation time
-- [ ] T007 Extend `projects/models/project.js` and `projects/controllers/project.js` with an `audios` content list containing `sourceVideoId`, `stage: "audio-src"`, `object_key`, `name`, `size`, `duration`, `container: "m4a"`, `audioCodec: "aac"`, `sampleRate`, and `channels`, plus a version-guarded `appendAudioIfVersion`
+- [ ] T006 Extend `projects/models/videoOperation.js` with nullable replacement-input fields, `audio_start_seconds`, `audio_end_seconds`, audio output metadata, and a private temporary download path for extraction results
+- [ ] T007 Add the authenticated Projects Service `audio-download` stream endpoint and its API Gateway proxy; remove the temporary result after transfer
 - [ ] T008 [P] Add `projects/services/videoAudioErrors.js` mapping internal failures to safe public codes without storage paths, credentials, FFmpeg stderr or stack traces
 - [ ] T009 [P] Add `projects/services/videoAudioValidation.js` to accept only MP3 and M4A/AAC, validate media content with FFprobe, reject unsupported/corrupt input, and validate optional intervals against detected audio duration
 - [ ] T010 [P] Add `projects/utils/videoAudioMsg.js` with correlated `video_audio` requests and response recognition; keep all worker paths internal
 - [ ] T011 [P] Extend `projects/utils/videoOperationMsg.js` with `audioAction` and `resultAudioId` while preserving existing event fields and operation types
-- [ ] T012 [P] Extend `imageStorageService` with audio upload/download/delete helpers and `audio-src` content handling, reusing the existing storage façade rather than direct SeaweedFS access
-- [ ] T013 Add foundational model, validation, message, storage and error contract tests in `projects/test/videoAudio.contract.test.js`, `projects/test/videoAudioValidation.test.js`, and `projects/test/videoAudioStorage.contract.test.js`
+- [ ] T012 [P] Ensure temporary audio outputs use the shared media volume and are removed after download or expiry; do not persist extraction output through the project storage façade
+- [ ] T013 Add foundational model, validation, message, authenticated download, shared-volume cleanup and error contract tests in focused `videoAudio*.test.js` files
 - [ ] T014 Run `node projects/test/run-tests.js` and fix only regressions caused by the foundational model, event and storage changes before starting user-story work
 
-**Checkpoint**: Shared audio operation, project audio content, storage helpers,
+**Checkpoint**: Shared audio operation, authenticated download, temporary cleanup,
 safe errors and message contracts are available; user stories can be developed
 independently.
 
@@ -99,27 +99,27 @@ source video.
 
 ## Phase 5: User Story 3 - Extrair a faixa de áudio (Priority: P2)
 
-**Goal**: Let an authorized user extract source audio into a new M4A/AAC
-library item without altering the source video.
+**Goal**: Let an authorized user extract source audio into an M4A/AAC download
+to their device without adding it to the project library or altering the source.
 
-**Independent Test**: Extract from a video with audio and verify a new audio
-content item; repeat with a video without audio and verify safe rejection and no
-quota use.
+**Independent Test**: Extract from a video with audio and verify the authenticated
+M4A/AAC download and absence of a new library item; repeat with a video without
+audio and verify safe rejection and no quota use.
 
 ### Tests for User Story 3
 
-- [ ] T037 [P] [US3] Add extraction contract tests in `projects/test/videoAudioExtract.contract.test.js` for request, M4A/AAC metadata, `resultAudioId`, no-audio error and event shape
-- [ ] T038 [P] [US3] Add extraction integration tests in `projects/test/videoAudioExtract.integration.test.js` for authorized extraction, `appendAudioIfVersion`, source preservation, quota refund and cleanup
+- [ ] T037 [P] [US3] Add extraction contract tests in `projects/test/videoAudioExtract.contract.test.js` for request, M4A/AAC metadata, authenticated download, no-audio error and event shape
+- [ ] T038 [P] [US3] Add extraction integration tests in `projects/test/videoAudioExtract.integration.test.js` for authorized download, no library append, source preservation, quota refund and cleanup
 - [ ] T039 [P] [US3] Extend `Tools/video_audio/test_video_audio.py` with extraction to M4A/AAC, audio metadata and no-audio failure assertions
 
 ### Implementation for User Story 3
 
 - [ ] T040 [US3] Implement extraction FFmpeg processing in `Tools/video_audio/video_audio.py` with explicit audio mapping, M4A container, AAC codec, validated metadata and no-audio failure
-- [ ] T041 [US3] Extend `projects/services/videoAudioDispatcher.js` to upload extracted audio through the storage façade, append it with `Project.appendAudioIfVersion`, set `result_audio_id`, and remove all temporary/partial objects
+- [ ] T041 [US3] Extend `projects/services/videoAudioDispatcher.js` to retain the completed M4A/AAC temporarily for an authenticated download, avoid appending it to the project, and remove it after download or expiry
 - [ ] T042 [US3] Extend `projects/services/videoOperationService.js` with extraction creation and no-audio precondition before quota reservation
 - [ ] T043 [US3] Add `POST /:user/:project/video/:videoId/audio/extract` to `projects/routes/projects.js` and return the shared `202` operation contract
-- [ ] T044 [US3] Add extracted-audio listing and download presentation to `frontend/components/project-page/project-video-list.tsx` and extraction action/status to `frontend/components/project-page/video-audio-dialog.tsx`
-- [ ] T045 [US3] Extend `frontend/lib/projects.ts` and `frontend/lib/mutations/projects.ts` with extraction submission and result-audio handling
+- [ ] T044 [US3] Add automatic local download after extraction and status/error presentation to `frontend/components/project-page/video-audio-dialog.tsx`; do not add extracted audio to the project list
+- [ ] T045 [US3] Extend `frontend/lib/projects.ts` and the API Gateway with the authenticated audio-download stream
 - [ ] T046 [US3] Run US1/US2 regression plus US3 contract, integration and worker tests; record `TST-AUD-013` through `TST-AUD-016` results
 
 **Checkpoint**: All three user stories are independently functional and
@@ -160,8 +160,8 @@ requirements across all audio operations.
 - **US1**: independent after Foundational; no dependency on another story.
 - **US2**: independent behaviorally after Foundational, but reuses the shared
   audio dispatcher/model and should integrate after its foundational pieces.
-- **US3**: independent behaviorally after Foundational, but requires the shared
-  `audios` content model and storage façade from Phase 2.
+- **US3**: independent behaviorally after Foundational, but requires the private
+  result path and authenticated download endpoint from Phase 2.
 
 ## Parallel Execution Examples
 

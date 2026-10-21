@@ -23,6 +23,9 @@ Existing shared endpoints remain:
 
 - `GET /:user/:project/video-operations/:operationId`, returning
   `type: "audio"`, `audioAction`, status, progress, result IDs and safe error.
+- `GET /:user/:project/video-operations/:operationId/audio-download` streams
+  the completed extraction as `audio.m4a`; the temporary file is removed after
+  transfer. It is available only to the authorized project owner.
 - `POST /:user/:project/video-operations/:operationId/cancel`, returning `202`
   with operation ID and current/terminal status.
 

@@ -1,17 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { createProjectVideoAudio, getProjectVideoAudio, cancelProjectVideoAudio, ProjectVideo } from "@/lib/projects";
+import { createProjectVideoAudio, getProjectVideoAudio, cancelProjectVideoAudio, downloadProjectVideoAudio, ProjectVideo } from "@/lib/projects";
 
 export function VideoAudioDialog({ video, uid, pid, token, projectVersion, canEdit }: { video: ProjectVideo; uid: string; pid: string; token: string; projectVersion: number; canEdit?: boolean }) {
   const [open, setOpen] = useState(false); const [file, setFile] = useState<File>();
   const [start, setStart] = useState(""); const [end, setEnd] = useState(""); const [status, setStatus] = useState(""); const [error, setError] = useState("");
   const [activeOperation, setActiveOperation] = useState<string>();
+  const [downloadUrl, setDownloadUrl] = useState<string>();
   const qc = useQueryClient();
+  useEffect(() => () => { if (downloadUrl) URL.revokeObjectURL(downloadUrl); }, [downloadUrl]);
   async function run(action: "remove" | "replace" | "extract") {
     setError(""); setStatus("A submeter operação…");
     try {
@@ -24,7 +26,16 @@ export function VideoAudioDialog({ video, uid, pid, token, projectVersion, canEd
         result = await getProjectVideoAudio({ uid, pid, token, operationId: accepted.operationId });
         setStatus(`${result.status} · ${result.progress}%`);
       }
-      if (result.status === "completed") { setStatus("Concluído. O resultado foi adicionado à biblioteca."); await qc.invalidateQueries({ queryKey: ["project", uid, pid, token], refetchType: "all" }); }
+      if (result.status === "completed") {
+        if (action === "extract") {
+          const url = await downloadProjectVideoAudio({ uid, pid, token, operationId: accepted.operationId });
+          setDownloadUrl(url);
+          setStatus("Áudio extraído e transferência iniciada.");
+        } else {
+          setStatus("Concluído. O novo vídeo foi adicionado à biblioteca.");
+          await qc.invalidateQueries({ queryKey: ["project", uid, pid, token], refetchType: "all" });
+        }
+      }
       else setError(result.errorCode || "A operação não foi concluída.");
       setActiveOperation(undefined);
     } catch (e) { setActiveOperation(undefined); setError((e as Error).message || "Não foi possível processar o áudio."); setStatus(""); }
@@ -42,6 +53,7 @@ export function VideoAudioDialog({ video, uid, pid, token, projectVersion, canEd
         </div>
         <Button className="w-full" variant="secondary" onClick={() => run("extract")}>Extrair faixa de áudio</Button>
         {status && <p role="status" className="text-sm">{status}</p>}{error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+        {downloadUrl && <Button variant="outline" onClick={() => { const link = document.createElement("a"); link.href = downloadUrl; link.download = "audio.m4a"; link.click(); }}>Descarregar novamente</Button>}
         {activeOperation && <Button variant="destructive" onClick={async () => { try { await cancelProjectVideoAudio({ uid, pid, token, operationId: activeOperation }); setStatus("cancelled"); setActiveOperation(undefined); } catch (e) { setError((e as Error).message); } }}>Cancelar operação</Button>}
       </div>
     </DialogContent>

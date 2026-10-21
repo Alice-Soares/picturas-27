@@ -621,6 +621,23 @@ router.post("/:user/:project/video/:videoId/audio/replace", auth.checkToken, (re
   finally { if (req.file?.path) await fs.promises.rm(req.file.path, { force: true }); }
 });
 
+router.get("/:user/:project/video-operations/:operationId/audio-download", auth.checkToken, async (req, res) => {
+  const ownerId = req.query.owner || req.params.user;
+  const callerId = req.authUserId || req.params.user;
+  try {
+    const upstream = await axios.get(
+      projectsURL + `${ownerId}/${req.params.project}/video-operations/${req.params.operationId}/audio-download`,
+      { headers: { Authorization: req.headers["authorization"], "X-Caller-Id": callerId }, params: req.query.share ? { share: req.query.share } : undefined, httpsAgent, responseType: "stream", validateStatus: () => true },
+    );
+    res.status(upstream.status);
+    for (const header of ["content-type", "content-disposition", "content-length"]) {
+      if (upstream.headers[header]) res.set(header, upstream.headers[header]);
+    }
+    upstream.data.on("error", () => res.destroy());
+    return upstream.data.pipe(res);
+  } catch (error) { return forwardAxiosError(res, error, "Falha ao descarregar áudio extraído"); }
+});
+
 router.get("/:user/:project/video-operations/:operationId", auth.checkToken, async (req, res) => {
   const ownerId = req.query.owner || req.params.user;
   const callerId = req.authUserId || req.params.user;

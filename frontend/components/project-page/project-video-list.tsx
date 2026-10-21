@@ -68,9 +68,10 @@ export function ProjectVideoList({
                 <DialogTitle>{selectedVideo.name}</DialogTitle>
                 <DialogDescription>
                   {selectedVideo.duration.toFixed(2)} s · {selectedVideo.width}×{selectedVideo.height}
+                  {selectedVideo.audioCodec ? ` · Áudio original: ${selectedVideo.audioCodec}` : " · Sem faixa de áudio detetada"}
                 </DialogDescription>
               </DialogHeader>
-              <video className="aspect-video w-full rounded-md bg-black" controls autoPlay src={selectedVideo.url}>
+              <video className="aspect-video w-full rounded-md bg-black" controls playsInline muted={false} src={selectedVideo.url}>
                 O browser não suporta reprodução de vídeo.
               </video>
               <div className="grid grid-cols-2 gap-2">
