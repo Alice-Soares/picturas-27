@@ -25,11 +25,12 @@ disponibilizar no projeto um vídeo MP4/H.264 válido.
 5. Tentar uma combinação de contentor/codec não suportada; confirmar erro
    `VIDEO_CONVERSION_INVALID_OPTIONS` sem operação criada.
 6. Confirmar uma conversão válida; observar `queued`, `processing`, progresso
-   e `completed`, e verificar que o resultado tem os parâmetros pedidos.
+   variável derivado do FFmpeg e `completed`; conferir os metadados do resultado.
 7. Confirmar que o resultado aparece como novo vídeo e que o original mantém
    referência, metadados e conteúdo.
 8. Cancelar uma operação em fila e outra em processamento; confirmar
-   `cancelled`, ausência de resultado parcial, limpeza e devolução de quota.
+   `cancelled`, pedido RabbitMQ à fila `video_conversion_cancel_queue`, ausência
+   de resultado parcial, limpeza e devolução de quota.
 9. Provocar uma falha de transcodificação ou armazenamento; confirmar
    `failed`, erro seguro, limpeza e preservação do original.
 10. Tentar consultar opções, criar, consultar ou cancelar uma operação de outro
@@ -68,18 +69,19 @@ disponibilizar no projeto um vídeo MP4/H.264 válido.
 Registar cada cenário como `pass`/`fail`, incluindo perfil, projeto,
 `operationId`, configuração, estado final e resultado observado.
 
-## Resultados desta execução
+## Resultados desta revisão
 
-- `python3 -m py_compile Tools/video_conversion/video_conversion.py`: pass.
-- `node --check` dos módulos alterados: pass.
-- `cd frontend && npx tsc --noEmit`: pass.
-- `docker compose config -q`: pass.
-- `git diff --check`: pass.
-- Testes de `projects/test/run-tests.js`: os testes da conversão passam; um
-  teste de integração legado de `videoFrameTool` falha neste host porque
-  `ffmpeg` não está instalado fora do container (`spawn ffmpeg ENOENT`).
+Os resultados abaixo ainda não foram repetidos após as correções desta
+revisão. O estado de aceitação permanece pendente até executar os comandos e
+cenários acima na stack Docker atual.
 - Os comandos `docker compose exec ... ffmpeg/ffprobe -version` não foram
   executados porque os serviços não foram iniciados nesta validação.
+
+Atualização de 2026-10-21: `docker compose config -q`, o build do serviço de
+conversão, o build do frontend e a suíte Projects (36 testes) passaram. Os
+testes cobrem validação e contrato da mensagem RabbitMQ, mas não executam a
+transcodificação end-to-end no worker; os cenários funcionais deste quickstart
+continuam pendentes.
 
 ## Documentação obrigatória
 

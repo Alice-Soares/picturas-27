@@ -60,9 +60,6 @@ services:
       server -dir=/data -s3 -s3.port=9000
       -s3.encryptVolumeData
       -master.volumeSizeLimitMB=1024
-    ports:
-      - "9000:9000"
-      - "9090:8888"
     environment:
       # Admin credentials. SeaweedFS reads these when no -s3.config file is given.
       AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY:-admin}
@@ -79,8 +76,6 @@ services:
     restart: on-failure
     depends_on:
       - seaweedfs
-    ports:
-      - "11000:11000"
     environment:
       S3_ENDPOINT: "seaweedfs:9000"
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:-admin}
@@ -93,19 +88,18 @@ services:
     build:
       context: ./rabbitMQ
     restart: on-failure
-    ports:
-      - "5672:5672"
-      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: "user"
       RABBITMQ_DEFAULT_PASS: "password"
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "+S 4:4"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD-SHELL", "rabbitmqctl status"]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/5672'"]
+      interval: 10s
+      timeout: 3s
       retries: 5
+      start_period: 60s
     networks:
       - elk
 
@@ -115,8 +109,6 @@ services:
     networks:
       - elk
     command: mongod --port 27018
-    ports:
-        - '27018:27018'
     healthcheck:
       test: ["CMD", "mongo", "--host", "localhost", "--port", "27018", "--eval", "db.adminCommand('ping')"]
       interval: 10s
@@ -132,14 +124,13 @@ services:
         condition: service_healthy
       projects_mongoDB:
         condition: service_started
-    ports:
-      - "9002:9001"
     restart: on-failure
     environment:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: user
       RABBITMQ_PASS: password
+      JWT_SECRET_KEY: lisan_al_gaib
     networks:
       - elk
     volumes:
@@ -185,8 +176,6 @@ services:
     image: mongo:4.4
     restart: on-failure
     command: mongod --port 27019
-    ports:
-        - '27019:27019'
     healthcheck:
       test: ["CMD", "mongo", "--host", "localhost", "--port", "27019", "--eval", "db.adminCommand('ping')"]
       interval: 10s
@@ -201,8 +190,6 @@ services:
     build: ./users
     depends_on:
       - users_mongoDB
-    ports:
-      - "10001:10001"
     restart: on-failure
     environment:
       - FREE_DAILY_OP=5
@@ -232,8 +219,6 @@ services:
     depends_on:
       - subscriptions_mongoDB
       - users
-    ports:
-      - "11001:11001"
     restart: on-failure
     environment:
       - SECRET_KEY=card_secret_key
@@ -441,8 +426,6 @@ services:
 
   generative-mock:
     build: ./generative-mock
-    ports:
-      - "7860:7860"
     networks:
       - elk
     healthcheck:
@@ -510,8 +493,6 @@ services:
     restart: on-failure
     networks:
       - elk
-    ports:
-      - "4000:4000"
     depends_on:
       rabbitmq:
         condition: service_healthy

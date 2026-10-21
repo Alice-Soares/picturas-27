@@ -139,11 +139,7 @@ A extração de fotogramas liga o domínio do vídeo ao domínio da imagem e per
 
 ### 4.1 Requisitos de Sistema
 
-| **ID** | **Requisito** | **Tipo** | **Prioridade** | **Novo/Alt** | **Origem** | **Como verificar** |
-|--------|---------------|----------|----------------|--------------|------------|--------------------|
-| REQ-VID-FEX-001 | O sistema deve permitir definir intervalo temporal, quantidade máxima e formato de saída para a extração. | F | Deve ter | NOVO | Passos 3-5 | Configurar uma extração e inspecionar o operação. |
-| REQ-VID-FEX-002 | O sistema deve limitar a extração a 1000 fotogramas por operação para registados e 5000 para premium. | F | Deve ter | NOVO | RN2 | Testar os limites e valores acima deles. |
-| REQ-VID-FEX-003 | O sistema deve guardar os fotogramas como imagens JPEG do projeto sem alterar o vídeo original. | F | Deve ter | ALT | RN4-RN5, pós-condição | Verificar ficheiros, projeto e hash do vídeo. |
+Requisitos normativos: `REQ-VID-FEX-001` a `REQ-VID-FEX-011` e requisitos comuns aplicáveis em `docs/RAS-requisitos-video.md`. Os identificadores locais anteriormente usados são retirados por colidirem com os da baseline consolidada.
 
 ### 4.2 Impacto no sistema existente
 
@@ -156,8 +152,10 @@ A extração de fotogramas liga o domínio do vídeo ao domínio da imagem e per
 
 ### 4.3 Matriz de Rastreabilidade
 
-| **Elemento do Caso de Uso** | **Descrição abreviada** | **Requisito(s) de Sistema** |
-|------------------------------|-------------------------|------------------------------|
-| Passos 3-7 | Configurar, estimar e validar | REQ-VID-FEX-001, REQ-VID-FEX-002 |
-| Passos 8-11 | Processar e guardar imagens | REQ-VID-FEX-003 |
-| FA1-FA3 e exceções | Intervalo, cancelamento e limpeza | REQ-VID-FEX-001, REQ-VID-FEX-003 |
+| Elemento | Requisitos canónicos |
+|---|---|
+| Intervalo, quantidade e formato | `REQ-VID-FEX-001` a `REQ-VID-FEX-005` |
+| Limites por perfil | `REQ-VID-FEX-006`, `REQ-VID-FEX-007` |
+| Espaço e destino | `REQ-VID-FEX-008`, `REQ-VID-FEX-010` |
+| Persistência das imagens e imutabilidade | `REQ-VID-FEX-009`, `REQ-VID-COM-017` |
+| Cancelamento e limpeza | `REQ-VID-FEX-011`, `REQ-VID-COM-014` a `REQ-VID-COM-016` |

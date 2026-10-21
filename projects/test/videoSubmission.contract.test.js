@@ -1,22 +1,26 @@
 const assert = require("assert");
+const { toSubmissionResponse } = require("../services/videoSubmission");
 
-const success = {
-  id: "video-reference-id",
-  projectId: "project-id",
-  metadata: {
-    container: "mp4",
-    videoCodec: "h264",
-    audioCodec: "aac",
-    size: 1,
-    duration: 1,
-    width: 1920,
-    height: 1080,
-    fps: 30,
-  },
-};
+describe("video submission response", () => {
+  test("returns the identifier assigned to the stored video subdocument", () => {
+    const response = toSubmissionResponse("project-id", {
+      version: 4,
+      videos: [{
+        _id: "stored-video-id",
+        container: "mp4",
+        videoCodec: "h264",
+        audioCodec: "aac",
+        size: 1,
+        duration: 1,
+        width: 1920,
+        height: 1080,
+        fps: 30,
+      }],
+    });
 
-assert.ok(success.id);
-assert.ok(success.projectId);
-assert.strictEqual(success.metadata.container, "mp4");
-assert.strictEqual(success.metadata.videoCodec, "h264");
-assert.ok(Number.isFinite(success.metadata.duration));
+    assert.strictEqual(response.id, "stored-video-id");
+    assert.strictEqual(response.projectId, "project-id");
+    assert.strictEqual(response.metadata._id, response.id);
+    assert.strictEqual(response.version, 4);
+  });
+});

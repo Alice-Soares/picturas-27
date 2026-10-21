@@ -146,14 +146,7 @@ O recorte temporal é uma operação central de edição de vídeo e permite tra
 
 ### 4.1 Requisitos de Sistema
 
-| **ID** | **Requisito** | **Tipo** | **Prioridade** | **Novo/Alt** | **Origem** | **Como verificar** |
-|--------|---------------|----------|----------------|--------------|------------|--------------------|
-| REQ-VID-TRIM-001 | O sistema deve permitir selecionar início e fim de um segmento de um vídeo acessível no projeto. | F | Deve ter | NOVO | Passos 2-4 | Definir instantes válidos num vídeo conhecido. |
-| REQ-VID-TRIM-002 | O sistema deve rejeitar intervalos fora da duração, com início não anterior ao fim ou com duração inferior a 1 segundo. | F | Deve ter | NOVO | RN1, exceções | Testar cada condição inválida e confirmar que não há operação. |
-| REQ-VID-TRIM-003 | O sistema deve criar um operação assíncrono com estados em fila, em processamento, concluído, falhado ou cancelado. | F | Deve ter | NOVO | Passos 6-8, RN6 | Observar o ciclo de vida do operação. |
-| REQ-VID-TRIM-004 | O sistema deve comunicar estado e progresso pelo canal de eventos existente, sem expor eventos a utilizadores não autorizados. | F | Deve ter | ALT | Passo 9, COM-001 | Executar um operação demorado e testar acesso cruzado. |
-| REQ-VID-TRIM-005 | O sistema deve guardar o recorte como novo vídeo, preservar o áudio correspondente e manter o original inalterado. | F | Deve ter | NOVO | RN2, RN5, pós-condição | Comparar hash, duração, vídeo e áudio. |
-| REQ-VID-TRIM-006 | O sistema deve permitir cancelar operações em fila ou em processamento e limpar temporários sem consumir quota. | F | Deve ter | NOVO | FA1-FA2, RN7 | Cancelar nos dois estados e verificar armazenamento e quota. |
+Requisitos normativos: `REQ-VID-TRIM-001` a `REQ-VID-TRIM-013` e requisitos comuns aplicáveis em `docs/RAS-requisitos-video.md`. Não se mantém numeração local duplicada.
 
 ### 4.2 Impacto no sistema existente
 
@@ -167,9 +160,9 @@ O recorte temporal é uma operação central de edição de vídeo e permite tra
 
 ### 4.3 Matriz de Rastreabilidade
 
-| **Elemento do Caso de Uso** | **Descrição abreviada** | **Requisito(s) de Sistema** |
-|------------------------------|-------------------------|------------------------------|
-| Passos 3-5 | Pré-visualizar e validar intervalo | REQ-VID-TRIM-001, REQ-VID-TRIM-002 |
-| Passos 6-9 | Criar operação e comunicar progresso | REQ-VID-TRIM-003, REQ-VID-TRIM-004 |
-| Passos 10-11 | Guardar novo vídeo | REQ-VID-TRIM-005 |
-| FA1-FA2 e exceções | Cancelar/falhar com limpeza | REQ-VID-TRIM-006 |
+| Elemento | Requisitos canónicos |
+|---|---|
+| Duração e intervalo | `REQ-VID-TRIM-002` a `REQ-VID-TRIM-008` |
+| Estado, fila e progresso | `REQ-VID-TRIM-001`, `REQ-VID-TRIM-009`, `REQ-VID-TRIM-010`, `REQ-VID-COM-011` a `REQ-VID-COM-013` |
+| Resultado e áudio | `REQ-VID-TRIM-011`, `REQ-VID-TRIM-013`, `REQ-VID-COM-017` |
+| Cancelamento, autorização e limpeza | `REQ-VID-TRIM-012`, `REQ-VID-COM-001` a `REQ-VID-COM-003`, `REQ-VID-COM-014` a `REQ-VID-COM-016` |

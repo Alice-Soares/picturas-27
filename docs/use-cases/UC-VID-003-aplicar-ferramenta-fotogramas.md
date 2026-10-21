@@ -140,13 +140,7 @@ Esta funcionalidade valida a extensão do conjunto de ferramentas de imagem para
 
 ### 4.1 Requisitos de Sistema
 
-| **ID** | **Requisito** | **Tipo** | **Prioridade** | **Novo/Alt** | **Origem** | **Como verificar** |
-|--------|---------------|----------|----------------|--------------|------------|--------------------|
-| REQ-VID-FRM-001 | O sistema deve permitir selecionar uma ferramenta de imagem existente e parâmetros compatíveis para aplicação aos fotogramas de um vídeo. | F | Deve ter | ALT | Passos 3-4 | Apresentar apenas ferramentas suportadas e validar parâmetros. |
-| REQ-VID-FRM-002 | O sistema deve extrair, processar e recompor os fotogramas no intervalo e à taxa definidos pelo utilizador. | F | Deve ter | NOVO | Passos 5, 9-11 | Verificar intervalo, número de fotogramas e resultado. |
-| REQ-VID-FRM-003 | O sistema deve preservar a faixa de áudio e a resolução quando a ferramenta não exigir alteração. | F | Deve ter | NOVO | RN4 | Comparar metadados de origem e resultado. |
-| REQ-VID-FRM-004 | O sistema deve aplicar ferramentas compatíveis pela ordem selecionada quando o encadeamento for solicitado. | F | Deveria ter | ALT | FA1 | Submeter duas ferramentas e verificar a ordem. |
-| REQ-VID-FRM-005 | O sistema deve repetir uma vez o processamento de um fotograma que falhe e terminar o operação como falhado se a falha persistir. | F | Deve ter | NOVO | FA2, exceção | Injetar uma falha repetida e verificar limpeza. |
+Requisitos normativos: `REQ-VID-FRM-001` a `REQ-VID-FRM-014` e requisitos comuns aplicáveis em `docs/RAS-requisitos-video.md`. Não se mantém numeração local duplicada.
 
 ### 4.2 Impacto no sistema existente
 
@@ -159,9 +153,10 @@ Esta funcionalidade valida a extensão do conjunto de ferramentas de imagem para
 
 ### 4.3 Matriz de Rastreabilidade
 
-| **Elemento do Caso de Uso** | **Descrição abreviada** | **Requisito(s) de Sistema** |
-|------------------------------|-------------------------|------------------------------|
-| Passos 3-8 | Selecionar ferramenta, parâmetros e validar | REQ-VID-FRM-001, REQ-VID-FRM-002 |
-| Passos 9-12 | Processar fotogramas e gerar resultado | REQ-VID-FRM-002, REQ-VID-FRM-003 |
-| FA1 | Encadear ferramentas | REQ-VID-FRM-004 |
-| FA2-FA3 e exceções | Repetir, cancelar e limpar | REQ-VID-FRM-005 |
+| Elemento | Requisitos canónicos |
+|---|---|
+| Ferramenta e parâmetros | `REQ-VID-FRM-001` a `REQ-VID-FRM-003` |
+| Intervalo, taxa e elegibilidade | `REQ-VID-FRM-004` a `REQ-VID-FRM-008` |
+| Recomposição, áudio e resolução | `REQ-VID-FRM-009`, `REQ-VID-FRM-010`, `REQ-VID-FRM-014`, `REQ-VID-COM-017` |
+| Encadeamento e retry | `REQ-VID-FRM-011` a `REQ-VID-FRM-013` |
+| Autorização, quota, cancelamento e limpeza | `REQ-VID-COM-001` a `REQ-VID-COM-008`, `REQ-VID-COM-014` a `REQ-VID-COM-016` |

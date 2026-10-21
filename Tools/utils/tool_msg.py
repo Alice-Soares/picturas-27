@@ -26,6 +26,7 @@ class ToolMSG:
         'obj_ai': 'obj_ai_queue',
         'people_ai': 'people_ai_queue',
         'expand_ai': 'expand_ai_queue',
+        'video_conversion': 'video_conversion_queue',
         'project': 'project_queue'
     }
     
@@ -63,8 +64,8 @@ class ToolMSG:
                     raise Exception("Make sure, in case of error status, err_code, err_msg and og_img_uri are not None")
                 
                 msg = {
-                    "messageId": msg_id,
-                    "correlationId": resp_msg_id,
+                    "messageId": resp_msg_id,
+                    "correlationId": msg_id,
                     "timestamp": timestamp,
                     "status": status,
                     "error": {
@@ -86,4 +87,4 @@ class ToolMSG:
             
         self._rabbit_mq.send_rabbit_msg(msg, self._proj_queue)
         
-    
+

@@ -2,10 +2,10 @@
 
 **Branch**: `003-apply-tool-to-video-frame` | **Date**: 2026-10-20 | **Spec**: [spec.md](./spec.md)
 
-**Input**: `spec.md` está vazio nesta revisão; o plano usa como fonte funcional
-o caso de uso [UC-VID-003](../../docs/use-cases/UC-VID-003-aplicar-ferramenta-fotogramas.md),
-o catálogo consolidado e o código existente. A especificação deve ser
-preenchida/regenerada antes de `/speckit-tasks`.
+**Input**: [spec.md](./spec.md), o caso de uso
+[UC-VID-003](../../docs/use-cases/UC-VID-003-aplicar-ferramenta-fotogramas.md)
+e o catálogo consolidado. A especificação existe; as decisões de negócio seguem
+essas fontes, não inferências do código.
 
 **Note**: This template is filled in by the `/speckit-plan` command; its definition describes the execution workflow.
 
@@ -69,12 +69,13 @@ _GATE: PASS antes da Fase 0 e PASS após a Fase 1._
   repetição de uma falha, cancelamento e limpeza; paralelismo avançado fica fora.
 - **Rastreabilidade**: PASS — requisitos FRM, componentes, testes e cenários
   serão ligados em [quickstart.md](./quickstart.md).
-- **Requisitos verificáveis**: PASS — limites, estados e regras vêm do UC-VID-003,
-  catálogo e RNG existentes; as questões abertas foram resolvidas nas fontes.
+- **Requisitos verificáveis**: PASS no desenho — limites, estados e regras vêm
+  do UC-VID-003, catálogo e RNG existentes; validação E2E continua pendente.
 - **Arquitetura baseada em evidência**: PASS — FFmpeg já está no Dockerfile e
   RabbitMQ/ferramentas têm contratos existentes.
-- **Responsabilidade da IA**: PASS — decisões e validação ficam documentadas;
-  a ausência de `spec.md` é uma pendência explícita, não uma decisão escondida.
+- **Responsabilidade da IA**: PASS no registo documental — as fontes e os
+  limites de validação estão identificados; consultar `quickstart.md` e
+  `tasks.md` para o trabalho ainda pendente.
 
 ## Project Structure
 

@@ -30,8 +30,28 @@ function publish(operation) {
 function processFrame(input, output, tool) {
   return new Promise((resolve, reject) => {
     const messageId = `video-frame-${uuidv4()}`;
-    pendingFrames.set(messageId, { resolve, reject });
-    send_msg_tool(messageId, new Date().toISOString(), input, output, tool.procedure, tool.params);
+    const timeoutMs = Number(process.env.VIDEO_FRAME_TOOL_TIMEOUT_MS || 60_000);
+    const timeout = setTimeout(() => {
+      pendingFrames.delete(messageId);
+      reject(new Error("VIDEO_FRAME_TOOL_TIMEOUT"));
+    }, timeoutMs);
+    pendingFrames.set(messageId, {
+      resolve: (value) => {
+        clearTimeout(timeout);
+        resolve(value);
+      },
+      reject: (error) => {
+        clearTimeout(timeout);
+        reject(error);
+      },
+    });
+    try {
+      send_msg_tool(messageId, new Date().toISOString(), input, output, tool.procedure, tool.params);
+    } catch (error) {
+      clearTimeout(timeout);
+      pendingFrames.delete(messageId);
+      reject(error);
+    }
   });
 }
 
@@ -130,7 +150,16 @@ async function runFrameToolOperation(operationId) {
       await delete_video(operation.user_id, operation.project_id, objectKey);
       return;
     }
-    const updatedProject = await Project.appendVideoIfVersion(operation.user_id, operation.project_id, {
+    const finalizing = await VideoOperation.findOneAndUpdate(
+      { _id: operationId, status: "processing", commit_locked: { $ne: true } },
+      { $set: { commit_locked: true } },
+      { new: true },
+    );
+    if (!finalizing) {
+      await delete_video(operation.user_id, operation.project_id, objectKey);
+      return;
+    }
+    const updatedProject = await Project.appendVideo(operation.user_id, operation.project_id, {
       user_id: operation.user_id,
       project_id: operation.project_id,
       sourceVideoId: source._id,
@@ -138,14 +167,14 @@ async function runFrameToolOperation(operationId) {
       object_key: objectKey,
       name: `${path.parse(source.name).name}-frame-tool.mp4`,
       ...metadata,
-    }, project.version);
+    });
     if (!updatedProject) {
       await delete_video(operation.user_id, operation.project_id, objectKey);
       throw new Error("VIDEO_FRAME_TOOL_FAILED");
     }
     const result = updatedProject.videos[updatedProject.videos.length - 1];
     const completed = await VideoOperation.findOneAndUpdate(
-      { _id: operationId, status: "processing" },
+      { _id: operationId, status: "processing", commit_locked: true },
       { $set: { status: "completed", progress: 100, finished_at: new Date(), result_video_id: result?._id || null } },
       { new: true },
     );

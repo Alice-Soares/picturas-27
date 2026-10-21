@@ -271,21 +271,14 @@ ports are published only for **development and debugging**.
 
 ### Published directly on the host
 
-| Port    | Service              | URL / Credentials                               |
-| ------- | -------------------- | ----------------------------------------------- |
-| `8080`  | Nginx (HTTPS)        | <https://localhost:8080>                        |
-| `9000`  | SeaweedFS S3 API     | <http://localhost:9000> — `admin` / `admin123`  |
-| `9090`  | SeaweedFS filer UI   | <http://localhost:9090>                         |
-| `11000` | Image Storage        | <http://localhost:11000>                        |
-| `15672` | RabbitMQ Management  | <http://localhost:15672> — `user` / `password`  |
-| `5672`  | RabbitMQ AMQP        | broker endpoint used by the tools               |
-| `10001` | User Service         | <http://localhost:10001>                        |
-| `11001` | Subscription Service | <http://localhost:11001>                        |
-| `9002`  | Project Service      | <http://localhost:9002> (container port `9001`) |
-| `4000`  | WebSocket Gateway    | <http://localhost:4000>                         |
-| `7860`  | Generative mock API  | <http://localhost:7860> (used by `expand_ai`)   |
-| `27018` | MongoDB (projects)   | `mongodb://localhost:27018`                     |
-| `27019` | MongoDB (users)      | `mongodb://localhost:27019`                     |
+| Port   | Service       | URL                            |
+| ------ | ------------- | ------------------------------ |
+| `8080` | Nginx (HTTPS) | <https://localhost:8080>       |
+
+Application services, databases, RabbitMQ, and storage ports stay on the
+Compose network. Use the reverse proxy for app traffic and `docker compose exec`
+for local diagnostics; this prevents direct unauthenticated access to internal
+service APIs and databases.
 
 Make sure the ports above are free before starting; see [Troubleshooting](#-troubleshooting).
 
@@ -380,7 +373,7 @@ Named Docker volumes: `user_data`, `project_data`, `subscription_data`, `image_d
 ### Scaling
 
 - Run more instances of a busy tool: `docker compose up -d --scale brightness_tool=3`
-- Watch queue depth in the RabbitMQ management UI (<http://localhost:15672>)
+- Inspect queues with `docker compose exec rabbitmq rabbitmqctl list_queues`
 - Tune per-container CPU/memory limits in `docker-compose.yaml` to match your machine
 
 Containers are named `picturas-<service>-<n>` (from `name: picturas` in `docker-compose.yaml`),
@@ -474,8 +467,8 @@ docker compose exec users_mongoDB mongo --port 27019
 docker compose exec projects_mongoDB mongo --port 27018
 ```
 
-Stored objects: <http://localhost:9090> (SeaweedFS filer UI).
-Queues and message rates: <http://localhost:15672> (`user` / `password`).
+Stored objects: <https://localhost:8080/s3-console/> (SeaweedFS filer UI).
+Inspect RabbitMQ with `docker compose exec rabbitmq rabbitmqctl list_queues`.
 
 ---
 
@@ -509,8 +502,8 @@ Some models are downloaded or warmed up on first use. `Tools/models/yolov5su.pt`
 but other weights are fetched at runtime — the first request needs network access.
 
 **`expand_ai` fails**
-It depends on `generative-mock` being healthy. Check <http://localhost:7860> and
-`docker compose logs generative-mock`.
+It depends on `generative-mock` being healthy. Check
+`docker compose ps generative-mock` and `docker compose logs generative-mock`.
 
 **Login works, then every request returns 401**
 `JWT_SECRET_KEY` differs between `users`, `api_gateway` and `ws_gateway`.

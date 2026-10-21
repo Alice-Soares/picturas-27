@@ -52,7 +52,7 @@ projeto e metadados; confirmar que a quota não diminuiu.
 ### Tests for User Story 1
 
 - [X] T010 [P] [US1] Criar teste de contrato para sucesso e metadados conforme [specs/001-video-submission/contracts/video-submission.md](./contracts/video-submission.md) em [projects/test/videoSubmission.contract.test.js](../../projects/test/videoSubmission.contract.test.js)
-- [X] T011 [P] [US1] Criar teste de integração de submissão válida e quota inalterada em [projects/test/videoSubmission.integration.test.js](../../projects/test/videoSubmission.integration.test.js), cobrindo `REQ-VID-SUB-001`, `REQ-VID-SUB-004`, `REQ-VID-SUB-005` a `REQ-VID-SUB-007`, `REQ-VID-SUB-010` a `REQ-VID-SUB-015` e `REQ-VID-SUB-025` a `REQ-VID-SUB-029`, `REQ-VID-SUB-032` e `REQ-VID-SUB-033`
+- [ ] T011 [P] [US1] Criar teste de integração de submissão válida e quota inalterada em [projects/test/videoSubmission.integration.test.js](../../projects/test/videoSubmission.integration.test.js), cobrindo `REQ-VID-SUB-001`, `REQ-VID-SUB-004`, `REQ-VID-SUB-005` a `REQ-VID-SUB-007`, `REQ-VID-SUB-010` a `REQ-VID-SUB-015` e `REQ-VID-SUB-025` a `REQ-VID-SUB-029`, `REQ-VID-SUB-032` e `REQ-VID-SUB-033`
 
 ### Implementation for User Story 1
 
@@ -80,7 +80,7 @@ ausência de referência e ausência de objeto parcial.
 
 ### Tests for User Story 2
 
-- [X] T021 [P] [US2] Criar testes de autorização para anónimo, sessão inválida, projeto não autorizado e conteúdo de outro projeto em [projects/test/videoAuthorization.integration.test.js](../../projects/test/videoAuthorization.integration.test.js), cobrindo `REQ-VID-SUB-001` a `REQ-VID-SUB-003`, `REQ-VID-SUB-026`, `REQ-VID-SUB-027` e `REQ-VID-Q-005`
+- [ ] T021 [P] [US2] Criar testes de autorização de ponta a ponta para anónimo, sessão inválida, projeto não autorizado e conteúdo de outro projeto; o teste de política de sala WebSocket não substitui estes cenários, que cobrem `REQ-VID-SUB-001` a `REQ-VID-SUB-003`, `REQ-VID-SUB-026`, `REQ-VID-SUB-027` e `REQ-VID-Q-005`
 - [X] T022 [P] [US2] Criar testes de validação para MP4, H.264, AAC opcional, stream legível, tamanho, duração, resolução e fps em [projects/test/videoValidation.integration.test.js](../../projects/test/videoValidation.integration.test.js), cobrindo `REQ-VID-SUB-005` a `REQ-VID-SUB-014` e `REQ-VID-SUB-016` a `REQ-VID-SUB-023`
 
 ### Implementation for User Story 2
@@ -106,7 +106,7 @@ seguro.
 ### Tests for User Story 3
 
 - [X] T028 [P] [US3] Criar testes de cancelamento e limpeza no serviço de armazenamento em [projects/test/videoCancellation.integration.test.js](../../projects/test/videoCancellation.integration.test.js) e [imageStorageService/test/videoCleanup.test.js](../../imageStorageService/test/videoCleanup.test.js), cobrindo `REQ-VID-SUB-024` e `REQ-VID-Q-007`
-- [X] T029 [P] [US3] Criar testes de falha de rede, armazenamento, validação, duplicados e lote independente em [projects/test/videoFailure.integration.test.js](../../projects/test/videoFailure.integration.test.js), cobrindo `REQ-VID-SUB-024`, `REQ-VID-SUB-030`, `REQ-VID-SUB-031`, `REQ-VID-Q-001`, `REQ-VID-Q-004` e `REQ-VID-Q-008`
+- [ ] T029 [P] [US3] Criar testes de integração de falha de rede, armazenamento, duplicados e lote independente; `videoErrorMapping.test.js` cobre apenas o mapeamento de erros e não demonstra estes fluxos, que cobrem `REQ-VID-SUB-024`, `REQ-VID-SUB-030`, `REQ-VID-SUB-031`, `REQ-VID-Q-001`, `REQ-VID-Q-004` e `REQ-VID-Q-008`
 
 ### Implementation for User Story 3
 
@@ -125,9 +125,9 @@ biblioteca consistentes.
 requisitos.
 
 - [X] T035 [P] Atualizar instruções de execução e testes em [README.md](../../README.md) com os serviços, dependências e cenários do [quickstart.md](./quickstart.md)
-- [X] T036 [P] Confirmar que o fluxo existente de imagens continua funcional e documentar o resultado em [specs/001-video-submission/quickstart.md](./quickstart.md)
-- [X] T037 [P] Executar a matriz de aceitação dos 33 requisitos `REQ-VID-SUB-*` e registar resultados em [specs/001-video-submission/quickstart.md](./quickstart.md)
-- [X] T038 Rever logs e respostas para garantir que não contêm segredos, credenciais, caminhos internos ou detalhes de comandos em [apiGateway/routes/projects.js](../../apiGateway/routes/projects.js), [projects/services/videoErrors.js](../../projects/services/videoErrors.js) e [imageStorageService/route/upload.js](../../imageStorageService/route/upload.js)
+- [ ] T036 [P] Confirmar que o fluxo existente de imagens continua funcional e documentar o resultado em [specs/001-video-submission/quickstart.md](./quickstart.md)
+- [ ] T037 [P] Executar a matriz de aceitação dos 33 requisitos `REQ-VID-SUB-*` e registar resultados em [specs/001-video-submission/quickstart.md](./quickstart.md)
+- [ ] T038 Rever logs e respostas para garantir que não contêm segredos, credenciais, caminhos internos ou detalhes de comandos em [apiGateway/routes/projects.js](../../apiGateway/routes/projects.js), [projects/services/videoErrors.js](../../projects/services/videoErrors.js) e [imageStorageService/route/upload.js](../../imageStorageService/route/upload.js)
 - [ ] T039 Executar `git diff --check`, lint/build/testes disponíveis nos manifests e a validação end-to-end do quickstart antes de marcar o `UC-VID-001` como concluído
 
 ## Dependencies & Execution Order

@@ -178,7 +178,7 @@ router.post("/", function (req, res, next) {
   const user = {
     name: req.body.name || undefined,
     email: req.body.email || undefined,
-    type: req.body.type || "free",
+    type: req.body.type === "anonymous" ? "anonymous" : "free",
     operations: [],
   };
 
@@ -189,11 +189,6 @@ router.post("/", function (req, res, next) {
   } else {
     user.password = req.body.password;
   }
-
-  console.log("---- USERS-MS: REGISTER REQUEST ----");
-  console.log("BODY:", req.body);
-  console.log("USER OBJECT BEFORE SAVE:", user);
-  console.log("User object to persist:", user);
 
   User.create(user)
     .then((createdUser) => {
@@ -206,11 +201,7 @@ router.post("/", function (req, res, next) {
       });
     })
     .catch((err) => {
-      console.error("USERS-MS ERROR CREATING USER:");
-      console.error(err);              // stack completo
-      console.error(err.message);
-      console.error(err?.errors);      // mongoose validation errors
-      console.error(err?.response?.data);
+      console.error("USERS-MS failed to create a user:", err.name || "Error");
 
       res.status(702).jsonp("Error creating a new user.");
     });

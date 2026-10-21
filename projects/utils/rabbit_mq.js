@@ -9,35 +9,65 @@ const exchange = "picturas";
 const rabbit_mq_sv = `amqp://${rabbit_username}:${rabbit_password}@${rabbit_host}:${rabbit_port}`;
 
 function send_rabbit_msg(msg, queue) {
-    amqp.connect(rabbit_mq_sv, (err_sv, connection) => {
-        if (err_sv) throw err_sv;
+    return new Promise((resolve) => {
+        let settled = false;
+        let connection;
+        let channel;
 
-        const close = () => connection.close();
-        connection.createConfirmChannel((err_conn, channel) => {
-            if (err_conn) throw err_conn;
+        const finish = (success, error) => {
+            if (settled) return;
+            settled = true;
+            if (error) console.error("RabbitMQ publish failed:", error.message);
 
-            channel.assertExchange(exchange, 'direct', {
-                durable: true
-            });
+            const closeConnection = () => {
+                if (!connection) return resolve(success);
+                try {
+                    connection.close(() => resolve(success));
+                } catch (_) {
+                    resolve(success);
+                }
+            };
+            if (!channel) return closeConnection();
+            try {
+                channel.close(closeConnection);
+            } catch (_) {
+                closeConnection();
+            }
+        };
 
-            const body = Buffer.from(JSON.stringify(msg));
-            if (queue === "video_audio_queue") {
-                channel.assertQueue(queue, { durable: true }, (err_queue) => {
-                    if (err_queue) { close(); throw err_queue; }
-                    channel.bindQueue(queue, exchange, queue, {}, (err_bind) => {
-                        if (err_bind) { close(); throw err_bind; }
-                        channel.publish(exchange, queue, body, { persistent: true }, (err_publish) => {
-                            close();
-                            if (err_publish) throw err_publish;
+        amqp.connect(rabbit_mq_sv, (connectError, connected) => {
+            if (connectError) return finish(false, connectError);
+            connection = connected;
+            connection.on("error", (error) => finish(false, error));
+            connection.createConfirmChannel((channelError, createdChannel) => {
+                if (channelError) return finish(false, channelError);
+                channel = createdChannel;
+                channel.on("error", (error) => finish(false, error));
+                channel.assertExchange(exchange, "direct", { durable: true }, (exchangeError) => {
+                    if (settled) return;
+                    if (exchangeError) return finish(false, exchangeError);
+
+                    const publish = () => {
+                        if (settled) return;
+                        try {
+                            channel.publish(exchange, queue, Buffer.from(JSON.stringify(msg)), { persistent: true });
+                            channel.waitForConfirms((publishError) => finish(!publishError, publishError));
+                        } catch (publishError) {
+                            finish(false, publishError);
+                        }
+                    };
+
+                    if (queue !== "video_audio_queue") return publish();
+                    channel.assertQueue(queue, { durable: true }, (queueError) => {
+                        if (settled) return;
+                        if (queueError) return finish(false, queueError);
+                        channel.bindQueue(queue, exchange, queue, {}, (bindError) => {
+                            if (bindError) return finish(false, bindError);
+                            publish();
                         });
                     });
                 });
-            } else {
-                channel.publish(exchange, queue, body, {}, (err_publish) => {
-                    close();
-                    if (err_publish) throw err_publish;
-                });
-            }
+            });
         });
     });
 }

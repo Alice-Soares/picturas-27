@@ -27,7 +27,11 @@ async function dispatchAudio(operation, source, replacementFile) {
     pending.set(String(operation._id), { dir, input, output, replacement, source, operation, timeout, committing: false });
     await download_content(operation.user_id, operation.project_id, "video-src", source.object_key, input);
     if (!pending.has(String(operation._id))) return;
-    send_rabbit_msg(audioRequest({ operation, inputVideoURI: input, replacementAudioURI: replacement, outputURI: output }), AUDIO_QUEUE);
+    const queued = await send_rabbit_msg(
+      audioRequest({ operation, inputVideoURI: input, replacementAudioURI: replacement, outputURI: output }),
+      AUDIO_QUEUE,
+    );
+    if (!queued) throw new Error("VIDEO_AUDIO_QUEUE_UNAVAILABLE");
   } catch (error) { const entry = pending.get(String(operation._id)); if (entry) clearTimeout(entry.timeout); pending.delete(String(operation._id)); await cleanup(dir); throw error; }
 }
 

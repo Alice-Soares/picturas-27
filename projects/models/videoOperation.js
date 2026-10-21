@@ -59,6 +59,7 @@ const videoOperationSchema = new mongoose.Schema(
       required: true,
     },
     progress: { type: Number, min: 0, max: 100, default: 0 },
+    commit_locked: { type: Boolean, default: false },
     result_video_id: { type: mongoose.Schema.Types.ObjectId, default: null },
     error_code: { type: String, default: null },
     error_message: { type: String, default: null },

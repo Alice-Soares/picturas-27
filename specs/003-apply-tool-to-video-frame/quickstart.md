@@ -41,16 +41,16 @@
 
 ## Evidência executada
 
-- `projects/test/run-tests.js`: 21 testes passaram, incluindo contrato da
-   operação, contrato da cadeia, retry e integração FFmpeg com vídeo temporário.
-- A integração FFmpeg confirmou resolução `160x90` e presença da faixa de
-   áudio no vídeo recomposto.
-- `frontend`: `npx tsc --noEmit` passou após o filtro de ferramentas compatíveis.
-- `wsGateway/test/project_events.test.js` confirmou que cada evento é emitido
-   apenas para a sala `project:<id>` correspondente.
-- Os cenários que exigem MongoDB, RabbitMQ, storage, workers e autenticação
-   ativos ainda devem ser executados com Docker Compose; não são declarados como
-   validados localmente.
+- Em 2026-10-21, `docker compose run --rm --no-deps projects node
+  test/run-tests.js` passou com 36 testes, incluindo validação de frame-tool,
+  retry, recomposição, validação de extração e contratos de conversão.
+- `npx tsc --noEmit` e o build Docker do frontend passaram; o build reportou
+  avisos existentes de dependências de `useEffect` e uso de `<img>`.
+- Um cenário Docker da baseline de imagem adicionou e removeu uma ferramenta e
+  confirmou a persistência da remoção após nova leitura. Não valida o
+  processamento de vídeo.
+- Os cenários end-to-end específicos de `UC-VID-003` com vídeo, RabbitMQ,
+  workers, quota, cancelamento e armazenamento permanecem pendentes.
 
 ## Rastreabilidade
 

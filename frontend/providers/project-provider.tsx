@@ -67,12 +67,12 @@ export function ProjectProvider({
   useEffect(() => {
     if (!socket.data) return;
     const projectId = project._id;
-    socket.data.emit("join-project", projectId);
+    socket.data.emit("join-project", { projectId, ownerId: ownerId || project.user_id, shareId });
 
     return () => {
       socket.data?.emit("leave-project", projectId);
     };
-  }, [socket.data, project._id]);
+  }, [socket.data, project._id, project.user_id, ownerId, shareId]);
 
   // manter state tools alinhado com o project vindo do backend
   useEffect(() => {

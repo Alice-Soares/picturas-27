@@ -135,15 +135,23 @@ async function runFrameExtractionOperation(operationId) {
       timestampSeconds: result.timestamp_seconds,
       mimeType: "image/jpeg",
     }));
-    const updatedProject = await Project.appendImagesIfVersion(
+    const finalizing = await VideoOperation.findOneAndUpdate(
+      { _id: operationId, status: "processing", commit_locked: { $ne: true } },
+      { $set: { commit_locked: true } },
+      { new: true },
+    );
+    if (!finalizing) {
+      await removeUploadedImages(latest);
+      return;
+    }
+    const updatedProject = await Project.appendImages(
       operation.user_id,
       targetProjectId,
       references,
-      destination.version,
     );
     if (!updatedProject) throw new Error("VIDEO_FRAME_EXTRACT_FAILED");
     const completed = await VideoOperation.findOneAndUpdate(
-      { _id: operationId, status: "processing" },
+      { _id: operationId, status: "processing", commit_locked: true },
       { $set: { status: "completed", progress: 100, finished_at: new Date() } },
       { new: true },
     );

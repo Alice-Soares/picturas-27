@@ -139,18 +139,7 @@ Esta funcionalidade é a base de todo o suporte a vídeo no PictuRAS, porque sem
 
 ### 4.1 Requisitos de Sistema
 
-| **ID** | **Requisito** | **Tipo** | **Prioridade** | **Novo/Alt** | **Origem** | **Como verificar** |
-|--------|---------------|----------|----------------|--------------|------------|--------------------|
-| REQ-VID-SUB-001 | O sistema deve permitir a submissão de vídeos apenas a utilizadores registados ou premium com sessão válida. | F | Deve ter | ALT | UC-VID-001, FA4, RN1 | Tentar submeter vídeo sem sessão e com os dois perfis autorizados. |
-| REQ-VID-SUB-002 | O sistema deve aceitar no MVP vídeos MP4 com vídeo H.264 e, quando exista áudio, AAC. | F | Deve ter | NOVO | UC-VID-001, RN4 | Submeter ficheiros compatíveis e incompatíveis. |
-| REQ-VID-SUB-003 | O sistema deve extrair e guardar codec, resolução, duração, taxa de fotogramas e tamanho. | F | Deve ter | NOVO | UC-VID-001, passo 7 | Inspecionar o registo após uma submissão válida. |
-| REQ-VID-SUB-004 | O sistema deve rejeitar vídeos que excedam os limites do perfil antes de os associar ao projeto. | F | Deve ter | NOVO | UC-VID-001, passos 8, RN2-RN3 | Testar ficheiros no limite e acima de cada limite. |
-| REQ-VID-SUB-005 | O sistema deve guardar o vídeo validado através da fachada de armazenamento existente, criar a referência no projeto e manter o original disponível para operações posteriores. | F | Deve ter | ALT | UC-VID-001, passos 4, 9-10, RN7-RN8 | Verificar objeto, registo e associação ao projeto. |
-| REQ-VID-SUB-006 | O sistema deve remover temporários e não criar referências persistentes quando a submissão for rejeitada, cancelada ou falhar. | F | Deve ter | NOVO | UC-VID-001, FA3, exceções | Interromper e provocar falhas durante o upload. |
-| REQ-VID-SUB-030 | O sistema deve devolver um resultado independente para cada vídeo de um lote. | F | Deve ter | NOVO | UC-VID-001, FA2 | Submeter um lote misto e verificar o estado de cada vídeo. |
-| REQ-VID-SUB-031 | O sistema deve permitir manter ambos ou cancelar quando o nome do vídeo duplicar um conteúdo existente, sem substituir o original no MVP. | F | Deve ter | NOVO | UC-VID-001, FA1, RN8 | Submeter nome duplicado e executar as duas opções. |
-| REQ-VID-SUB-032 | O sistema deve aplicar os limites de tamanho usando unidades decimais. | F | Deve ter | NOVO | UC-VID-001, RN9 | Testar valores no limite e acima dele. |
-| REQ-VID-SUB-033 | O sistema deve receber o vídeo completo em ficheiro temporário em disco, sem o manter completo em memória durante a submissão. | F | Deve ter | NOVO | UC-VID-001, RN10 | Inspecionar o fluxo de upload e o consumo de memória. |
+Requisitos normativos: `REQ-VID-SUB-001` a `REQ-VID-SUB-033` em `docs/RAS-requisitos-video.md`, secção UC-VID-001. Esta secção não cria uma segunda numeração local.
 
 ### 4.2 Impacto no sistema existente
 
@@ -164,9 +153,9 @@ Esta funcionalidade é a base de todo o suporte a vídeo no PictuRAS, porque sem
 
 ### 4.3 Matriz de Rastreabilidade
 
-| **Elemento do Caso de Uso** | **Descrição abreviada** | **Requisito(s) de Sistema** |
-|------------------------------|-------------------------|------------------------------|
-| Passos 2-3 | Validar perfil, extensão e conteúdo | REQ-VID-SUB-001, REQ-VID-SUB-002 |
-| Passos 4-8 | Transferir, inspecionar e aplicar limites | REQ-VID-SUB-003, REQ-VID-SUB-004, REQ-VID-SUB-032, REQ-VID-SUB-033 |
-| Passos 9-11 | Persistir e associar ao projeto | REQ-VID-SUB-005 |
-| FA1-FA4 e exceções | Duplicados, lote, cancelamento e rejeição sem resíduos | REQ-VID-SUB-006, REQ-VID-SUB-030, REQ-VID-SUB-031 |
+| Elemento | Requisitos canónicos |
+|---|---|
+| Passos 2-3: autenticação e autorização | `REQ-VID-SUB-001` a `REQ-VID-SUB-003` |
+| Passos 4-8: validação, metadados e limites | `REQ-VID-SUB-004` a `REQ-VID-SUB-023`, `REQ-VID-SUB-032`, `REQ-VID-SUB-033` |
+| Passos 9-11: persistência e associação | `REQ-VID-SUB-015`, `REQ-VID-SUB-026` a `REQ-VID-SUB-029` |
+| Alternativas e exceções: limpeza, lote e duplicados | `REQ-VID-SUB-024`, `REQ-VID-SUB-030`, `REQ-VID-SUB-031` |

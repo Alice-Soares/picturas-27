@@ -137,11 +137,7 @@ A conversão de vídeo permite adaptar conteúdos a diferentes dispositivos e co
 
 ### 4.1 Requisitos de Sistema
 
-| **ID** | **Requisito** | **Tipo** | **Prioridade** | **Novo/Alt** | **Origem** | **Como verificar** |
-|--------|---------------|----------|----------------|--------------|------------|--------------------|
-| REQ-VID-CONV-001 | O sistema deve apresentar e validar apenas combinações de contentor, codec e resolução suportadas pelo perfil e pelo MVP. | F | Deve ter | NOVO | Passos 3-4, RN1-RN2 | Selecionar combinações válidas e inválidas. |
-| REQ-VID-CONV-002 | O sistema deve executar a conversão de forma assíncrona, comunicar progresso e disponibilizar o novo ficheiro quando concluída. | F | Deve ter | NOVO | Passos 7-10 | Verificar operação, eventos e resultado. |
-| REQ-VID-CONV-003 | Quando a saída for MP4, o sistema deve codificar o áudio como AAC e manter o vídeo original intacto. | F | Deve ter | NOVO | RN4-RN5 | Inspecionar codecs e comparar o original. |
+Requisitos normativos: `REQ-VID-CONV-001` a `REQ-VID-CONV-011` e requisitos comuns aplicáveis em `docs/RAS-requisitos-video.md`. A numeração local anteriormente usada é retirada por colidir com a numeração canónica.
 
 ### 4.2 Impacto no sistema existente
 
@@ -154,9 +150,10 @@ A conversão de vídeo permite adaptar conteúdos a diferentes dispositivos e co
 
 ### 4.3 Matriz de Rastreabilidade
 
-| **Elemento do Caso de Uso** | **Descrição abreviada** | **Requisito(s) de Sistema** |
-|------------------------------|-------------------------|------------------------------|
-| Passos 1-5 | Apresentar e validar opções | REQ-VID-CONV-001 |
-| Passos 6-8 | Criar operação e comunicar progresso | REQ-VID-CONV-002 |
-| Passos 9-10 | Guardar conversão sem substituir origem | REQ-VID-CONV-003 |
-| FA2 e exceções | Cancelar ou falhar com limpeza | REQ-VID-CONV-002 |
+| Elemento | Requisitos canónicos |
+|---|---|
+| Origem, formatos, codecs e resolução | `REQ-VID-CONV-001` a `REQ-VID-CONV-004` |
+| Combinações e limites de perfil | `REQ-VID-CONV-005` a `REQ-VID-CONV-007` |
+| Estimativa | `REQ-VID-CONV-008` |
+| Execução, resultado e progresso | `REQ-VID-CONV-009` a `REQ-VID-CONV-011`, `REQ-VID-COM-017` |
+| Autorização, quota e limpeza | `REQ-VID-COM-001` a `REQ-VID-COM-008`, `REQ-VID-COM-014` a `REQ-VID-COM-016` |

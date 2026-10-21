@@ -137,13 +137,17 @@ export function AppliedToolsList() {
         opId,
       },
       {
-        onSuccess: () => {
+        onSuccess: (newVersionHeader) => {
           const remainingTools = tools.filter((t) => t._id !== id);
           setTools(remainingTools);
 
           // Não pedir preview de uma pipeline vazia: o backend rejeita esse pedido.
           if (mode === "edit" && imageId && remainingTools.length > 0) {
-            preview.mutate({ imageId, projectVersion: project.version });
+            const newVersion = Number(newVersionHeader);
+            preview.mutate({
+              imageId,
+              projectVersion: Number.isFinite(newVersion) ? newVersion : project.version + 1,
+            });
           }
         },
         onError: (error) => {
@@ -173,7 +177,7 @@ export function AppliedToolsList() {
         opId,
       },
       {
-        onSuccess: () => {
+        onSuccess: (newVersionHeader) => {
           const updated = tools.slice(0, -1);
           setTools(updated);
 
@@ -181,7 +185,11 @@ export function AppliedToolsList() {
           if (mode === "edit" && imageId) {
             // se não houver tools, não faz sentido preview com pipeline vazia
             if (updated.length > 0) {
-              preview.mutate({ imageId, projectVersion: project.version });
+              const newVersion = Number(newVersionHeader);
+              preview.mutate({
+                imageId,
+                projectVersion: Number.isFinite(newVersion) ? newVersion : project.version + 1,
+              });
             }
           }
         },

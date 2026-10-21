@@ -3,6 +3,7 @@ import {
   addProject,
   addProjectImages,
   addProjectVideo,
+  fetchProject,
   createProjectVideoTrim,
   getProjectVideoTrim,
   cancelProjectVideoTrim,
@@ -527,16 +528,33 @@ export const useDeleteProjectTool = (
   const projectKey = ["project", uid, pid, token, ownerId, shareId];
 
   return useMutation({
-    mutationFn: (args: { toolId: string; projectVersion: number; opId?: string }) =>
-      deleteProjectTool({
-        uid,
-        pid,
-        toolId: args.toolId,
-        token,
-        ownerId: ownerId ?? uid,
-        shareId,
-        projectVersion: args.projectVersion,
-      }),
+    mutationFn: async (args: { toolId: string; projectVersion: number; opId?: string }) => {
+      const request = (projectVersion: number) =>
+        deleteProjectTool({
+          uid,
+          pid,
+          toolId: args.toolId,
+          token,
+          ownerId: ownerId ?? uid,
+          shareId,
+          projectVersion,
+        });
+
+      try {
+        return await request(args.projectVersion);
+      } catch (error: any) {
+        // Dirty sync and other edits can advance the version between render and
+        // click. Refresh once, then retry against the current project version.
+        if (error?.response?.status !== 409) throw error;
+
+        const current = await fetchProject(uid, pid, token, ownerId ?? uid, shareId);
+        const toolStillExists = current.tools.some(
+          (tool) => String(tool._id) === String(args.toolId),
+        );
+        if (!toolStillExists) return String(current.version);
+        return request(current.version);
+      }
+    },
 
     onSuccess: (newVersionHeader) => {
       bumpProjectVersion(qc, projectKey, newVersionHeader);

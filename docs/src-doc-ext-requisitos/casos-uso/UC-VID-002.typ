@@ -120,7 +120,7 @@
 #tabela(
   colunas: (1.4cm, 1fr, 5cm),
   [ID], [Questão], [Resolução],
-  [Q1], [O sistema deve permitir que o utilizador escolha um formato de saída diferente do original?], [Decidida -> RN2 / REQ-VID-TRIM-005: o recorte preserva formato/codec original; conversão é delegada ao UC-VID-004.],
+  [Q1], [O sistema deve permitir que o utilizador escolha um formato de saída diferente do original?], [Decidida -> o recorte preserva formato/codec original; a conversão é delegada ao UC-VID-004. Esta regra não reutiliza um ID de requisito de validação do instante inicial.],
   [Q2], [Deve existir um limite máximo de duração por segmento no MVP?], [Decidida -> RNG-01 / RN3: limitada à duração máxima do perfil do utilizador (5 min registado, 30 min premium).],
   [Q3], [O vídeo recortado deve substituir o original ou criar um novo ficheiro no projeto?], [Decidida -> DQ-003 / RN2: original é imutável; resultado criado como novo conteúdo no projeto.],
   [Q4], [O sistema deve permitir a retoma de um recorte cancelado?], [Adiada para Fase 3 (no MVP o cancelamento limpa temporários sem suporte a retoma).],

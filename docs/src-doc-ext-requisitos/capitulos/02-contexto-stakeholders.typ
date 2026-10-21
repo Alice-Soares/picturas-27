@@ -33,7 +33,7 @@ A @tab-perfis-video sintetiza as condições de acesso estabelecidas para o MVP,
     [Utilizador Anónimo], [Operações de imagem limitadas e imagens pequenas; sem autenticação], [As regras de imagem da _baseline_ mantêm-se. Sem acesso a submissão ou processamento de vídeo no MVP.], [UC-VID-001/RN1 \ UC-VID-002/RN4 \ UC-VID-003/RN1 \ UC-VID-007/RN1 \ RNG-02],
     [Utilizador Registado], [Operações básicas de imagem sem limite diário; quota de 5 operações avançadas de imagem por dia; projetos persistentes], [Para vídeo: submissão até 100 MB, 5 min, 1920×1080 e 60 fps, sem consumir quota. Cada operação aceite de processamento conta como 1 operação avançada (mesmo que processe vários fotogramas/ficheiros) e usa a quota diária de 5; falhas, cancelamentos e operações sem efeito não consomem quota.], [UC-VID-001/RN2,RN5,RN6 \ UC-VID-002/RN3,RN7 \ UC-VID-003/RN2,RN3 \ UC-VID-004/RN2,RN3 \ UC-VID-005/RN2,RN3 \ UC-VID-006/RN1,RN2,RN4 \ UC-VID-007/RN2,RN4 \ RNG-03, RNG-04],
     [Utilizador Premium], [Sem quota diária de operações avançadas de imagem; acesso a funcionalidades avançadas/IA], [Para vídeo: sem quota diária de processamento, mas com limites técnicos. Submissão até 1 GB, 30 min, 3840×2160 e 60 fps; concatenação até 15 vídeos e extração até 5000 fotogramas.], [UC-VID-001/RN3 \ UC-VID-003/RN3 \ UC-VID-004/RN2 \ UC-VID-005/RN2 \ UC-VID-006/RN1,RN2 \ RNG-03, RNG-04],
-  ),
+),
 ) <tab-perfis-video>
 
 
@@ -41,20 +41,18 @@ A @tab-perfis-video sintetiza as condições de acesso estabelecidas para o MVP,
 
 A introdução de vídeo não altera substancialmente o conjunto de intervenientes do PictuRAS, mas acrescenta novos interesses e responsabilidades aos já identificados na solução de base. A revisão incide, sobretudo, na utilização das novas funcionalidades, no controlo dos recursos computacionais e na manutenção da qualidade do serviço. A nomenclatura dos intervenientes coincide integralmente com a utilizada na secção de cabeçalho de cada caso de uso, detalhando-se os seus interesses específicos e desdobramentos operacionais na tabela seguinte. 
 
-*TODO:* REVER A COLUNA DE UC/REQUISITOS PARA VER SE BATE CERTO E ESTA COERENTE
-
 #tab([_Stakeholders_ e interesses (novos ou revistos)],
   tabela(
     colunas: (3.2cm, 1.8cm, 1fr, 1.8cm, 2.8cm),
     [_Stakeholder_], [Estado], [Interesse(s) relativamente ao vídeo], [Influência], [UC / requisitos],
-    [Utilizador Registado], [Revisto], [Submeter e transformar vídeos (recorte, conversão, extração de imagens, áudio, filtros) sem perda de qualidade, com acompanhamento de progresso em tempo real, sem corrupção do ficheiro original e com gestão transparente da sua quota diária de 5 operações.], [Alta], [UC-VID-001 a UC-VID-007; UC07; REQ-VID-SUB-001, REQ-VID-SUB-016 a 019, REQ-VID-SUB-025, REQ-VID-COM-004, 005, 007, 008, 011, 012, 017, 018, 020; RF45; RNF44],
-    [Utilizador Premium], [Revisto], [Executar processamentos intensivos sobre vídeos longos (até 30 min) e em alta resolução (até 4K) sem restrições de quotas diárias, com tempos de resposta compatíveis com o tamanho do vídeo e garantia de armazenamento seguro na nuvem.], [Alta], [UC-VID-001 a UC-VID-007; REQ-VID-SUB-001, REQ-VID-SUB-020 a 023, REQ-VID-COM-006; UC06; RF44; RNF43, RNF45],
-    [Utilizador Anónimo], [Revisto], [Manter a facilidade de utilização rápida para imagens estáticas; obter retorno claro e mensagens informativas sobre as razões da indisponibilidade de vídeo e incentivo à criação de conta.], [Média], [UC-VID-001; REQ-VID-SUB-002; RNF48],
-    [Proprietário do Sistema], [Novo], [Salvaguardar a viabilidade económica e o controlo de custos computacionais e de armazenamento; assegurar o cumprimento rigoroso das quotas por perfil; potenciar a conversão de utilizadores gratuitos para planos Premium através do valor acrescentado das funcionalidades de vídeo.], [Alta], [UC-VID-001 a UC-VID-007; RNG-01 a RNG-05; REQ-VID-SUB-016 a 025; REQ-VID-COM-004 a 008],
-    [Equipa de Desenvolvimento], [Revisto], [Garantir a estabilidade e escalabilidade da arquitetura de modo a integrar o processamento de vídeo, assegurar a fiabilidade das operações e a gestão adequada de falhas, preservar a compatibilidade com as funcionalidades de imagem e facilitar a manutenção e evolução da solução.], [Alta], [UC-VID-001 a UC-VID-007; REQ-VID-COM-009 a 020; REQ-VID-Q-001 a 016; RNF43, RNF46],
-    [Serviço Cloud (MinIO)], [Revisto], [Assegurar a persistência segura e performante de ficheiros multimédia pesados, garantindo isolamento por utilizador/projeto e integridade dos dados sem ficheiros órfãos.], [Média], [UC-VID-001; UC-VID-002 a UC-VID-007; REQ-VID-SUB-015, 024, 026 a 029; REQ-VID-COM-014 a 018; RNF45],
-    [Convidado por Link], [Revisto], [Visualizar (ou editar, conforme as permissões) projetos partilhados que contenham vídeo, com reprodução fluida.], [Média], [UC07; RF41, RF45, RF52 a RF57; RNF44, RNF45, RNF53],
-    [Administrador de Sistema], [Revisto], [Assegurar que os vídeos armazenados e partilhados cumprem as regras de privacidade e RGPD, incluindo encriptação e revogação de partilhas.], [Alta], [UC07; RNF44; REQ-VID-COM-001 a 003, 013, 019],
+    [Utilizador Registado], [Revisto], [Submeter e transformar vídeos através dos fluxos implementados (recorte, frame-tool, conversão e extração), com acompanhamento de estado e preservação do original. Merge e gestão de áudio continuam fora do MVP implementado.], [Alta], [UC-VID-001 a UC-VID-005; REQ-VID-SUB; REQ-VID-TRIM; REQ-VID-FRM; REQ-VID-CONV; REQ-VID-FEX],
+    [Utilizador Premium], [Revisto], [Executar os fluxos de vídeo implementados dentro dos limites técnicos premium e sem quota diária de operações avançadas.], [Alta], [UC-VID-001 a UC-VID-005; REQ-VID-SUB-020 a REQ-VID-SUB-023; RNG-03, RNG-04],
+    [Utilizador Anónimo], [Revisto], [Manter o acesso às ferramentas de imagem estática; vídeo exige perfil autenticado autorizado.], [Média], [UC-VID-001; REQ-VID-SUB-001 a REQ-VID-SUB-003; RNG-02],
+    [Proprietário do Sistema], [Novo], [Controlar custos computacionais e de armazenamento e assegurar aplicação consistente das quotas por perfil.], [Alta], [UC-VID-001 a UC-VID-005; RNG-01 a RNG-07; REQ-VID-COM-004 a REQ-VID-COM-008],
+    [Equipa de Desenvolvimento], [Revisto], [Manter os fluxos de imagem compatíveis, tratar falhas e facilitar a manutenção das operações assíncronas de vídeo.], [Alta], [UC-VID-001 a UC-VID-005; REQ-VID-COM-009 a REQ-VID-COM-020; REQ-VID-Q-001 a REQ-VID-Q-016],
+    [Armazenamento de objetos (SeaweedFS/S3)], [Revisto], [Persistir conteúdos originais e resultados derivados, mantendo isolamento de objetos por projeto.], [Média], [UC-VID-001 a UC-VID-005; REQ-VID-SUB-015, REQ-VID-SUB-024, REQ-VID-COM-014 a REQ-VID-COM-018],
+    [Convidado por link], [Não confirmado para vídeo], [As permissões de edição por link aplicam-se à baseline de projetos; acesso do convidado às operações de vídeo não é declarado até ser decidido e validado.], [Média], [REQ-VID-COM-001 a REQ-VID-COM-003; decisão pendente para vídeo partilhado],
+    [Administrador de sistema], [Revisto], [Assegurar políticas de segurança e privacidade aplicáveis aos conteúdos e projetos.], [Alta], [REQ-VID-COM-001 a REQ-VID-COM-003, REQ-VID-COM-019],
   ),
   )
 
