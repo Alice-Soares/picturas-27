@@ -30,7 +30,7 @@ Projects Service.
 
 **Performance Goals**: Operações demoradas devem ser assíncronas; operações com duração superior a 5 segundos devem publicar pelo menos uma atualização de progresso. Não é introduzida meta de throughput no MVP.
 
-**Constraints**: MP3 e M4A/AAC são os únicos formatos de substituição; original imutável; sem resultados parciais; quota devolvida em falha/cancelamento/sem efeito; acesso apenas ao projeto autorizado; sem múltiplas faixas no MVP.
+**Constraints**: Substituição aceita MP3, M4A/AAC ou vídeo com faixa sonora descodificável (usa apenas a primeira faixa de áudio); original imutável; sem resultados parciais; quota devolvida em falha/cancelamento/sem efeito; acesso apenas ao projeto autorizado; sem seleção manual de múltiplas faixas no MVP.
 
 **Scale/Scope**: Um caso de uso de vídeo, três ações de áudio, uma nova operação assíncrona e um download temporário M4A/AAC; sem reescrita do pipeline de imagens.
 

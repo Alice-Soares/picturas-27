@@ -7,6 +7,16 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { createProjectVideoAudio, getProjectVideoAudio, cancelProjectVideoAudio, downloadProjectVideoAudio, ProjectVideo } from "@/lib/projects";
 
+function audioErrorMessage(error: unknown) {
+  const responseError = (error as { response?: { data?: { error?: unknown } } })?.response?.data?.error;
+  const code = typeof responseError === "string"
+    ? responseError
+    : (responseError as { code?: string } | undefined)?.code;
+  if (code === "VIDEO_AUDIO_NO_TRACK") return "O vídeo escolhido não contém uma faixa de áudio.";
+  if (code === "VIDEO_AUDIO_FORMAT_UNSUPPORTED") return "Formato não suportado. Escolhe MP3, M4A/AAC ou um vídeo válido com áudio.";
+  return (error as Error)?.message || "Não foi possível processar o áudio.";
+}
+
 export function VideoAudioDialog({ video, uid, pid, token, projectVersion, canEdit }: { video: ProjectVideo; uid: string; pid: string; token: string; projectVersion: number; canEdit?: boolean }) {
   const [open, setOpen] = useState(false); const [file, setFile] = useState<File>();
   const [start, setStart] = useState(""); const [end, setEnd] = useState(""); const [status, setStatus] = useState(""); const [error, setError] = useState("");
@@ -38,7 +48,7 @@ export function VideoAudioDialog({ video, uid, pid, token, projectVersion, canEd
       }
       else setError(result.errorCode || "A operação não foi concluída.");
       setActiveOperation(undefined);
-    } catch (e) { setActiveOperation(undefined); setError((e as Error).message || "Não foi possível processar o áudio."); setStatus(""); }
+    } catch (e) { setActiveOperation(undefined); setError(audioErrorMessage(e)); setStatus(""); }
   }
   return <Dialog open={open} onOpenChange={setOpen}>
     <DialogTrigger asChild><Button variant="outline" disabled={!canEdit}>Gerir áudio</Button></DialogTrigger>
@@ -47,7 +57,8 @@ export function VideoAudioDialog({ video, uid, pid, token, projectVersion, canEd
       <div className="space-y-3">
         <Button className="w-full" onClick={() => run("remove")}>Remover áudio</Button>
         <div className="space-y-2 rounded border p-3">
-          <Input type="file" accept=".mp3,.m4a,audio/mpeg,audio/mp4" onChange={(event) => setFile(event.target.files?.[0])} />
+          <Input type="file" accept="video/*,.mp3,.m4a,audio/mpeg,audio/mp4" onChange={(event) => setFile(event.target.files?.[0])} />
+          <p className="text-xs text-muted-foreground">Podes escolher MP3, M4A ou um vídeo com áudio. De um vídeo será usada apenas a primeira faixa de áudio.</p>
           <div className="grid grid-cols-2 gap-2"><Input aria-label="Início do áudio (segundos)" placeholder="Início (opcional)" type="number" min="0" value={start} onChange={(e) => setStart(e.target.value)} /><Input aria-label="Fim do áudio (segundos)" placeholder="Fim (opcional)" type="number" min="0" value={end} onChange={(e) => setEnd(e.target.value)} /></div>
           <Button className="w-full" disabled={!file} onClick={() => run("replace")}>Substituir áudio</Button>
         </div>

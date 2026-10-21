@@ -35,10 +35,11 @@ unchanged. Repeat for a source without audio and verify no result or quota use.
 
 ### Replace
 
-Call the multipart replace endpoint with MP3 and M4A/AAC. Verify MP4/AAC
-results, source preservation, safe rejection of unsupported formats, and the
-shorter/longer interval semantics: remaining video has no audio when the input
-is shorter and the input is clipped when longer.
+Call the multipart replace endpoint with MP3, M4A/AAC and a video containing
+audio. Verify video input contributes only its first audio stream, while the
+result keeps the target video's picture and has MP4/AAC output. Also verify
+source preservation, safe rejection of invalid/no-audio inputs, and the
+shorter/longer interval semantics.
 
 ### Extract
 

@@ -29,7 +29,7 @@ media, error and message foundations required by all three user stories.
 - [ ] T006 Extend `projects/models/videoOperation.js` with nullable replacement-input fields, `audio_start_seconds`, `audio_end_seconds`, audio output metadata, and a private temporary download path for extraction results
 - [ ] T007 Add the authenticated Projects Service `audio-download` stream endpoint and its API Gateway proxy; remove the temporary result after transfer
 - [ ] T008 [P] Add `projects/services/videoAudioErrors.js` mapping internal failures to safe public codes without storage paths, credentials, FFmpeg stderr or stack traces
-- [ ] T009 [P] Add `projects/services/videoAudioValidation.js` to accept only MP3 and M4A/AAC, validate media content with FFprobe, reject unsupported/corrupt input, and validate optional intervals against detected audio duration
+- [ ] T009 [P] Add `projects/services/videoAudioValidation.js` to accept MP3, M4A/AAC and video with a decodable audio stream, validate media content with FFprobe rather than extension/MIME, reject invalid/no-audio input, and validate optional intervals against detected audio duration
 - [ ] T010 [P] Add `projects/utils/videoAudioMsg.js` with correlated `video_audio` requests and response recognition; keep all worker paths internal
 - [ ] T011 [P] Extend `projects/utils/videoOperationMsg.js` with `audioAction` and `resultAudioId` while preserving existing event fields and operation types
 - [ ] T012 [P] Ensure temporary audio outputs use the shared media volume and are removed after download or expiry; do not persist extraction output through the project storage façade
@@ -72,27 +72,29 @@ recommended MVP increment.
 
 ## Phase 4: User Story 2 - Substituir áudio de um vídeo (Priority: P1)
 
-**Goal**: Let an authorized user upload MP3 or M4A/AAC, optionally select an
-audio interval, and create an MP4/AAC result with the specified duration rules.
+**Goal**: Let an authorized user upload MP3, M4A/AAC or a video with audio,
+optionally select an audio interval, and create an MP4/AAC result with the
+specified duration rules. For video input, use only its first audio stream.
 
-**Independent Test**: Replace audio with MP3 and M4A/AAC, verify MP4/AAC output,
-reject unsupported input before queueing, and verify shorter/longer semantics.
+**Independent Test**: Replace audio with MP3, M4A/AAC and a video with audio;
+verify the target picture is retained and output is MP4/AAC, reject invalid or
+no-audio input before queueing, and verify shorter/longer semantics.
 
 ### Tests for User Story 2
 
-- [ ] T027 [P] [US2] Add replacement validation tests in `projects/test/videoAudioReplaceValidation.test.js` for MP3, M4A/AAC, unsupported/corrupt files, optional intervals and quota-not-reserved-on-rejection
+- [ ] T027 [P] [US2] Add replacement validation tests for MP3, M4A/AAC, video with audio, video without audio, corrupt content, optional intervals and quota-not-reserved-on-rejection
 - [ ] T028 [P] [US2] Add replacement integration tests in `projects/test/videoAudioReplace.integration.test.js` for multipart upload, MP4/AAC result, shorter audio remainder silence, longer audio clipping, cancellation and partial-result cleanup
-- [ ] T029 [P] [US2] Extend `Tools/video_audio/test_video_audio.py` with MP3/M4A replacement, AAC output, shorter-input duration preservation and longer-input clipping assertions
+- [ ] T029 [P] [US2] Extend `Tools/video_audio/test_video_audio.py` with MP3/M4A and video-input replacement, asserting AAC output, use of target video frames, shorter-input duration preservation and longer-input clipping
 
 ### Implementation for User Story 2
 
 - [ ] T030 [US2] Implement replacement input staging and cleanup in `projects/services/videoAudioDispatcher.js`, ensuring the uploaded temporary audio is removed after success, failure or cancellation
-- [ ] T031 [US2] Extend `projects/services/videoOperationService.js` with replacement creation that validates project/video before reading input, accepts only MP3 or M4A/AAC, validates `audio_start_seconds`/`audio_end_seconds`, then reserves quota and queues work
+- [ ] T031 [US2] Extend `projects/services/videoOperationService.js` with replacement creation that validates project/video before reading input, requires a decodable audio stream, validates `audio_start_seconds`/`audio_end_seconds`, then reserves quota and queues work
 - [ ] T032 [US2] Implement replacement FFmpeg processing in `Tools/video_audio/video_audio.py` with explicit video/audio mapping, AAC encoding, audio clipping at video duration, and video-duration preservation when replacement audio is shorter
 - [ ] T033 [US2] Add `POST /:user/:project/video/:videoId/audio/replace` multipart handling in `projects/routes/projects.js` with bounded upload cleanup, optional interval parsing and safe validation errors
 - [ ] T034 [US2] Add replacement controls, file selection, interval fields and validation messages to `frontend/components/project-page/video-audio-dialog.tsx`
 - [ ] T035 [US2] Extend `frontend/lib/projects.ts` and `frontend/lib/mutations/projects.ts` with multipart replacement submission, polling and cancellation
-- [ ] T036 [US2] Run US1 regression plus US2 contract, integration and worker tests; record `TST-AUD-007` through `TST-AUD-012` results
+- [ ] T036 [US2] Run US1 regression plus US2 contract, integration and worker tests; record `TST-AUD-007` through `TST-AUD-012` and added validation tests `TST-AUD-017` through `TST-AUD-021`
 
 **Checkpoint**: User Stories 1 and 2 both work independently and preserve the
 source video.

@@ -6,11 +6,15 @@ authorization are required before reading media.
 ## Operations
 
 - `POST /:user/:project/video/:videoId/audio/remove` — no body.
-- `POST /:user/:project/video/:videoId/audio/replace` — multipart `audio`
-  plus optional `startSeconds` and `endSeconds`.
+- `POST /:user/:project/video/:videoId/audio/replace` — multipart `audio` with
+  MP3, M4A/AAC or a video containing a decodable audio stream, plus optional
+  `startSeconds` and `endSeconds`. For video input, only the first audio stream
+  is used; its video stream is ignored.
 - `POST /:user/:project/video/:videoId/audio/extract` — no body.
 
-Replacement accepts only MP3 and M4A/AAC. A successful request returns `202`:
+For video input, replacement detects video/audio streams with FFprobe rather
+than trusting the extension or MIME type. Audio-only input remains limited to
+MP3 and M4A/AAC. A successful request returns `202`:
 
 ```json
 { "operationId": "string", "status": "queued" }

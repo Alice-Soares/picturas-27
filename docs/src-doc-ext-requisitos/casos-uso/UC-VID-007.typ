@@ -35,7 +35,7 @@
     colunas: (1.2cm, 1fr, 1fr),
     [Passo], [Ação do Ator], [Resposta do Sistema],
     [1], [O utilizador seleciona um vídeo na biblioteca e clica em "Gerir Áudio".], [O sistema apresenta as opções *Remover Áudio*, *Substituir Áudio* e *Extrair Faixa de Áudio*.],
-    [2], [O utilizador escolhe a operação desejada e confirma.], [O sistema valida o perfil, a quota aplicável e, para extração, a existência de áudio no ficheiro de origem. Para substituição, solicita e valida o ficheiro de áudio.],
+    [2], [O utilizador escolhe a operação desejada e confirma.], [O sistema valida o perfil, a quota aplicável e, para extração, a existência de áudio no ficheiro de origem. Para substituição, solicita um ficheiro de áudio ou vídeo e valida uma faixa sonora.],
     [3], [—], [O sistema cria uma operação de processamento de áudio e coloca-o na fila.],
     [4], [—], [O sistema notifica o utilizador que o processamento está em curso.],
     [5], [O utilizador acompanha o estado.], [O sistema atualiza o progresso em tempo real via WebSocket.],
@@ -88,7 +88,7 @@
   [RN2], [Cada operação de gestão de áudio aceite conta como uma operação avançada para o utilizador registado; utilizadores premium não têm limite diário.],
   [RN3], [O vídeo original nunca é substituído pelo resultado; cada resultado é guardado como novo conteúdo.],
   [RN4], [Operações canceladas ou falhadas, e operações terminadas sem efeito por falta de áudio, não consomem quota.],
-  [RN5], [O áudio de substituição deve ser fornecido em MP3 ou M4A/AAC e é convertido para AAC no vídeo MP4 resultante.],
+  [RN5], [O áudio de substituição pode ser MP3, M4A/AAC ou vídeo com faixa sonora; de um vídeo usa-se apenas a primeira faixa de áudio, convertida para AAC no resultado MP4.],
 )
 
 === Assunções

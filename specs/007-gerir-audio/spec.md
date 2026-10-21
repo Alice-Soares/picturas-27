@@ -13,6 +13,7 @@
 ### Session 2026-10-21
 
 - Q: Onde deve ficar o resultado da extração de áudio? → A: Deve ser descarregado para o dispositivo do utilizador, sem ser adicionado à biblioteca do projeto.
+- Q: Que entradas aceita a substituição de áudio? → A: MP3, M4A/AAC ou qualquer vídeo com faixa sonora descodificável; de um vídeo usa-se apenas a primeira faixa de áudio.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -36,16 +37,17 @@ Como utilizador registado ou premium, quero substituir a faixa sonora de um víd
 
 **Why this priority**: A substituição cobre a edição de áudio mais completa do MVP e permite controlar o áudio resultante sem alterar o conteúdo original.
 
-**Independent Test**: Selecionar um vídeo, fornecer um ficheiro MP3 ou M4A/AAC, confirmar a operação e verificar o novo vídeo, incluindo o comportamento quando a duração do áudio difere da duração do vídeo.
+**Independent Test**: Selecionar um vídeo, fornecer um ficheiro MP3, M4A/AAC ou vídeo com áudio, confirmar a operação e verificar que só a faixa sonora da entrada é usada no novo vídeo, incluindo o comportamento quando a duração do áudio difere da duração do vídeo.
 
 **Acceptance Scenarios**:
 
 1. **Dado** um vídeo acessível e um ficheiro de substituição MP3, **Quando** o utilizador confirma a substituição, **Então** o sistema aceita o ficheiro e produz um novo vídeo MP4 com áudio AAC.
 2. **Dado** um vídeo acessível e um ficheiro de substituição M4A/AAC, **Quando** o utilizador confirma a substituição, **Então** o sistema aceita o ficheiro e produz um novo vídeo MP4 com áudio AAC.
-3. **Dado** um ficheiro de substituição num formato não suportado, **Quando** o utilizador o seleciona, **Então** o sistema rejeita-o com uma mensagem que identifica a condição sem expor detalhes internos e não inicia o processamento.
-4. **Dado** um áudio de substituição mais curto do que o vídeo, **Quando** a substituição termina, **Então** o restante do vídeo fica sem áudio.
-5. **Dado** um áudio de substituição mais longo do que o vídeo, **Quando** a substituição termina, **Então** o áudio é cortado no fim do vídeo.
-6. **Dado** uma substituição em curso, **Quando** o utilizador a cancela, **Então** não é apresentado um resultado parcial e a quota reservada é devolvida.
+3. **Dado** um vídeo acessível e um vídeo de substituição com uma faixa sonora descodificável, **Quando** o utilizador confirma a substituição, **Então** o sistema usa apenas a primeira faixa sonora desse vídeo e produz um novo vídeo MP4 com áudio AAC, preservando a imagem do vídeo de origem.
+4. **Dado** uma entrada de substituição apenas de áudio fora de MP3/M4A/AAC, sem faixa sonora ou cujo conteúdo não pode ser descodificado, **Quando** o utilizador a seleciona, **Então** o sistema rejeita-a com uma mensagem segura e não inicia o processamento.
+5. **Dado** um áudio de substituição mais curto do que o vídeo, **Quando** a substituição termina, **Então** o restante do vídeo fica sem áudio.
+6. **Dado** um áudio de substituição mais longo do que o vídeo, **Quando** a substituição termina, **Então** o áudio é cortado no fim do vídeo.
+7. **Dado** uma substituição em curso, **Quando** o utilizador a cancela, **Então** não é apresentado um resultado parcial e a quota reservada é devolvida.
 
 ### User Story 3 - Extrair a faixa de áudio (Priority: P2)
 
@@ -75,10 +77,10 @@ Como utilizador registado ou premium, quero extrair a faixa sonora de um vídeo 
 
 - **REQ-VID-AUD-001**: O sistema deve apresentar a opção de remover áudio para um vídeo autorizado.
 - **REQ-VID-AUD-002**: O sistema deve permitir confirmar a remoção da faixa de áudio.
-- **REQ-VID-AUD-003**: O sistema deve permitir selecionar um ficheiro de áudio para substituição.
+- **REQ-VID-AUD-003**: O sistema deve permitir selecionar um ficheiro de áudio ou um vídeo com faixa sonora para substituição.
 - **REQ-VID-AUD-004**: O sistema deve aceitar MP3 como entrada de substituição.
 - **REQ-VID-AUD-005**: O sistema deve aceitar M4A/AAC como entrada de substituição.
-- **REQ-VID-AUD-006**: O sistema deve rejeitar formatos de áudio de substituição não suportados antes de iniciar o processamento.
+- **REQ-VID-AUD-006**: O sistema deve rejeitar ficheiros apenas de áudio que não sejam MP3 ou M4A/AAC, vídeos sem faixa sonora ou entradas cujo conteúdo não possa ser descodificado antes de iniciar o processamento.
 - **REQ-VID-AUD-007**: O sistema deve permitir selecionar um intervalo opcional do áudio de substituição.
 - **REQ-VID-AUD-008**: O sistema deve cortar o áudio de substituição quando este ultrapassar a duração do vídeo.
 - **REQ-VID-AUD-009**: O sistema deve deixar sem áudio o restante do vídeo quando o áudio de substituição for mais curto.
@@ -103,7 +105,7 @@ As operações deste caso de uso também devem cumprir os requisitos transversai
 ### Key Entities
 
 - **Vídeo**: conteúdo audiovisual do projeto, com a faixa de áudio e metadados relevantes; permanece imutável durante a operação.
-- **Ficheiro de áudio de substituição**: conteúdo fornecido pelo utilizador em MP3 ou M4A/AAC, podendo ser usado integralmente ou através de um intervalo selecionado.
+- **Entrada de substituição**: conteúdo fornecido pelo utilizador em MP3, M4A/AAC ou vídeo com faixa sonora; de um vídeo só a primeira faixa sonora descodificável é usada, integralmente ou através de um intervalo selecionado.
 - **Operação de gestão de áudio**: trabalho solicitado pelo utilizador, com tipo de operação, origem, projeto, estado, progresso, timestamps, quota e eventual erro.
 - **Resultado de áudio ou vídeo**: resultado de vídeo guardado como novo conteúdo do projeto, ou áudio extraído transferido ao dispositivo sem persistência na biblioteca; nunca substitui a origem.
 - **Projeto**: contexto autorizado que reúne o vídeo de origem e os resultados disponibilizados ao utilizador.

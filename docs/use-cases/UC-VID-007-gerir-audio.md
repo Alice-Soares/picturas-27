@@ -49,7 +49,7 @@ Permite manipular a faixa de áudio de um vídeo: removê-la, substituí-la por 
 | **Passo** | **Ação do Ator**                                                        | **Resposta do Sistema**                                                                                                                       |
 | --------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1         | O utilizador seleciona um vídeo na biblioteca e clica em "Gerir Áudio". | O sistema apresenta as opções **Remover Áudio**, **Substituir Áudio** e **Extrair Faixa de Áudio**. |
-| 2         | O utilizador escolhe a operação desejada e confirma.                    | O sistema valida o perfil, a quota aplicável e, para extração, a existência de áudio no ficheiro de origem. Para substituição, solicita e valida o ficheiro de áudio. |
+| 2         | O utilizador escolhe a operação desejada e confirma.                    | O sistema valida o perfil, a quota aplicável e, para extração, a existência de áudio no ficheiro de origem. Para substituição, solicita um ficheiro de áudio ou um vídeo e valida que contém uma faixa sonora. |
 | 3         | —                                                                       | O sistema cria um operação de processamento de áudio e coloca-o na fila (RabbitMQ).                                                                |
 | 4         | —                                                                       | O sistema notifica o utilizador que o processamento está em curso.                                                                            |
 | 5         | O utilizador acompanha o estado.                                        | O sistema atualiza o progresso em tempo real via WebSocket.                                                                                   |
@@ -73,6 +73,7 @@ Permite manipular a faixa de áudio de um vídeo: removê-la, substituí-la por 
 | Quota de operações avançadas esgotada        | O sistema impede a submissão do operação e indica o estado atual da quota.                               |
 | Erro técnico no processamento (FFmpeg crash) | O sistema interceta o erro, marca o operação como falhado, elimina ficheiros parciais e liberta a quota. |
 | Ficheiro corrompido                          | O sistema aborta a operação, marca como falhado e apresenta mensagem explicativa.                   |
+| Entrada de substituição sem áudio, não suportada ou inválida | O sistema rejeita a entrada antes de reservar quota e informa os formatos aceites: MP3, M4A/AAC ou vídeo com faixa sonora. |
 
 ### 2.5 Pós-condições
 
@@ -89,7 +90,7 @@ Permite manipular a faixa de áudio de um vídeo: removê-la, substituí-la por 
 | RN2    | Cada operação de gestão de áudio aceite conta como uma operação avançada para o utilizador registado; utilizadores premium não têm limite diário. |
 | RN3    | O vídeo original nunca é substituído. Os resultados de vídeo são guardados como novo conteúdo; o áudio extraído é transferido e não fica na biblioteca do projeto. |
 | RN4    | Operações cancelados ou falhados, e operações terminadas sem efeito por falta de áudio, não consomem quota. |
-| RN5    | O áudio de substituição deve ser fornecido em MP3 ou M4A/AAC e é convertido para AAC no vídeo MP4 resultante. |
+| RN5    | O áudio de substituição pode ser fornecido como MP3, M4A/AAC ou como vídeo com faixa sonora; quando é fornecido um vídeo, só a primeira faixa de áudio é usada. O áudio é convertido para AAC no vídeo MP4 resultante. |
 | RN6    | Na extração, o destino do resultado é o dispositivo do utilizador através de download autenticado; `REQ-VID-COM-018` aplica-se com esta exceção explícita à biblioteca. |
 
 ### 2.7 Assunções
@@ -136,7 +137,7 @@ Permite manipular a faixa de áudio de um vídeo: removê-la, substituí-la por 
 | **ID** | **Requisito** | **Tipo** | **Prioridade** | **Novo/Alt** | **Origem** | **Como verificar** |
 |--------|---------------|----------|----------------|--------------|------------|--------------------|
 | REQ-VID-AUD-001 | O sistema deve permitir remover, substituir ou extrair a faixa de áudio de um vídeo. | F | Deve ter | NOVO | Passos 1-2 | Executar cada operação. |
-| REQ-VID-AUD-002 | O sistema deve aceitar áudio de substituição MP3 ou M4A/AAC e gerar AAC no vídeo MP4 resultante. | F | Deve ter | NOVO | RN5 | Testar formatos aceites e inspecionar o resultado. |
+| REQ-VID-AUD-002 | O sistema deve aceitar áudio MP3, M4A/AAC ou vídeo com faixa sonora como entrada de substituição e gerar AAC no vídeo MP4 resultante. | F | Deve ter | NOVO | RN5 | Testar áudio e vídeo como entrada e inspecionar o resultado. |
 | REQ-VID-AUD-003 | O sistema deve rejeitar a extração quando o vídeo não tiver faixa sonora. | F | Deve ter | NOVO | FA1 | Executar extração num vídeo sem áudio. |
 | REQ-VID-AUD-004 | O sistema deve preservar o vídeo original e guardar como novo conteúdo do projeto os resultados de vídeo de remoção/substituição. | F | Deve ter | NOVO | RN3, pós-condição | Comparar original e vídeo resultante. |
 | REQ-VID-AUD-005 | O sistema deve permitir cancelar o operação e limpar temporários sem consumir quota. | F | Deve ter | NOVO | FA3-RN4 | Cancelar e verificar estado, armazenamento e quota. |

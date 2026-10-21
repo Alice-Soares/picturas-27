@@ -40,8 +40,8 @@
 
 ## Decision 6: Limites e segurança
 
-- **Decision**: Aceitar apenas MP3 e M4A/AAC, validar extensão/MIME e conteúdo antes de reservar quota, verificar projeto/vídeo antes de ler conteúdo e nunca expor caminhos temporários ou stderr.
-- **Rationale**: MIME sozinho não valida o conteúdo; a autorização deve ocorrer antes da leitura. Mensagens públicas devem seguir `REQ-VID-Q-008`.
+- **Decision**: Aceitar MP3, M4A/AAC e vídeos que contenham pelo menos uma faixa sonora descodificável. FFprobe deteta os streams do vídeo sem confiar na extensão/MIME; de uma entrada de vídeo usa-se apenas a primeira faixa sonora e ignora-se a imagem. Entradas apenas de áudio mantêm os formatos MP3 e M4A/AAC. Validar antes de reservar quota, verificar projeto/vídeo antes de ler conteúdo e nunca expor caminhos temporários ou stderr.
+- **Rationale**: A substituição é definida pela faixa sonora, não pelo contentor do vídeo. MIME/extensão não provam o conteúdo; a autorização deve ocorrer antes da leitura. Mensagens públicas devem seguir `REQ-VID-Q-008`.
 - **Alternatives considered**: Confiar apenas no MIME seria vulnerável a ficheiros malformados.
 - **Requirements**: `REQ-VID-AUD-003`..`006`, `REQ-VID-AUD-010`, `REQ-VID-COM-001`..`008`, `REQ-VID-Q-005`, `REQ-VID-Q-008`.
 

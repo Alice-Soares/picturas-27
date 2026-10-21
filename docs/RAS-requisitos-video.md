@@ -159,10 +159,10 @@ Os requisitos específicos de cada caso de uso estão identificados pelo prefixo
 |---|---|---|---|---|---|---|
 | REQ-VID-AUD-001 | O sistema deve apresentar a opção de remover áudio. | F | Deve ter | NOVO | UC-VID-007, passo 1 | Abrir a ferramenta de áudio e verificar a opção. |
 | REQ-VID-AUD-002 | O sistema deve permitir confirmar a remoção da faixa de áudio. | F | Deve ter | NOVO | UC-VID-007, passos 1-2 | Confirmar remoção num vídeo com áudio. |
-| REQ-VID-AUD-003 | O sistema deve permitir selecionar um ficheiro de áudio para substituição. | F | Deve ter | NOVO | UC-VID-007, passo 2 | Selecionar ficheiro suportado. |
+| REQ-VID-AUD-003 | O sistema deve permitir selecionar um ficheiro de áudio ou um vídeo com faixa sonora para substituição. | F | Deve ter | NOVO | UC-VID-007, passo 2 | Selecionar áudio ou vídeo com faixa sonora. |
 | REQ-VID-AUD-004 | O sistema deve aceitar MP3 como entrada de substituição. | F | Deve ter | NOVO | UC-VID-007, RN5 | Substituir com MP3. |
 | REQ-VID-AUD-005 | O sistema deve aceitar M4A/AAC como entrada de substituição. | F | Deve ter | NOVO | UC-VID-007, RN5 | Substituir com M4A/AAC. |
-| REQ-VID-AUD-006 | O sistema deve rejeitar formatos de áudio de substituição não suportados. | F | Deve ter | NOVO | UC-VID-007, RN5 | Selecionar formato incompatível. |
+| REQ-VID-AUD-006 | O sistema deve rejeitar áudio que não seja MP3 ou M4A/AAC, vídeos sem faixa sonora e entradas cujo conteúdo não possa ser descodificado. | F | Deve ter | NOVO | UC-VID-007, RN5 | Selecionar formato de áudio não suportado, vídeo sem áudio ou entrada inválida. |
 | REQ-VID-AUD-007 | O sistema deve permitir selecionar um intervalo opcional do áudio de substituição. | F | Deveria ter | NOVO | UC-VID-007, FA2 | Selecionar início e fim do áudio. |
 | REQ-VID-AUD-008 | O sistema deve cortar o áudio de substituição quando este ultrapassar a duração do vídeo. | F | Deve ter | NOVO | UC-VID-007, FA2 | Substituir com áudio mais longo. |
 | REQ-VID-AUD-009 | O sistema deve deixar sem áudio o restante do vídeo quando o áudio de substituição for mais curto. | F | Deve ter | NOVO | UC-VID-007, FA2 | Substituir com áudio mais curto. |

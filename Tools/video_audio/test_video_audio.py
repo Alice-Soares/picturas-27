@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -23,16 +24,20 @@ class VideoAudioWorkerTests(unittest.TestCase):
         video_audio.ROOT = os.path.realpath(cls.root)
         cls.source = os.path.join(cls.root, "source.mp4")
         cls.replacement = os.path.join(cls.root, "replacement.mp3")
+        cls.replacement_video = os.path.join(cls.root, "replacement-video.mp4")
+        cls.replacement_video_input = os.path.join(cls.root, "replacement.input")
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=c=black:s=160x120:r=10:d=2", "-f", "lavfi", "-i", "sine=frequency=440:duration=2", "-c:v", "mpeg4", "-c:a", "aac", "-shortest", cls.source], check=True)
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "sine=frequency=880:duration=1", "-c:a", "libmp3lame", cls.replacement], check=True)
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=c=red:s=80x60:r=10:d=1", "-f", "lavfi", "-i", "sine=frequency=880:duration=1", "-c:v", "mpeg4", "-c:a", "aac", "-shortest", cls.replacement_video], check=True)
+        shutil.copyfile(cls.replacement_video, cls.replacement_video_input)
 
     @classmethod
     def tearDownClass(cls):
         import shutil
         shutil.rmtree(cls.root, ignore_errors=True)
 
-    def request(self, action, name):
-        return {"correlationId": name, "procedure": "video_audio", "parameters": {"action": action, "inputVideoURI": self.source, "replacementAudioURI": self.replacement if action == "replace" else None, "outputURI": os.path.join(self.root, name + (".m4a" if action == "extract" else ".mp4"))}}
+    def request(self, action, name, replacement=None):
+        return {"correlationId": name, "procedure": "video_audio", "parameters": {"action": action, "inputVideoURI": self.source, "replacementAudioURI": (replacement or self.replacement) if action == "replace" else None, "outputURI": os.path.join(self.root, name + (".m4a" if action == "extract" else ".mp4"))}}
 
     def test_remove_produces_silent_video(self):
         channel = Channel(); request = self.request("remove", "removed")
@@ -47,6 +52,15 @@ class VideoAudioWorkerTests(unittest.TestCase):
         document, audio, _ = video_audio.probe(request["parameters"]["outputURI"])
         self.assertEqual(audio["codec_name"], "aac")
         self.assertAlmostEqual(float(document["format"]["duration"]), 2, delta=0.25)
+
+    def test_replace_uses_audio_only_from_a_video_file(self):
+        request = self.request("replace", "replaced-from-video", self.replacement_video_input)
+        channel = Channel()
+        video_audio.process(channel, request)
+        _, audio, video = video_audio.probe(request["parameters"]["outputURI"])
+        self.assertEqual(audio["codec_name"], "aac")
+        self.assertEqual((video["width"], video["height"]), (160, 120))
+        self.assertEqual(channel.messages[-1]["status"], "completed")
 
     def test_extract_produces_m4a_aac(self):
         request = self.request("extract", "extracted")

@@ -18,10 +18,13 @@ projeto autorizado antes de qualquer leitura; `duration` limita intervalos e
 
 ## Replacement audio
 
-Input temporário do utilizador para `replace`. Só aceita MP3 ou M4A/AAC,
-requer validação de extensão/MIME e conteúdo, e deve ser limpo após sucesso,
-falha ou cancelamento. `audio_start_seconds`/`audio_end_seconds` são opcionais
-e devem estar dentro da duração detetada.
+Input temporário do utilizador para `replace`. Aceita MP3, M4A/AAC ou vídeo
+com pelo menos uma faixa sonora descodificável. A validação é feita pelo
+conteúdo com FFprobe; de um vídeo é usada apenas a primeira faixa de áudio. Um
+ficheiro apenas de áudio continua limitado a MP3 ou M4A/AAC. O input deve ser
+limpo após sucesso, falha ou cancelamento.
+`audio_start_seconds`/`audio_end_seconds` são opcionais e devem estar dentro
+da duração detetada da faixa escolhida.
 
 ## Extracted audio download
 

@@ -16,7 +16,7 @@ async function cleanup(dir) { if (dir) await fs.promises.rm(dir, { recursive: tr
 async function dispatchAudio(operation, source, replacementFile) {
   const dir = fs.mkdtempSync(path.join("/app/images", "picturas-audio-"));
   const input = path.join(dir, "input.mp4"), output = path.join(dir, operation.audio_action === "extract" ? "output.m4a" : "output.mp4");
-  const replacement = replacementFile ? path.join(dir, `replacement.${String(replacementFile.originalname).split(".").pop().toLowerCase()}`) : null;
+  const replacement = replacementFile ? path.join(dir, "replacement.input") : null;
   try {
     if (replacement) fs.copyFileSync(replacementFile.path, replacement);
     const timeout = setTimeout(async () => {
