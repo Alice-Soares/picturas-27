@@ -2345,12 +2345,14 @@ router.delete(
 
         // Se o estado atual (tools após undo) == prevCommittedTools,
         // então voltamos ao token anterior imediatamente.
+        let rolledBackToPreviousCommit = false;
         if (canRollback && toolsEqual(updated.tools, updated.prevCommittedTools)) {
           const rollbackTok = updated.prevCommittedToken;
 
           updated.committedToken = rollbackTok;
           updated.resultsToken = rollbackTok;
           updated.committedTools = updated.prevCommittedTools;
+          rolledBackToPreviousCommit = true;
 
           // opcional (mas normalmente boa ideia): como já voltaste ao "commit anterior",
           // podes limpar o prevCommitted* para evitar encadear rollbacks errados
@@ -2388,21 +2390,23 @@ router.delete(
           console.error("Error clearing previews on tool delete:", err);
         }
 
-        // 3)  apagar apenas outputs do token "mais recente" (oldTok),
-        // para não destruir o token para onde fizemos rollback.
-        try {
-          // results por token (como no cancel):
-          const resultsOld = await Result.getAllByToken(req.params.user, req.params.project, oldTok);
-          for (const r of resultsOld) {
-            try {
-              await delete_image(req.params.user, req.params.project, "out", r.img_key);
-            } catch (_) {}
-          }
-          await Result.deleteByToken(req.params.user, req.params.project, oldTok);
+        // Preservar o último resultado confirmado enquanto os tools editados
+        // ainda não foram aplicados. Só limpar o token antigo quando fizemos
+        // rollback para outro commit e esse token deixou de ser o resultado ativo.
+        if (rolledBackToPreviousCommit && oldTok !== updated.committedToken) {
+          try {
+            const resultsOld = await Result.getAllByToken(req.params.user, req.params.project, oldTok);
+            for (const r of resultsOld) {
+              try {
+                await delete_image(req.params.user, req.params.project, "out", r.img_key);
+              } catch (_) {}
+            }
+            await Result.deleteByToken(req.params.user, req.params.project, oldTok);
 
-          console.log(`[UNDO-ROLLBACK][RESULTS-CLEAN] token=${oldTok} deleted=${resultsOld.length}`);
-        } catch (err) {
-          console.error("Error clearing token results on tool delete:", err);
+            console.log(`[UNDO-ROLLBACK][RESULTS-CLEAN] token=${oldTok} deleted=${resultsOld.length}`);
+          } catch (err) {
+            console.error("Error clearing rolled-back results on tool delete:", err);
+          }
         }
 
         // broadcast granular op

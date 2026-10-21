@@ -14,6 +14,7 @@ import {
   useCurrentImage,
   usePreview,
   useProjectInfo,
+  useSetProjectTools,
   useUnsavedChanges,
   useCanEditProject,
 } from "@/providers/project-provider";
@@ -61,6 +62,7 @@ export function ToolbarButton({
   const router = useRouter();
   const session = useSession();
   const project = useProjectInfo();
+  const setProjectTools = useSetProjectTools();
   const preview = usePreview();
   const { setHasUnsavedChanges } = useUnsavedChanges();
   const { toast } = useToast();
@@ -147,6 +149,12 @@ export function ToolbarButton({
     deleteTool.mutate(
       { toolId: prevTool._id, projectVersion: project.version },
       {
+        onSuccess: () => {
+          const removedToolId = String(prevTool._id);
+          setProjectTools(
+            project.tools.filter((item) => String(item._id) !== removedToolId),
+          );
+        },
         onError: (error) => {
           if (handleProjectConflict(error)) return;
           const { title, description } = getErrorMessage("project-update", error);
