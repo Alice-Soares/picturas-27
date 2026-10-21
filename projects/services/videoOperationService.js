@@ -72,7 +72,7 @@ async function createTrimOperation({ userId, projectId, videoId, startSeconds, e
     endSeconds: Number(endSeconds),
     duration: video.duration,
   });
-  const quotaReserved = await reserveQuota(userId, profile, "VIDEO_FRAME_EXTRACT_QUOTA_EXCEEDED");
+  const quotaReserved = await reserveQuota(userId, profile, "VIDEO_TRIM_QUOTA_EXCEEDED");
   const operation = await VideoOperation.create({
     type: "trim",
     user_id: userId,
@@ -243,7 +243,7 @@ async function createFrameToolOperation({ userId, projectId, videoId, tools, sta
     duration: video.duration,
     sourceFps: video.fps,
   });
-  const quotaReserved = await reserveQuota(userId, profile);
+  const quotaReserved = await reserveQuota(userId, profile, "VIDEO_FRAME_TOOL_QUOTA_EXCEEDED");
   const operation = await VideoOperation.create({
     type: "frame_tool",
     user_id: userId,
@@ -332,7 +332,7 @@ async function createFrameExtractionOperation({
     profile,
     outputFormat,
   });
-  const quotaReserved = await reserveQuota(userId, profile);
+  const quotaReserved = await reserveQuota(userId, profile, "VIDEO_FRAME_EXTRACT_QUOTA_EXCEEDED");
   const operation = await VideoOperation.create({
     type: "frame_extract",
     user_id: userId,

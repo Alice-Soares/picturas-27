@@ -206,6 +206,7 @@ router.post("/:user/:project/video/:videoId/trim", requireAuth, async (req, res)
       status: operation.status,
     });
   } catch (error) {
+    console.error("Video trim creation failed:", error);
     const publicError = error.code?.startsWith("VIDEO_FRAME_EXTRACT") || error.message?.startsWith("VIDEO_FRAME_EXTRACT")
       ? publicFrameExtractionError(error)
       : error.code?.startsWith("VIDEO_CONVERSION") || error.message?.startsWith("VIDEO_CONVERSION")
