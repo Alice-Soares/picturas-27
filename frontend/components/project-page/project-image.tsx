@@ -33,9 +33,12 @@ import { getErrorMessage } from "@/lib/error-messages";
 interface ImageItemProps {
   image: ProjectImage;
   animation?: boolean;
+  selectable?: boolean;
+  selected?: boolean;
+  onToggleSelection?: () => void;
 }
 
-export function ProjectImage({ image, animation = true }: ImageItemProps) {
+export function ProjectImage({ image, animation = true, selectable, selected, onToggleSelection }: ImageItemProps) {
   const searchParams = useSearchParams();
   const mode = searchParams.get("mode") ?? "edit";
 
@@ -63,6 +66,16 @@ export function ProjectImage({ image, animation = true }: ImageItemProps) {
       <ContextMenu>
         <ContextMenuTrigger>
           <Card className="group relative overflow-hidden size-full">
+            {selectable && (
+              <input
+                type="checkbox"
+                aria-label={`Selecionar ${image.name}`}
+                checked={selected}
+                onChange={onToggleSelection}
+                onClick={(event) => event.stopPropagation()}
+                className="absolute left-2 top-2 z-50 size-5 accent-primary"
+              />
+            )}
             {/* Image */}
             <div className="size-full relative grid z-0 grid-cols-1 grid-rows-1">
               <Image

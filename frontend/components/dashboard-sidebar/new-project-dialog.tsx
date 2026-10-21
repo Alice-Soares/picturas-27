@@ -96,10 +96,13 @@ export default function NewProjectDialog({
           onDrop={(files) => setImageFiles(files)}
           receivedFiles={files}
         />
+        <p className="text-sm text-muted-foreground">
+          Podes criar o projeto sem imagens e adicionar um vídeo depois.
+        </p>
         <DialogFooter>
           <Button
             onClick={() => handleCreate()}
-            disabled={imageFiles.length <= 0 || name === ""}
+            disabled={name === ""}
             className="inline-flex items-center gap-1"
           >
             <span>Create</span>

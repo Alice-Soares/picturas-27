@@ -652,6 +652,35 @@ router.post(
         },
       );
 
+      router.delete(
+        "/:user/:project/video/:videoId",
+        auth.checkToken,
+        async (req, res) => {
+          const ownerId = req.query.owner || req.params.user;
+          const callerId = req.authUserId || req.params.user;
+          try {
+            const resp = await axios.delete(
+              projectsURL + `${ownerId}/${req.params.project}/video/${req.params.videoId}`,
+              {
+                httpsAgent,
+                params: req.query.share ? { share: req.query.share } : undefined,
+                headers: {
+                  Authorization: req.headers["authorization"],
+                  "X-Project-Version": req.headers["x-project-version"],
+                  "X-Caller-Id": callerId,
+                },
+              },
+            );
+            if (resp.headers?.["x-project-version"]) {
+              res.set("X-Project-Version", resp.headers["x-project-version"]);
+            }
+            return res.sendStatus(204);
+          } catch (error) {
+            return forwardAxiosError(res, error, "Falha ao apagar o vídeo");
+          }
+        },
+      );
+
       if (resp.headers?.["x-project-version"]) {
         res.set("X-Project-Version", resp.headers["x-project-version"]);
       }

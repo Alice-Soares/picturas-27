@@ -15,6 +15,7 @@ import {
   addProjectTool,
   deleteProject,
   deleteProjectImages,
+  deleteProjectVideo,
   deleteProjectTool,
   downloadProjectImages,
   downloadProjectImage,
@@ -319,6 +320,21 @@ export const useDeleteProjectImages = (
         queryKey: ["projectImages", uid, pid, token, ownerId, shareId],
         refetchType: "all",
       });
+    },
+  });
+};
+
+export const useDeleteProjectVideo = (
+  uid: string, pid: string, token: string, ownerId?: string, shareId?: string,
+) => {
+  const qc = useQueryClient();
+  const projectKey = ["project", uid, pid, token, ownerId, shareId];
+  return useMutation({
+    mutationFn: (args: { videoId: string; projectVersion: number }) =>
+      deleteProjectVideo({ uid, pid, token, ownerId, shareId, ...args }),
+    onSuccess: (newVersion) => {
+      bumpProjectVersion(qc, projectKey, newVersion);
+      qc.invalidateQueries({ queryKey: projectKey, refetchType: "all" });
     },
   });
 };

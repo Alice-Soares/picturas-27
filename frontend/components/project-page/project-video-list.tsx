@@ -1,23 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { ProjectVideo } from "@/lib/projects";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Trash } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { ProjectVideo, ProjectToolResponse } from "@/lib/projects";
+import { useDeleteProjectVideo } from "@/lib/mutations/projects";
 import { VideoTrimDialog } from "./video-trim-dialog";
 import { VideoFrameToolDialog } from "./video-frame-tool-dialog";
 import { VideoFrameExtractionDialog } from "./video-frame-extraction-dialog";
-import { ProjectToolResponse } from "@/lib/projects";
 import { VideoConversionDialog } from "./video-conversion-dialog";
 
 export function ProjectVideoList({
-  videos,
-  uid,
-  pid,
-  token,
-  projectVersion,
-  ownerId,
-  shareId,
-  canEdit,
-  tools,
+  videos, uid, pid, token, projectVersion, ownerId, shareId, canEdit, tools,
 }: {
   videos: ProjectVideo[];
   uid: string;
@@ -29,44 +26,97 @@ export function ProjectVideoList({
   canEdit?: boolean;
   tools: ProjectToolResponse[];
 }) {
+  const [selectedVideo, setSelectedVideo] = useState<ProjectVideo | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const deleteVideo = useDeleteProjectVideo(uid, pid, token, ownerId, shareId);
+  const { toast } = useToast();
+
   if (!videos.length) return null;
   return (
-    <section className="border-b p-4 space-y-3">
-      <h2 className="font-semibold">Vídeos do projeto</h2>
+    <section className="space-y-4 border-b p-4">
+      <div>
+        <h2 className="font-semibold">Vídeos do projeto</h2>
+        <p className="text-sm text-muted-foreground">Seleciona um vídeo para o reproduzir ou editar.</p>
+      </div>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {videos.map((video) => (
-          <Card key={video._id} className="space-y-3 p-3">
-            <video
-              className="aspect-video w-full rounded-md bg-black object-contain"
-              controls
-              preload="metadata"
-              src={video.url}
-              onError={(event) => {
-                console.error("Unable to load project video", video._id, event.currentTarget.error);
-              }}
-            >
-              O browser não suporta reprodução de vídeo.
-            </video>
-            <div className="min-w-0">
+          <Card key={video._id} className="overflow-hidden p-0">
+            <button type="button" className="block w-full text-left" onClick={() => setSelectedVideo(video)}>
+              <video className="aspect-video w-full bg-black object-contain" preload="metadata" src={video.url} />
+            </button>
+            <div className="space-y-2 p-3">
               <p className="truncate font-medium">{video.name}</p>
               <p className="text-xs text-muted-foreground">
                 {video.duration.toFixed(2)} s · {video.width}×{video.height}
                 {video.sourceVideoId ? " · derivado" : ""}
               </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <VideoTrimDialog video={video} uid={uid} pid={pid} token={token}
-                projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
-              <VideoFrameToolDialog video={video} tools={tools} uid={uid} pid={pid} token={token}
-                projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
-              <VideoFrameExtractionDialog video={video} uid={uid} pid={pid} token={token}
-                projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
-              <VideoConversionDialog video={video} uid={uid} pid={pid} token={token}
-                projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
+              <Button className="w-full" variant="outline" onClick={() => setSelectedVideo(video)}>
+                Abrir vídeo e editar
+              </Button>
             </div>
           </Card>
         ))}
       </div>
+      <Dialog open={selectedVideo !== null} onOpenChange={(open) => !open && setSelectedVideo(null)}>
+        <DialogContent className="max-w-3xl">
+          {selectedVideo && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{selectedVideo.name}</DialogTitle>
+                <DialogDescription>
+                  {selectedVideo.duration.toFixed(2)} s · {selectedVideo.width}×{selectedVideo.height}
+                </DialogDescription>
+              </DialogHeader>
+              <video className="aspect-video w-full rounded-md bg-black" controls autoPlay src={selectedVideo.url}>
+                O browser não suporta reprodução de vídeo.
+              </video>
+              <div className="grid grid-cols-2 gap-2">
+                <VideoTrimDialog video={selectedVideo} uid={uid} pid={pid} token={token} projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
+                <VideoFrameToolDialog video={selectedVideo} tools={tools} uid={uid} pid={pid} token={token} projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
+                <VideoFrameExtractionDialog video={selectedVideo} uid={uid} pid={pid} token={token} projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
+                <VideoConversionDialog video={selectedVideo} uid={uid} pid={pid} token={token} projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
+              </div>
+              {canEdit && (
+                <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                  <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
+                    <Trash className="mr-2 size-4" /> Apagar vídeo
+                  </Button>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Apagar vídeo?</DialogTitle>
+                      <DialogDescription>Esta ação não pode ser desfeita.</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancelar</Button>
+                      <Button
+                        variant="destructive"
+                        disabled={deleteVideo.isPending}
+                        onClick={() => deleteVideo.mutate(
+                          { videoId: selectedVideo._id, projectVersion },
+                          {
+                            onSuccess: () => {
+                              setDeleteOpen(false);
+                              setSelectedVideo(null);
+                              toast({ title: "Vídeo apagado com sucesso." });
+                            },
+                            onError: (error) => toast({
+                              title: "Não foi possível apagar o vídeo.",
+                              description: error.message,
+                              variant: "destructive",
+                            }),
+                          },
+                        )}
+                      >
+                        Apagar
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

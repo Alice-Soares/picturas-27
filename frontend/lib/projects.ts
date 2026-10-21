@@ -447,6 +447,29 @@ export const downloadProjectImage = async ({
   };
 };
 
+export const downloadProjectVideo = async ({
+  videoUrl,
+  videoName,
+}: {
+  videoUrl: string;
+  videoName: string;
+}) => {
+  const response = await axios.get<ArrayBuffer>(videoUrl, {
+    responseType: "arraybuffer",
+  });
+
+  if (response.status !== 200 || !response.data)
+    throw new Error("Failed to download project video");
+
+  const blob = new Blob([response.data], { type: "video/mp4" });
+  const file = new File([blob], videoName, { type: "video/mp4" });
+
+  return {
+    name: videoName,
+    file,
+  };
+};
+
 export const downloadProjectImages = async ({
   uid,
   pid,
@@ -467,6 +490,14 @@ export const downloadProjectImages = async ({
     const { name, file } = await downloadProjectImage({
       imageUrl: image.url,
       imageName: image.name,
+    });
+    zip.file(name, file);
+  }
+
+  for (const video of project.videos) {
+    const { name, file } = await downloadProjectVideo({
+      videoUrl: video.url,
+      videoName: video.name,
     });
     zip.file(name, file);
   }
@@ -811,6 +842,27 @@ export const getProjectVideoFrameExtraction = async (params: {
     { headers: { Authorization: `Bearer ${params.token}` } },
   );
   return response.data;
+};
+
+export const deleteProjectVideo = async ({
+  uid, pid, token, videoId, ownerId, shareId, projectVersion,
+}: {
+  uid: string; pid: string; token: string; videoId: string;
+  ownerId?: string; shareId?: string; projectVersion: number;
+}) => {
+  const pathUid = ownerId ?? uid;
+  const query = buildQuery({ ownerId, shareId });
+  const response = await api.delete(
+    `/projects/${pathUid}/${pid}/video/${videoId}${query}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "X-Project-Version": String(projectVersion),
+      },
+    },
+  );
+  if (response.status !== 204) throw new Error("Failed to delete video");
+  return response.headers?.["x-project-version"];
 };
 
 export const deleteProjectImages = async ({

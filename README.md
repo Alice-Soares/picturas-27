@@ -205,7 +205,7 @@ OOM-killed.
 
 3. **Open the application**
 
-   👉 **<https://localhost:8080>** — note the **`https`** and the port **`8080`**.
+   👉 **<https://localst:8080>** — note the **`https`** and the port **`8080`**.
 
    Your browser will warn you about the self-signed certificate. Accept it
    (Chrome: _Advanced → Proceed to localhost (unsafe)_; Firefox: _Advanced → Accept the Risk_).

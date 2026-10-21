@@ -28,6 +28,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import ProjectText from "./project-text";
 import { getAiErrorMessage } from "@/lib/error-messages"; 
 import { usePreview } from "@/providers/project-provider";
+import { useDeleteProjectImages } from "@/lib/mutations/projects";
+import { Button } from "../ui/button";
+import { Trash } from "lucide-react";
 
 export function ProjectImageList({
   setCurrentImageId,
@@ -53,6 +56,7 @@ export function ProjectImageList({
   const [previewOpen, setPreviewOpen] = useState<boolean>(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [previewText, setPreviewText] = useState<string[] | null>(null);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
 
   const project = useProjectInfo();
   const session = useSession();
@@ -61,6 +65,13 @@ export function ProjectImageList({
 
   const qc = useQueryClient();
   const socket = useGetSocket(session.token);
+  const deleteImages = useDeleteProjectImages(
+    session.user._id,
+    project._id,
+    session.token,
+    owner ?? undefined,
+    share ?? undefined,
+  );
 
 
 useEffect(() => {
@@ -191,8 +202,10 @@ useEffect(() => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 p-2 overflow-scroll overflow-x-hidden h-fit">
                   {(mode === "results" ? results.imgs : project.imgs).map(
                     (image, index) => (
-                      <button
+                      <div
                         key={image._id}
+                        role="button"
+                        tabIndex={0}
                         className="aspect-square"
                         onClick={() => {
                           setJumpTo(index);
@@ -209,15 +222,34 @@ useEffect(() => {
                             refetchType: "all",
                           });
                         }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            event.currentTarget.click();
+                          }
+                        }}
                       >
-                        <ProjectImage image={image} />
-                      </button>
+                        <ProjectImage
+                          image={image}
+                          selectable={mode !== "results"}
+                          selected={selectedImages.includes(image._id)}
+                          onToggleSelection={() =>
+                            setSelectedImages((current) =>
+                              current.includes(image._id)
+                                ? current.filter((id) => id !== image._id)
+                                : [...current, image._id],
+                            )
+                          }
+                        />
+                      </div>
                     ),
                   )}
                   {mode === "results" &&
                     results.texts.map((text, index) => (
-                      <button
+                      <div
                         key={text._id + index}
+                        role="button"
+                        tabIndex={0}
                         className="aspect-square"
                         onClick={() => {
                           setJumpTo(
@@ -237,11 +269,49 @@ useEffect(() => {
                             refetchType: "all",
                           });
                         }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            event.currentTarget.click();
+                          }
+                        }}
                       >
                         <ProjectText text={text.text} />
-                      </button>
+                      </div>
                     ))}
                 </div>
+                {mode !== "results" && selectedImages.length > 0 && (
+                  <div className="flex items-center gap-3 px-2 pb-3">
+                    <span className="text-sm text-muted-foreground">
+                      {selectedImages.length} selecionada(s)
+                    </span>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      disabled={deleteImages.isPending}
+                      onClick={() =>
+                        deleteImages.mutate(
+                          { imageIds: selectedImages, projectVersion: project.version },
+                          {
+                            onSuccess: () => {
+                              setSelectedImages([]);
+                              toast({ title: "Imagens apagadas com sucesso." });
+                            },
+                            onError: (error) => {
+                              toast({
+                                title: "Não foi possível apagar as imagens.",
+                                description: error.message,
+                                variant: "destructive",
+                              });
+                            },
+                          },
+                        )
+                      }
+                    >
+                      <Trash className="mr-2 size-4" /> Apagar selecionadas
+                    </Button>
+                  </div>
+                )}
               </>
             ) : (
               <div className="flex flex-col items-center justify-center h-full">

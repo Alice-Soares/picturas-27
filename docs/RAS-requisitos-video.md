@@ -220,7 +220,20 @@ Os requisitos específicos de cada caso de uso estão identificados pelo prefixo
 | REQ-VID-Q-015 | O sistema deve impedir o acesso a objetos temporários após a operação. | Manutenibilidade | Nenhum temporário acessível após a operação | Limpeza garantida após reinício do worker | COM-016 | Tentar aceder a um temporário após a operação. |
 | REQ-VID-Q-016 | O sistema deve emitir atualizações de progresso para operações assíncronas demoradas. | Eficiência de desempenho | Progresso observável | Atualizações no máximo a cada 5 segundos | DQ-001 | Observar uma operação demorada. |
 
-### 4.1.3 Verificação da completude e dos limites do âmbito
+### 4.1.3 Requisitos de manutenção da biblioteca
+
+Estes requisitos não alteram os sete casos de uso de vídeo nem são apresentados como
+novos `UC-VID`. Registam melhorias de manutenção e usabilidade identificadas durante a
+integração do MVP, mantendo a separação entre a extensão de vídeo e a gestão geral dos
+recursos do projeto.
+
+| ID | Requisito | Classificação | Critério de aceitação | Origem | Verificação |
+|---|---|---|---|---|---|
+| REQ-VID-MNT-001 | O sistema deve permitir a um utilizador autorizado apagar um vídeo do projeto e o respetivo objeto armazenado. | Funcional / Manutenibilidade | Dado um utilizador autorizado e um vídeo do projeto, Quando confirma a eliminação, Então o vídeo deixa de aparecer no projeto e o objeto deixa de estar acessível. | Manutenção corretiva T-VID-MNT-001 | Teste manual de eliminação e consulta posterior do projeto. |
+| REQ-VID-MNT-002 | O sistema deve permitir selecionar várias imagens do projeto e apagá-las numa única ação confirmada. | Funcional / Usabilidade | Dado um utilizador autorizado com pelo menos duas imagens selecionadas, Quando confirma a eliminação, Então todas as imagens selecionadas deixam de aparecer no projeto. | Manutenção corretiva T-VID-MNT-002 | Teste manual de seleção múltipla, confirmação e atualização da grelha. |
+| REQ-VID-MNT-003 | O sistema deve permitir criar um projeto sem imagem inicial para posterior adição de vídeos ou imagens. | Funcional / Usabilidade | Dado um utilizador autenticado, Quando cria um projeto apenas com nome, Então o projeto é criado e permite adicionar um vídeo ou imagem. | Manutenção corretiva T-VID-MNT-003 | Criar projeto vazio e adicionar vídeo. |
+
+### 4.1.4 Verificação da completude e dos limites do âmbito
 
 | Tópico | Aplicável? | Decisão / justificação | Requisitos relacionados |
 |---|---|---|---|
@@ -230,6 +243,7 @@ Os requisitos específicos de cada caso de uso estão identificados pelo prefixo
 | Persistência e expiração dos ficheiros | Sim | Resultados devem ser persistidos; temporários devem ser removidos. | SUB-015, FEX-009 a FEX-011, COM-014 a COM-018, Q-007 |
 | Perfis e contagem de operações | Sim | O baseline diferencia anónimo, registado e premium e limita operações avançadas. | SUB-001, SUB-016 a SUB-023, COM-004 a COM-008 |
 | Encadeamento de ferramentas e processamento em lote | Parcial | O encadeamento de ferramentas de imagem e a conversão em lote são suportados apenas quando explicitamente previstos nos UC-VID-003 e UC-VID-004; transições e edição avançada ficam fora do MVP. | FRM-011, CONV-009, MERGE-001 a MERGE-015 |
+| Gestão e manutenção de recursos | Sim | A biblioteca deve permitir remover recursos e gerir vários itens sem repetir a operação individualmente. | REQ-VID-MNT-001 a REQ-VID-MNT-003 |
 
 ## 4.2 Impacto no sistema existente
 
@@ -244,7 +258,7 @@ Os requisitos específicos de cada caso de uso estão identificados pelo prefixo
 | WebSocket Gateway | Estender | Encaminhar estados e progresso de vídeo apenas para clientes autorizados do projeto. | COM-011 a COM-013, Q-002, Q-003 |
 | Workers de ferramentas de imagem | Manter / Estender | Manter o contrato atual para imagens e permitir que UC-VID-003 entregue fotogramas isolados às ferramentas compatíveis. | FRM-001, FRM-008, Q-006 |
 | FFmpeg/FFprobe | Novo | Introduzir análise de metadados, validação de streams, recorte, extração, recomposição, conversão e áudio. | SUB-005 a SUB-014, SUB-024 a SUB-025, TRIM-005, FRM-007 a FRM-010, CONV-002 a CONV-011, FEX-001 a FEX-009, MERGE-005 a MERGE-013, AUD-001 a AUD-016 |
-| Frontend da biblioteca | Estender | Apresentar vídeos, metadados, parâmetros, estados, progresso, cancelamento, resultados e mensagens de erro. | SUB-001 a SUB-004, TRIM-001 a TRIM-013, CONV-001 a CONV-011, FEX-001 a FEX-011, MERGE-001 a MERGE-015, AUD-001 a AUD-016 |
+| Frontend da biblioteca | Estender | Apresentar vídeos, metadados, parâmetros, estados, progresso, cancelamento, resultados, mensagens de erro e ações de gestão da biblioteca. | SUB-001 a SUB-004, TRIM-001 a TRIM-013, CONV-001 a CONV-011, FEX-001 a FEX-011, MERGE-001 a MERGE-015, AUD-001 a AUD-016, MNT-001 a MNT-003 |
 
 ## 4.3 Matriz de rastreabilidade consolidada
 
@@ -275,6 +289,9 @@ Os requisitos específicos de cada caso de uso estão identificados pelo prefixo
 | UC-VID-001 a UC-VID-007, autorização | Acesso a projeto e conteúdo | COM-001 a COM-003, Q-005 |
 | UC-VID-001 a UC-VID-007, quota | Reserva, consumo e devolução | SUB-015, COM-004 a COM-008 |
 | UC-VID-001 a UC-VID-007, estados | Registo, eventos, limpeza e resultados | COM-009 a COM-018, Q-002, Q-003, Q-007 |
+| Manutenção corretiva T-VID-MNT-001 | Apagar vídeo autorizado | MNT-001 |
+| Manutenção corretiva T-VID-MNT-002 | Selecionar e apagar várias imagens | MNT-002 |
+| Manutenção corretiva T-VID-MNT-003 | Criar projeto sem imagem inicial | MNT-003 |
 | DQ-001 | Progresso observável em operações demoradas | Q-002, Q-003, Q-016 |
 | DQ-002 | Isolamento do fluxo existente de imagens | Q-006 |
 

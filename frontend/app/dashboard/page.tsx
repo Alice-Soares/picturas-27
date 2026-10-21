@@ -54,8 +54,8 @@ export default function Dashboard() {
           <div className="flex flex-col gap-4 items-center justify-center max-w-[20rem]">
             <ImagePlus size={100} />
             <p className="text-2xl font-medium">
-              Pick a project or drag and drop some images or a .zip to create a
-              new one
+              Pick a project or drag and drop images or a .zip to create a new
+              one. You can also create an empty project and add a video later.
             </p>
           </div>
         </AppDropzone>

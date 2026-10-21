@@ -783,7 +783,7 @@ const handleCancel = () => {
                           }
                         >
                           {mode === "edit"
-                            ? "Download images (ZIP)"
+                            ? "Download project (ZIP: images and videos)"
                             : "Download results (ZIP)"}
                         </DropdownMenuItem>
 

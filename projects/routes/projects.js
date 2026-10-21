@@ -59,6 +59,7 @@ const {
   delete_image,
   copy_image,
 } = require("../utils/imageStorage");
+const { delete_video } = require("../utils/videoStorage");
 
 const {
   checkSharePermission,
@@ -1554,6 +1555,43 @@ router.post(
         message: "O vídeo não cumpre os requisitos de formato ou do perfil.",
       };
       return res.status(400).json({ error: publicError });
+    }
+  },
+);
+
+router.delete(
+  "/:user/:project/video/:videoId",
+  checkSharePermission,
+  requireEditPermission,
+  enforcePresenceLimit,
+  requireProjectVersion,
+  async (req, res) => {
+    try {
+      const project = await Project.getOne(req.params.user, req.params.project);
+      if (!project) return res.status(404).json({ error: "PROJECT_NOT_FOUND" });
+      const video = project.videos?.id(req.params.videoId);
+      if (!video) return res.status(404).json({ error: "VIDEO_NOT_FOUND" });
+
+      await delete_video(req.params.user, req.params.project, video.object_key);
+      project.videos.pull(video._id);
+      const updated = await Project.updateIfVersion(
+        req.params.user,
+        req.params.project,
+        project,
+        req.expectedVersion,
+      );
+      if (!updated) {
+        const fresh = await Project.getOne(req.params.user, req.params.project);
+        return res.status(409).json({
+          error: "PROJECT_VERSION_CONFLICT",
+          serverVersion: fresh?.version ?? null,
+        });
+      }
+      res.set("X-Project-Version", String(updated.version));
+      return res.sendStatus(204);
+    } catch (error) {
+      console.error("Error deleting project video:", error);
+      return res.status(400).json({ error: "VIDEO_DELETE_FAILED" });
     }
   },
 );
