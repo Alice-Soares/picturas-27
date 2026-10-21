@@ -27,7 +27,7 @@ async function extractFrames(input, directory, startSeconds, endSeconds, outputF
 }
 
 async function assembleVideo(input, framesDirectory, output, startSeconds, endSeconds, outputFps) {
-  const pattern = `${framesDirectory}/processed-%08d.png`;
+  const pattern = `${framesDirectory}/processed-frame-%08d.png`;
   await runFfmpeg([
     "-framerate", String(outputFps), "-i", pattern,
     "-ss", String(startSeconds), "-t", String(endSeconds - startSeconds),

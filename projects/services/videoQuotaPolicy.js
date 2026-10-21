@@ -1,7 +1,7 @@
 function shouldReserveVideoQuota({ type }) {
-  // Only frame tools invoke AI. FFmpeg operations (trim, conversion, audio,
-  // frame extraction and merge) are available without a daily quota.
-  return type === "frame_tool";
+  // Video frame tools run the project's standard image filters per frame;
+  // they do not invoke an AI service and therefore have no daily quota.
+  return false;
 }
 
 module.exports = { shouldReserveVideoQuota };

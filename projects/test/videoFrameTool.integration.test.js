@@ -30,7 +30,7 @@ describe("video frame tool media integration", () => {
       assert.ok(extracted.length > 0);
       await Promise.all(extracted.map((frame, index) => fs.promises.copyFile(
         frame,
-        path.join(processed, `processed-${String(index + 1).padStart(8, "0")}.png`),
+        path.join(processed, `processed-frame-${String(index + 1).padStart(8, "0")}.png`),
       )));
       await assembleVideo(input, processed, output, 0, 1.5, 5);
       const { stdout } = await execFileAsync(ffprobePath, [

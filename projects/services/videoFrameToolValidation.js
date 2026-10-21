@@ -1,5 +1,5 @@
 const supportedTools = new Set([
-  "border", "brightness", "contrast", "cut", "scale", "saturation",
+  "border", "brightness", "contrast", "cut", "saturation",
   "binarization", "rotate", "resize", "watermark",
 ]);
 

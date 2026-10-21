@@ -11,9 +11,16 @@ import { ProjectToolResponse, ProjectVideo } from "@/lib/projects";
 import { ToolNames } from "@/lib/tool-types";
 import { useCancelProjectVideoTrim, useCreateProjectVideoFrameTool, useGetProjectVideoFrameTool } from "@/lib/mutations/projects";
 
-const compatibleVideoTools: ToolNames[] = [
-  "border", "brightness", "contrast", "cut", "scale", "saturation",
-  "binarization", "rotate", "resize", "watermark",
+const availableVideoTools: Array<{ procedure: ToolNames; params: Record<string, number> }> = [
+  { procedure: "border", params: { borderWidth: 1, r: 0, g: 0, b: 0 } },
+  { procedure: "brightness", params: { brightness: 1.1 } },
+  { procedure: "contrast", params: { contrastFactor: 1.1 } },
+  { procedure: "cut", params: {} },
+  { procedure: "saturation", params: { saturationFactor: 1.1 } },
+  { procedure: "binarization", params: { threshold: 127 } },
+  { procedure: "rotate", params: { degrees: 90 } },
+  { procedure: "resize", params: {} },
+  { procedure: "watermark", params: {} },
 ];
 
 export function VideoFrameToolDialog({
@@ -29,12 +36,19 @@ export function VideoFrameToolDialog({
   shareId?: string;
   canEdit?: boolean;
 }) {
-  const compatibleTools = tools.filter((tool) => compatibleVideoTools.includes(tool.procedure));
+  const compatibleProjectTools = tools.filter((tool) => availableVideoTools.some(({ procedure }) => procedure === tool.procedure));
+  function defaultParams(procedure: ToolNames): Record<string, number> {
+    if (procedure === "cut") return { left: 0, top: 0, right: Math.max(1, video.width), bottom: Math.max(1, video.height) };
+    if (procedure === "resize") return { width: Math.max(1, video.width), height: Math.max(1, video.height) };
+    return availableVideoTools.find((tool) => tool.procedure === procedure)?.params ?? {};
+  }
   const [open, setOpen] = useState(false);
   const [chain, setChain] = useState<Array<{ procedure: ToolNames; params: string }>>(
-    compatibleTools[0]
-      ? [{ procedure: compatibleTools[0].procedure, params: JSON.stringify(compatibleTools[0].params ?? {}, null, 2) }]
-      : [],
+    compatibleProjectTools.length
+      ? [...compatibleProjectTools]
+        .sort((left, right) => left.position - right.position)
+        .map((tool) => ({ procedure: tool.procedure, params: JSON.stringify(tool.params ?? defaultParams(tool.procedure), null, 2) }))
+      : [{ procedure: "brightness", params: JSON.stringify(defaultParams("brightness"), null, 2) }],
   );
   const [start, setStart] = useState("0");
   const [end, setEnd] = useState(String(Math.max(1, video.duration)));
@@ -84,18 +98,21 @@ export function VideoFrameToolDialog({
       endSeconds,
       outputFps,
       projectVersion,
-    }, { onSuccess: (result) => setOperationId(result.operationId), onError: () => toast({
-      title: "Não foi possível iniciar o processamento",
-      description: "Verifique a ferramenta, os parâmetros, o acesso e a quota.",
-      variant: "destructive",
-    }) });
+    }, { onSuccess: (result) => setOperationId(result.operationId), onError: (error) => {
+      const code = (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
+      toast({
+        title: "Não foi possível iniciar o processamento",
+        description: code || (error instanceof Error ? error.message : "Verifique a ferramenta, os parâmetros e o acesso."),
+        variant: "destructive",
+      });
+    } });
   }
 
   const active = operation && !["completed", "failed", "cancelled"].includes(operation.status);
   return (
     <Dialog open={open} onOpenChange={(next) => { setOpen(next); if (!next) setOperationId(null); }}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" disabled={!canEdit || compatibleTools.length === 0}>
+        <Button size="sm" variant="outline" disabled={!canEdit}>
           <WandSparkles className="mr-2 size-4" /> Aplicar ferramenta
         </Button>
       </DialogTrigger>
@@ -110,9 +127,13 @@ export function VideoFrameToolDialog({
             {chain.map((item, index) => <div className="space-y-1 rounded-md border p-2" key={`${index}-${item.procedure}`}>
               <div className="flex gap-2">
                 <select className="w-full rounded-md border bg-background p-2" value={item.procedure}
-                  onChange={(event) => setChain((current) => current.map((entry, entryIndex) =>
-                    entryIndex === index ? { ...entry, procedure: event.target.value as ToolNames } : entry))}>
-                  {compatibleTools.map((tool) => <option key={`${tool.position}-${tool.procedure}`} value={tool.procedure}>{tool.procedure}</option>)}
+                  onChange={(event) => setChain((current) => current.map((entry, entryIndex) => {
+                    if (entryIndex !== index) return entry;
+                    const procedure = event.target.value as ToolNames;
+                    const configured = compatibleProjectTools.find((tool) => tool.procedure === procedure);
+                    return { procedure, params: JSON.stringify(configured?.params ?? defaultParams(procedure), null, 2) };
+                  }))}>
+                  {availableVideoTools.map((tool) => <option key={tool.procedure} value={tool.procedure}>{tool.procedure}</option>)}
                 </select>
                 <Button type="button" variant="outline" disabled={index === 0}
                   onClick={() => setChain((current) => current.map((entry, entryIndex) =>
@@ -129,10 +150,10 @@ export function VideoFrameToolDialog({
                   entryIndex === index ? { ...entry, params: event.target.value } : entry))} />
             </div>)}
             <Button type="button" variant="outline" onClick={() => {
-              const first = compatibleTools[0];
+              const first = availableVideoTools[0];
               if (first) setChain((current) => [...current, {
                 procedure: first.procedure,
-                params: JSON.stringify(first.params ?? {}, null, 2),
+                params: JSON.stringify(defaultParams(first.procedure), null, 2),
               }]);
             }}>Adicionar ferramenta</Button>
           </div>
@@ -148,7 +169,7 @@ export function VideoFrameToolDialog({
         </div>}
         <DialogFooter>
           {active && <Button variant="outline" onClick={() => operationId && cancel.mutate(operationId)}>Cancelar operação</Button>}
-          {!operationId && <Button onClick={submit} disabled={create.isPending || compatibleTools.length === 0}>{create.isPending && <LoaderCircle className="mr-2 size-4 animate-spin" />} Processar vídeo</Button>}
+          {!operationId && <Button onClick={submit} disabled={create.isPending || chain.length === 0}>{create.isPending && <LoaderCircle className="mr-2 size-4 animate-spin" />} Processar vídeo</Button>}
           {operation?.status === "completed" && <Button onClick={() => setOpen(false)}>Concluir</Button>}
         </DialogFooter>
       </DialogContent>
