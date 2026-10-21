@@ -1119,7 +1119,8 @@ export const deleteProjectTool = async ({
 
 }) => {
   const query = buildQuery({ ownerId, shareId });
-  const response = await api.delete(`/projects/${uid}/${pid}/tool/${toolId}${query}`,
+  const pathUid = pathUidFor(uid, ownerId, shareId);
+  const response = await api.delete(`/projects/${pathUid}/${pid}/tool/${toolId}${query}`,
  {
     headers: {
       Authorization: `Bearer ${token}`,

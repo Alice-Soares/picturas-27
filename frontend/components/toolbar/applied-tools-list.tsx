@@ -108,8 +108,6 @@ export function AppliedToolsList() {
       {
         onSuccess: () => {
           // reorder também invalida resultados (a pipeline mudou)
-          clearResultsCache();
-
           if (mode === "edit" && imageId) {
             preview.mutate({
               imageId,
@@ -140,13 +138,11 @@ export function AppliedToolsList() {
       },
       {
         onSuccess: () => {
-          setTools(tools.filter((t) => t._id !== id));
+          const remainingTools = tools.filter((t) => t._id !== id);
+          setTools(remainingTools);
 
-          // pipeline mudou => resultados atuais já não servem
-          clearResultsCache();
-
-          // se estiver em edit, podes forçar preview (opcional)
-          if (mode === "edit" && imageId) {
+          // Não pedir preview de uma pipeline vazia: o backend rejeita esse pedido.
+          if (mode === "edit" && imageId && remainingTools.length > 0) {
             preview.mutate({ imageId, projectVersion: project.version });
           }
         },
@@ -180,9 +176,6 @@ export function AppliedToolsList() {
         onSuccess: () => {
           const updated = tools.slice(0, -1);
           setTools(updated);
-
-          // pipeline mudou => limpar results 
-          clearResultsCache();
 
           // preview (edit mode)
           if (mode === "edit" && imageId) {
