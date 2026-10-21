@@ -200,19 +200,18 @@ function parseMergeQueueMessage(message) {
   } catch { return null; }
 }
 
-function startMergeWorker(dependencies) {
+function startMergeWorker(dependencies, { consumer = require('../utils/videoMergeQueue').consumeMergeQueue } = {}) {
   const worker = createVideoMergeWorker(dependencies);
-  require('../utils/rabbit_mq').read_rabbit_msg('video_merge', (message) => {
+  // O consumidor aguarda a Promise completa do worker antes do ACK.
+  const ready = consumer(async (message) => {
     const operationId = parseMergeQueueMessage(message);
-    if (!operationId) {
-      console.error('UC-VID-006: mensagem inválida na fila video_merge');
-      return;
+    if (!operationId || !/^[a-f0-9]{24}$/i.test(operationId)) {
+      console.error('UC-VID-006: ID inválido na fila video_merge');
+      return; // descartar mensagem malformada (ACK), sem retry infinito
     }
-    worker.runMergeOperation(operationId).catch((error) => {
-      console.error('UC-VID-006: processamento não iniciado:', error.message);
-    });
+    return worker.runMergeOperation(operationId);
   });
-  return worker;
+  return { ...worker, ready };
 }
 
 module.exports = { createVideoMergeWorker, startMergeWorker, selectSources, parseMergeQueueMessage };

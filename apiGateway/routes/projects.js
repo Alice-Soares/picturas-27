@@ -63,6 +63,15 @@ function forwardAxiosError(res, err, fallbackMsg) {
   return res.status(status).jsonp(data);
 }
 
+// UC-VID-006: endpoint de criacao. Consulta/cancelamento usam rotas genericas.
+require("./videoMergeGatewayRoute").registerVideoMergeGatewayRoute(router, {
+  checkToken: auth.checkToken,
+  axios,
+  httpsAgent,
+  projectsURL,
+  forwardAxiosError,
+});
+
 // TODO Verify jwt
 
 /*

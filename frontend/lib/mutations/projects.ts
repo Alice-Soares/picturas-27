@@ -7,6 +7,9 @@ import {
   createProjectVideoTrim,
   getProjectVideoTrim,
   cancelProjectVideoTrim,
+  createProjectVideoMerge,
+  getProjectVideoMerge,
+  cancelProjectVideoMerge,
   getProjectVideoConversionOptions,
   createProjectVideoConversion,
   createProjectVideoFrameTool,
@@ -744,3 +747,19 @@ export const useSetProjectDirty = () => {
     },
   });
 };
+
+// UC-VID-006 — hooks com o mesmo padrão das outras operações de vídeo.
+export const useCreateProjectVideoMerge = (uid: string, pid: string, token: string) =>
+  useMutation({
+    mutationFn: (videoIds: string[]) => createProjectVideoMerge({ uid, pid, token, videoIds }),
+  });
+
+export const useGetProjectVideoMerge = (uid: string, pid: string, token: string) =>
+  useMutation({
+    mutationFn: (operationId: string) => getProjectVideoMerge({ uid, pid, token, operationId }),
+  });
+
+export const useCancelProjectVideoMerge = (uid: string, pid: string, token: string) =>
+  useMutation({
+    mutationFn: (operationId: string) => cancelProjectVideoMerge({ uid, pid, token, operationId }),
+  });

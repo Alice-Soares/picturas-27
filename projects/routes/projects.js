@@ -145,6 +145,14 @@ async function trimProfile(req) {
   return getUserType(getCallerId(req));
 }
 
+// UC-VID-006: registar a criacao de concatenações com autenticação e perfil existentes.
+const { createVideoMergeOperationService, publicMergeError } = require("../services/videoMergeOperationService");
+const { registerVideoMergeRoutes } = require("./videoMergeRoutes");
+const mergeOperationService = createVideoMergeOperationService();
+registerVideoMergeRoutes(router, {
+  requireAuth, getCallerId, getProfile: trimProfile, service: mergeOperationService,
+});
+
 /**
  * Calcula quantas operações avançadas vão ser usadas *nesta execução*.
  * - totalAdv: nº total de tools avançadas atualmente no projeto
@@ -374,7 +382,9 @@ router.get("/:user/:project/video-operations/:operationId", requireAuth, async (
       type: operation.type,
       status: operation.status,
       progress: operation.progress,
-      sourceVideoId: String(operation.source_video_id),
+      sourceVideoId: operation.source_video_id ? String(operation.source_video_id) : null,
+      sourceVideoIds: operation.type === "merge" ? (operation.source_video_ids || []).map(String) : [],
+      totalDurationSeconds: operation.type === "merge" ? operation.total_duration_seconds : null,
       startSeconds: operation.start_seconds,
       endSeconds: operation.end_seconds,
       outputFps: operation.output_fps,
@@ -426,7 +436,9 @@ router.post("/:user/:project/video-operations/:operationId/cancel", requireAuth,
   }
   try {
     const existing = await getOperation(req.params.user, req.params.project, req.params.operationId);
-    const operation = existing.type === "audio"
+    const operation = existing.type === "merge"
+      ? await mergeOperationService.cancelMergeOperation(req.params.user, req.params.project, req.params.operationId)
+      : existing.type === "audio"
       ? await cancelAudioOperation(req.params.user, req.params.project, req.params.operationId)
       : existing.type === "conversion"
       ? await cancelVideoConversionOperation(req.params.user, req.params.project, req.params.operationId)
@@ -440,6 +452,10 @@ router.post("/:user/:project/video-operations/:operationId/cancel", requireAuth,
       status: operation.status,
     });
   } catch (error) {
+    if (error.message?.startsWith("VIDEO_MERGE") || error.code?.startsWith("VIDEO_MERGE")) {
+      const code = publicMergeError(error);
+      return res.status(error.status || (code === "VIDEO_MERGE_FAILED" ? 500 : 400)).json({ error: code });
+    }
     const publicError = error.code?.startsWith("VIDEO_CONVERSION") || error.message?.startsWith("VIDEO_CONVERSION")
       ? publicConversionError(error)
       : error.code?.startsWith("VIDEO_FRAME_EXTRACT") || error.message?.startsWith("VIDEO_FRAME_EXTRACT")

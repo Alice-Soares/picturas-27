@@ -846,6 +846,7 @@ const handleCancel = () => {
           shareId={shareId}
           canEdit={canEdit && mode !== "results"}
           destinationProjects={shareId ? [] : projects.data ?? []}
+          profile={session.user.type}
         />
         <ProjectImageList
           setCurrentImageId={setCurrentImage}

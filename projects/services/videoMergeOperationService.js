@@ -16,6 +16,7 @@ function publicMergeError(error) {
     "VIDEO_MERGE_TOO_MANY_VIDEOS", "VIDEO_MERGE_DURATION_EXCEEDED",
     "VIDEO_MERGE_INVALID_VIDEO", "VIDEO_MERGE_INVALID_PROJECT_VIDEOS",
     "VIDEO_MERGE_QUOTA_EXCEEDED", "VIDEO_MERGE_CANCELLED",
+    "VIDEO_MERGE_QUEUE_UNAVAILABLE",
   ]);
   return known.has(error?.message) ? error.message : "VIDEO_MERGE_FAILED";
 }
@@ -62,9 +63,13 @@ function defaultDependencies() {
       const { axios, httpsAgent } = await usersClient();
       await axios.post(`${usersUrl}/${userId}/process/refund/1`, null, { httpsAgent });
     },
-    enqueue: (operationId) => require("../utils/rabbit_mq").send_rabbit_msg(
-      { operationId }, "video_merge",
-    ),
+    enqueue: async (operationId) => {
+      const published = await require("../utils/rabbit_mq").send_rabbit_msg(
+        { operationId }, "video_merge",
+      );
+      // send_rabbit_msg resolve false em falha, não lança exceção.
+      if (!published) throw mergeError("VIDEO_MERGE_QUEUE_UNAVAILABLE", 503);
+    },
     publish: (operation) => require("../utils/project_msg").send_msg_project_op({
       projectId: String(operation.project_id), ownerId: String(operation.user_id),
       op: require("../utils/videoOperationMsg").operationEvent(operation),
