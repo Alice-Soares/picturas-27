@@ -20,6 +20,8 @@ const {
   estimateOutputSize,
 } = require("./videoConversionValidation");
 const { dispatchConversion, cancelConversion } = require("./videoConversionDispatcher");
+const { dispatchAudio, cancelAudio } = require("./videoAudioDispatcher");
+const { validateReplacement } = require("./videoAudioValidation");
 
 const usersUrl = "https://users:10001";
 const httpsAgent = new https.Agent({ rejectUnauthorized: false });
@@ -221,6 +223,44 @@ async function cancelVideoConversionOperation(userId, projectId, operationId) {
   return operation;
 }
 
+async function createAudioOperation({ userId, projectId, videoId, action, profile, file, startSeconds, endSeconds }) {
+  const project = await Project.getOne(userId, projectId);
+  if (!project) { const e = new Error("VIDEO_AUDIO_UNAUTHORIZED"); e.status = 403; throw e; }
+  const source = (project.videos || []).id(videoId);
+  if (!source) { const e = new Error("VIDEO_AUDIO_NOT_FOUND"); e.status = 404; throw e; }
+  if (!["remove", "replace", "extract"].includes(action)) throw new Error("VIDEO_AUDIO_INVALID");
+  if (action !== "replace" && !source.audioCodec) throw new Error("VIDEO_AUDIO_NO_TRACK");
+  let audio = null;
+  if (action === "replace") audio = await validateReplacement(file, startSeconds, endSeconds);
+  const quotaReserved = await reserveQuota(userId, profile, "VIDEO_AUDIO_QUOTA_EXCEEDED");
+  let operation;
+  try {
+    operation = await VideoOperation.create({ type: "audio", audio_action: action, user_id: userId, project_id: projectId, source_video_id: source._id, start_seconds: 0, end_seconds: source.duration, audio_start_seconds: audio?.startSeconds ?? null, audio_end_seconds: audio?.endSeconds ?? null, quota_reserved: quotaReserved });
+    publish(operation);
+    dispatchAudio(operation, source, action === "replace" ? file : null).catch((error) => failAudioOperation(operation, error));
+    return operation;
+  } catch (error) {
+    if (quotaReserved) await axios.post(`${usersUrl}/${userId}/process/refund/1`, null, { httpsAgent }).catch(() => {});
+    throw error;
+  }
+}
+
+async function failAudioOperation(operation, error) {
+  const current = await VideoOperation.findById(operation._id);
+  if (!current || ["completed", "cancelled", "failed"].includes(current.status)) return current;
+  const safe = require("./videoAudioErrors").publicAudioError(error);
+  current.status = "failed"; current.error_code = safe.code; current.error_message = safe.code; current.finished_at = new Date();
+  await current.save(); await refundQuota(current); publish(current); return current;
+}
+
+async function cancelAudioOperation(userId, projectId, operationId) {
+  const operation = await getOperation(userId, projectId, operationId);
+  if (operation.type !== "audio" || ["completed", "failed", "cancelled"].includes(operation.status)) return operation;
+  if (cancelAudio(operationId) === "committing") return operation;
+  assertTransition(operation.status, "cancelled"); operation.status = "cancelled"; operation.cancelled_at = new Date(); operation.finished_at = operation.cancelled_at; await operation.save();
+  await refundQuota(operation); publish(operation); return operation;
+}
+
 async function createFrameToolOperation({ userId, projectId, videoId, tools, startSeconds, endSeconds, outputFps, profile }) {
   const project = await Project.getOne(userId, projectId);
   if (!project) {
@@ -399,6 +439,9 @@ module.exports = {
   createVideoConversionOperation,
   failConversionOperation,
   cancelVideoConversionOperation,
+  createAudioOperation,
+  failAudioOperation,
+  cancelAudioOperation,
   startTrimWorker: () => require("./videoTrimWorker").startTrimWorker(),
   startFrameToolWorker: () => require("./videoFrameToolWorker").startFrameToolWorker(),
   startFrameExtractionWorker: () => require("./videoFrameExtractionWorker").startFrameExtractionWorker(),

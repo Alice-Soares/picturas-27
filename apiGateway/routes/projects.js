@@ -29,6 +29,8 @@ const videoUpload = multer({
   }),
   limits: { fileSize: 1_000_000_000 },
 });
+const audioUpload = multer({ dest: "/tmp/picturas-audio-gateway", limits: { fileSize: 1_000_000_000 } });
+fs.mkdirSync("/tmp/picturas-audio-gateway", { recursive: true });
 fs.mkdirSync("/tmp/picturas-video-gateway", { recursive: true });
 function receiveVideo(req, res, next) {
   return videoUpload.single("video")(req, res, (error) => {
@@ -581,6 +583,42 @@ router.post("/:user/:project/video/:videoId/conversion", auth.checkToken, async 
   } catch (error) {
     return forwardAxiosError(res, error, "Falha ao converter o vídeo");
   }
+});
+
+for (const action of ["remove", "extract"]) {
+  router.post(`/:user/:project/video/:videoId/audio/${action}`, auth.checkToken, async (req, res) => {
+    const ownerId = req.query.owner || req.params.user; const callerId = req.authUserId || req.params.user;
+    try {
+      const resp = await axios.post(projectsURL + `${ownerId}/${req.params.project}/video/${req.params.videoId}/audio/${action}`, {}, {
+        headers: { Authorization: req.headers["authorization"], "X-Project-Version": req.headers["x-project-version"], "X-Caller-Id": callerId, "X-User-Profile": req.authUserType },
+        params: req.query.share ? { share: req.query.share } : undefined, httpsAgent,
+      });
+      return res.status(resp.status).json(resp.data);
+    } catch (error) { return forwardAxiosError(res, error, "Falha na operação de áudio"); }
+  });
+}
+
+router.post("/:user/:project/video/:videoId/audio/replace", auth.checkToken, (req, res, next) => {
+  audioUpload.single("audio")(req, res, (error) => {
+    if (!error) return next();
+    if (req.file?.path) fs.rm(req.file.path, { force: true }, () => {});
+    return res.status(error.code === "LIMIT_FILE_SIZE" ? 413 : 400).json({ error: "VIDEO_AUDIO_INVALID" });
+  });
+}, async (req, res) => {
+  const ownerId = req.query.owner || req.params.user; const callerId = req.authUserId || req.params.user;
+  try {
+    if (!req.file) return res.status(400).json({ error: "VIDEO_AUDIO_INVALID" });
+    const form = new FormData();
+    form.append("audio", fs.createReadStream(req.file.path), { filename: req.file.originalname, contentType: req.file.mimetype });
+    if (req.body?.startSeconds != null) form.append("startSeconds", req.body.startSeconds);
+    if (req.body?.endSeconds != null) form.append("endSeconds", req.body.endSeconds);
+    const resp = await axios.post(projectsURL + `${ownerId}/${req.params.project}/video/${req.params.videoId}/audio/replace`, form, {
+      headers: { ...form.getHeaders(), Authorization: req.headers["authorization"], "X-Project-Version": req.headers["x-project-version"], "X-Caller-Id": callerId, "X-User-Profile": req.authUserType },
+      params: req.query.share ? { share: req.query.share } : undefined, httpsAgent, maxContentLength: Infinity, maxBodyLength: Infinity,
+    });
+    return res.status(resp.status).json(resp.data);
+  } catch (error) { return forwardAxiosError(res, error, "Falha ao substituir o áudio"); }
+  finally { if (req.file?.path) await fs.promises.rm(req.file.path, { force: true }); }
 });
 
 router.get("/:user/:project/video-operations/:operationId", auth.checkToken, async (req, res) => {

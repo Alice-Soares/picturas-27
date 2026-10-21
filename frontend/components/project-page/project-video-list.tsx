@@ -6,17 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Trash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ProjectVideo, ProjectToolResponse } from "@/lib/projects";
+import { ProjectVideo, ProjectAudio, ProjectToolResponse } from "@/lib/projects";
 import { useDeleteProjectVideo } from "@/lib/mutations/projects";
 import { VideoTrimDialog } from "./video-trim-dialog";
 import { VideoFrameToolDialog } from "./video-frame-tool-dialog";
 import { VideoFrameExtractionDialog } from "./video-frame-extraction-dialog";
 import { VideoConversionDialog } from "./video-conversion-dialog";
+import { VideoAudioDialog } from "./video-audio-dialog";
 
 export function ProjectVideoList({
-  videos, uid, pid, token, projectVersion, ownerId, shareId, canEdit, tools,
+  videos, audios = [], uid, pid, token, projectVersion, ownerId, shareId, canEdit, tools,
 }: {
   videos: ProjectVideo[];
+  audios?: ProjectAudio[];
   uid: string;
   pid: string;
   token: string;
@@ -31,13 +33,14 @@ export function ProjectVideoList({
   const deleteVideo = useDeleteProjectVideo(uid, pid, token, ownerId, shareId);
   const { toast } = useToast();
 
-  if (!videos.length) return null;
+  if (!videos.length && !audios.length) return null;
   return (
     <section className="space-y-4 border-b p-4">
       <div>
         <h2 className="font-semibold">Vídeos do projeto</h2>
         <p className="text-sm text-muted-foreground">Seleciona um vídeo para o reproduzir ou editar.</p>
       </div>
+      {!!audios.length && <div className="space-y-2"><h3 className="font-medium">Áudios extraídos</h3>{audios.map((audio) => <Card key={audio._id} className="flex items-center justify-between gap-4 p-3"><div><p className="font-medium">{audio.name}</p><p className="text-xs text-muted-foreground">M4A · AAC · {audio.duration.toFixed(2)} s</p></div><audio controls src={audio.url} className="max-w-full" /></Card>)}</div>}
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {videos.map((video) => (
           <Card key={video._id} className="overflow-hidden p-0">
@@ -75,6 +78,7 @@ export function ProjectVideoList({
                 <VideoFrameToolDialog video={selectedVideo} tools={tools} uid={uid} pid={pid} token={token} projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
                 <VideoFrameExtractionDialog video={selectedVideo} uid={uid} pid={pid} token={token} projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
                 <VideoConversionDialog video={selectedVideo} uid={uid} pid={pid} token={token} projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
+                <VideoAudioDialog video={selectedVideo} uid={uid} pid={pid} token={token} projectVersion={projectVersion} canEdit={canEdit} />
               </div>
               {canEdit && (
                 <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>

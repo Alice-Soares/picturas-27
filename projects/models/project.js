@@ -36,12 +36,23 @@ const videoSchema = new mongoose.Schema({
   sourceVideoId: { type: mongoose.Schema.Types.ObjectId, default: null },
 }, { _id: true });
 
+const audioSchema = new mongoose.Schema({
+  sourceVideoId: { type: mongoose.Schema.Types.ObjectId, required: true },
+  stage: { type: String, enum: ["audio-src"], required: true },
+  object_key: { type: String, required: true }, name: { type: String, required: true },
+  size: { type: Number, required: true }, duration: { type: Number, required: true },
+  container: { type: String, enum: ["m4a"], required: true },
+  audioCodec: { type: String, enum: ["aac"], required: true },
+  sampleRate: { type: Number, default: null }, channels: { type: Number, default: null },
+}, { _id: true });
+
 
 const projectSchema = new mongoose.Schema({
   name: { type: String, required: true },
   user_id: { type: mongoose.Schema.Types.ObjectId, required: true },
   imgs: { type: [imgSchema], default: [] },
   videos: { type: [videoSchema], default: [] },
+  audios: { type: [audioSchema], default: [] },
   tools: { type: [toolSchema], default: [] },
   version: { type: Number, default: 0 },
   activeToken: { type: Number, default: 0 },

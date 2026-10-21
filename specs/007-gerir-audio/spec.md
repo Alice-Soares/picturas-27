@@ -1,6 +1,6 @@
 # Feature Specification: Gestão de Áudio de Vídeo
 
-**Feature Branch**: `006-gerir-audio`
+**Feature Branch**: `007-gerir-audio`
 
 **Created**: 2026-10-21
 

@@ -1,6 +1,6 @@
 # Tasks: Gestão de Áudio de Vídeo
 
-**Input**: Design documents from `/specs/006-gerir-audio/`
+**Input**: Design documents from `/specs/007-gerir-audio/`
 
 **Prerequisites**: [plan.md](./plan.md), [spec.md](./spec.md),
 [research.md](./research.md), [data-model.md](./data-model.md),
@@ -135,7 +135,7 @@ requirements across all audio operations.
 - [ ] T049 [P] Add cleanup tests in `projects/test/videoAudioCleanup.test.js` proving no temporary object or partial result remains after success, failure or cancellation
 - [ ] T050 [P] Add frontend component/API tests for unauthorized actions, safe error messages, terminal status and result distinction in `frontend/components/project-page/video-audio-dialog.test.tsx`
 - [ ] T051 Update `README.md` with audio worker startup, focused test command and the UC-VID-007 validation flow without documenting secrets or unsupported MVP features
-- [ ] T052 Update `specs/006-gerir-audio/quickstart.md` with executed command output, operation IDs, result IDs and pass/fail evidence after implementation
+- [ ] T052 Update `specs/007-gerir-audio/quickstart.md` with executed command output, operation IDs, result IDs and pass/fail evidence after implementation
 - [ ] T053 Run `node projects/test/run-tests.js`, worker tests, frontend tests and the complete quickstart validation; fix only feature-caused failures and document known limitations
 - [ ] T054 Verify every `REQ-VID-AUD-*`, referenced `REQ-VID-COM-*` and `REQ-VID-Q-*` has a component and `TST-AUD-*` result in the Phase 1 traceability evidence
 

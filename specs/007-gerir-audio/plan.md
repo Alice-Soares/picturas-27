@@ -1,8 +1,8 @@
 # Implementation Plan: Gestão de Áudio de Vídeo
 
-**Branch**: `006-gerir-audio` | **Date**: 2026-10-21 | **Spec**: [spec.md](./spec.md)
+**Branch**: `007-gerir-audio` | **Date**: 2026-10-21 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `/specs/006-gerir-audio/spec.md`
+**Input**: Feature specification from `/specs/007-gerir-audio/spec.md`
 
 ## Summary
 
@@ -51,7 +51,7 @@ permanecem responsabilidade do Projects Service.
 ### Documentation (this feature)
 
 ```text
-specs/006-gerir-audio/
+specs/007-gerir-audio/
 ├── plan.md
 ├── research.md
 ├── data-model.md

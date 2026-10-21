@@ -32,9 +32,11 @@ export interface SingleProject {
   tools: ProjectToolResponse[];
   imgs: ProjectImage[];
   videos: ProjectVideo[];
+  audios: ProjectAudio[];
   version: number;
 
 }
+export interface ProjectAudio { _id: string; name: string; duration: number; container: "m4a"; audioCodec: "aac"; sourceVideoId: string; url: string; }
 export interface ProjectVideo {
   _id: string;
   name: string;
@@ -94,6 +96,10 @@ export interface VideoConversionOperation extends Omit<VideoTrimOperation, "type
     outputHeight: number | null;
     estimatedSize: number | null;
   };
+}
+export interface VideoAudioOperation {
+  id: string; type: "audio"; audioAction: "remove" | "replace" | "extract";
+  status: VideoTrimOperation["status"]; progress: number; resultVideoId: string | null; resultAudioId: string | null; errorCode: string | null;
 }
 export interface ProjectImage {
   _id: string;
@@ -777,6 +783,30 @@ export const createProjectVideoConversion = async (params: {
   );
   return response.data;
 };
+
+export async function createProjectVideoAudio(params: {
+  uid: string; pid: string; token: string; videoId: string; action: "remove" | "replace" | "extract";
+  projectVersion: number; file?: File; startSeconds?: number; endSeconds?: number; ownerId?: string; shareId?: string;
+}) {
+  const pathUid = params.ownerId ?? params.uid; const query = buildQuery(params);
+  const url = `/projects/${pathUid}/${params.pid}/video/${params.videoId}/audio/${params.action}${query}`;
+  const headers = { Authorization: `Bearer ${params.token}`, "X-Project-Version": String(params.projectVersion) };
+  const data = params.action === "replace" ? (() => { const form = new FormData(); if (params.file) form.append("audio", params.file); if (params.startSeconds !== undefined) form.append("startSeconds", String(params.startSeconds)); if (params.endSeconds !== undefined) form.append("endSeconds", String(params.endSeconds)); return form; })() : {};
+  const response = await api.post<{ operationId: string; status: string }>(url, data, { headers });
+  return response.data;
+}
+
+export async function getProjectVideoAudio(params: { uid: string; pid: string; token: string; operationId: string; ownerId?: string; shareId?: string }) {
+  const pathUid = params.ownerId ?? params.uid; const query = buildQuery(params);
+  const response = await api.get<VideoAudioOperation>(`/projects/${pathUid}/${params.pid}/video-operations/${params.operationId}${query}`, { headers: { Authorization: `Bearer ${params.token}` } });
+  return response.data;
+}
+
+export async function cancelProjectVideoAudio(params: { uid: string; pid: string; token: string; operationId: string; ownerId?: string; shareId?: string }) {
+  const pathUid = params.ownerId ?? params.uid; const query = buildQuery(params);
+  const response = await api.post(`/projects/${pathUid}/${params.pid}/video-operations/${params.operationId}/cancel${query}`, {}, { headers: { Authorization: `Bearer ${params.token}` } });
+  return response.data;
+}
 
 export const createProjectVideoFrameTool = async (params: {
   uid: string; pid: string; token: string; videoId: string;
