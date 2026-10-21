@@ -50,7 +50,9 @@ def process(ch, payload):
     if action == "remove":
         cmd = ["ffmpeg", "-y", "-i", source, "-map", "0:v:0", "-c", "copy", "-an", "-movflags", "+faststart", output]
     elif action == "extract":
-        cmd = ["ffmpeg", "-y", "-i", source, "-map", "0:a:0", "-vn", "-c:a", "aac", "-f", "ipod", output]
+        # Submitted videos use AAC audio; remux it into M4A instead of
+        # re-encoding the whole track. This keeps playback preparation light.
+        cmd = ["ffmpeg", "-y", "-i", source, "-map", "0:a:0", "-vn", "-c:a", "copy", "-f", "ipod", output]
     else:
         if not replacement: raise ValueError("VIDEO_AUDIO_INVALID")
         trim = f"atrim=start={float(start or 0)}"

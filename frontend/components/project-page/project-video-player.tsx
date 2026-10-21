@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { ProjectVideo, createProjectVideoAudioPlayback, fetchProjectVideoAudio, getProjectVideoAudio } from "@/lib/projects";
 
 type Props = {
@@ -17,41 +18,40 @@ export function ProjectVideoPlayer({ video, uid, pid, token, projectVersion, aud
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const requestedVideoId = useRef<string | undefined>(undefined);
+  const audioCorrectionAt = useRef(0);
+  const [preparingAudio, setPreparingAudio] = useState(false);
   const [audioStatus, setAudioStatus] = useState("");
 
-  useEffect(() => {
+  async function prepareAudio() {
     if (!video.audioCodec || audioUrl || requestedVideoId.current === video._id) return;
     requestedVideoId.current = video._id;
-    let active = true;
-    let operationId: string | undefined;
     const params = { uid, pid, token };
-
-    async function prepareAudio() {
-      try {
-        setAudioStatus("A preparar a faixa de áudio para reprodução…");
-        const accepted = await createProjectVideoAudioPlayback({ ...params, videoId: video._id, projectVersion });
-        operationId = accepted.operationId;
-        let operation = await getProjectVideoAudio({ ...params, operationId });
-        while (!["completed", "failed", "cancelled"].includes(operation.status)) {
-          await new Promise((resolve) => window.setTimeout(resolve, 1500));
-          operation = await getProjectVideoAudio({ ...params, operationId });
-        }
-        if (operation.status !== "completed") throw new Error(operation.errorCode || "Não foi possível preparar o áudio.");
-        const url = await fetchProjectVideoAudio({ ...params, operationId });
-        if (!active) {
-          URL.revokeObjectURL(url);
-          return;
-        }
-        onAudioReady(video._id, url);
-        setAudioStatus("");
-      } catch (error) {
-        if (active) setAudioStatus((error as Error).message || "Não foi possível preparar o áudio para reprodução.");
+    try {
+      setPreparingAudio(true);
+      setAudioStatus("A preparar a faixa de áudio para reprodução…");
+      const accepted = await createProjectVideoAudioPlayback({ ...params, videoId: video._id, projectVersion });
+      let operation = await getProjectVideoAudio({ ...params, operationId: accepted.operationId });
+      while (!["completed", "failed", "cancelled"].includes(operation.status)) {
+        await new Promise((resolve) => window.setTimeout(resolve, 1500));
+        operation = await getProjectVideoAudio({ ...params, operationId: accepted.operationId });
       }
+      if (operation.status !== "completed") throw new Error(operation.errorCode || "Não foi possível preparar o áudio.");
+      const url = await fetchProjectVideoAudio({ ...params, operationId: accepted.operationId });
+      if (requestedVideoId.current !== video._id) {
+        URL.revokeObjectURL(url);
+        return;
+      }
+      onAudioReady(video._id, url);
+      setAudioStatus("");
+    } catch (error) {
+      if (requestedVideoId.current === video._id) {
+        requestedVideoId.current = undefined;
+        setAudioStatus((error as Error).message || "Não foi possível preparar o áudio para reprodução.");
+      }
+    } finally {
+      if (requestedVideoId.current === video._id) setPreparingAudio(false);
     }
-
-    void prepareAudio();
-    return () => { active = false; };
-  }, [audioUrl, onAudioReady, pid, projectVersion, token, uid, video._id, video.audioCodec]);
+  }
 
   function syncAudio() {
     const videoElement = videoRef.current;
@@ -74,6 +74,7 @@ export function ProjectVideoPlayer({ video, uid, pid, token, projectVersion, aud
         className="aspect-video w-full rounded-md bg-black"
         controls
         playsInline
+        preload="metadata"
         muted={Boolean(audioUrl)}
         src={video.url}
         onPlay={playAudio}
@@ -83,6 +84,14 @@ export function ProjectVideoPlayer({ video, uid, pid, token, projectVersion, aud
       >
         O browser não suporta reprodução de vídeo.
       </video>
+      {video.audioCodec && !audioUrl && (
+        <div className="space-y-1">
+          <Button type="button" variant="outline" disabled={preparingAudio} onClick={() => void prepareAudio()}>
+            {preparingAudio ? "A preparar áudio…" : "Ativar faixa de áudio alternativa"}
+          </Button>
+          {audioStatus && <p role="status" className="text-sm text-muted-foreground">{audioStatus}</p>}
+        </div>
+      )}
       {video.audioCodec && audioUrl && (
         <div className="space-y-1">
           <p className="text-sm">Áudio original sincronizado</p>
@@ -92,7 +101,10 @@ export function ProjectVideoPlayer({ video, uid, pid, token, projectVersion, aud
             controls
             preload="auto"
             src={audioUrl}
-            onLoadedMetadata={syncAudio}
+            onLoadedMetadata={() => {
+              syncAudio();
+              if (!videoRef.current?.paused) audioRef.current?.play().catch(() => {});
+            }}
             onPlay={() => {
               const audio = audioRef.current;
               const videoElement = videoRef.current;
@@ -110,14 +122,17 @@ export function ProjectVideoPlayer({ video, uid, pid, token, projectVersion, aud
             onTimeUpdate={() => {
               const audio = audioRef.current;
               const videoElement = videoRef.current;
-              if (audio && videoElement && !videoElement.paused && Math.abs(audio.currentTime - videoElement.currentTime) > 0.4) {
-                videoElement.currentTime = audio.currentTime;
+              const now = Date.now();
+              if (audio && videoElement && !videoElement.paused &&
+                Math.abs(audio.currentTime - videoElement.currentTime) > 0.75 && now - audioCorrectionAt.current > 1000) {
+                audioCorrectionAt.current = now;
+                audio.currentTime = videoElement.currentTime;
               }
             }}
           />
         </div>
       )}
-      {audioStatus && <p role="status" className="text-sm text-muted-foreground">{audioStatus}</p>}
+      {video.audioCodec && audioUrl && audioStatus && <p role="status" className="text-sm text-muted-foreground">{audioStatus}</p>}
     </div>
   );
 }
