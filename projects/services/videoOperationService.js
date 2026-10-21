@@ -1,4 +1,5 @@
 const axios = require("axios");
+const fs = require("fs");
 const https = require("https");
 const { v4: uuidv4 } = require("uuid");
 const Project = require("../controllers/project");
@@ -408,6 +409,20 @@ async function createFrameExtractionOperation({
     const error = new Error("VIDEO_FRAME_EXTRACT_DESTINATION_NOT_FOUND");
     error.status = 404;
     throw error;
+  }
+  if (video.videoCodec && video.videoCodec !== "h264") {
+    const error = new Error("VIDEO_FRAME_EXTRACT_CODEC_UNSUPPORTED");
+    error.status = 400;
+    throw error;
+  }
+  if (Number.isFinite(Number(video.size)) && fs.promises.statfs) {
+    const storage = await fs.promises.statfs("/tmp");
+    const availableBytes = storage.bavail * storage.bsize;
+    if (availableBytes < Number(video.size)) {
+      const error = new Error("VIDEO_FRAME_EXTRACT_STORAGE_INSUFFICIENT");
+      error.status = 507;
+      throw error;
+    }
   }
   const extraction = validateExtraction({
     startSeconds,
