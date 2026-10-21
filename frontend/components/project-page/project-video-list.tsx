@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -13,6 +13,7 @@ import { VideoFrameToolDialog } from "./video-frame-tool-dialog";
 import { VideoFrameExtractionDialog } from "./video-frame-extraction-dialog";
 import { VideoConversionDialog } from "./video-conversion-dialog";
 import { VideoAudioDialog } from "./video-audio-dialog";
+import { ProjectVideoPlayer } from "./project-video-player";
 
 export function ProjectVideoList({
   videos, audios = [], uid, pid, token, projectVersion, ownerId, shareId, canEdit, tools,
@@ -29,9 +30,13 @@ export function ProjectVideoList({
   tools: ProjectToolResponse[];
 }) {
   const [selectedVideo, setSelectedVideo] = useState<ProjectVideo | null>(null);
+  const [playbackAudio, setPlaybackAudio] = useState<Record<string, string>>({});
+  const playbackUrls = useRef<string[]>([]);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const deleteVideo = useDeleteProjectVideo(uid, pid, token, ownerId, shareId);
   const { toast } = useToast();
+
+  useEffect(() => () => playbackUrls.current.forEach((url) => URL.revokeObjectURL(url)), []);
 
   if (!videos.length && !audios.length) return null;
   return (
@@ -71,9 +76,18 @@ export function ProjectVideoList({
                   {selectedVideo.audioCodec ? ` · Áudio original: ${selectedVideo.audioCodec}` : " · Sem faixa de áudio detetada"}
                 </DialogDescription>
               </DialogHeader>
-              <video className="aspect-video w-full rounded-md bg-black" controls playsInline muted={false} src={selectedVideo.url}>
-                O browser não suporta reprodução de vídeo.
-              </video>
+              <ProjectVideoPlayer
+                video={selectedVideo}
+                uid={uid}
+                pid={pid}
+                token={token}
+                projectVersion={projectVersion}
+                audioUrl={playbackAudio[selectedVideo._id]}
+                onAudioReady={(videoId, url) => {
+                  playbackUrls.current.push(url);
+                  setPlaybackAudio((current) => ({ ...current, [videoId]: url }));
+                }}
+              />
               <div className="grid grid-cols-2 gap-2">
                 <VideoTrimDialog video={selectedVideo} uid={uid} pid={pid} token={token} projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
                 <VideoFrameToolDialog video={selectedVideo} tools={tools} uid={uid} pid={pid} token={token} projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />

@@ -809,14 +809,18 @@ export async function cancelProjectVideoAudio(params: { uid: string; pid: string
 }
 
 export async function downloadProjectVideoAudio(params: { uid: string; pid: string; token: string; operationId: string; ownerId?: string; shareId?: string }) {
+  const blobUrl = await fetchProjectVideoAudio(params);
+  const link = document.createElement("a"); link.href = blobUrl; link.download = "audio.m4a";
+  document.body.appendChild(link); link.click(); link.remove();
+  return blobUrl;
+}
+
+export async function fetchProjectVideoAudio(params: { uid: string; pid: string; token: string; operationId: string; ownerId?: string; shareId?: string }) {
   const pathUid = params.ownerId ?? params.uid; const query = buildQuery(params);
   const response = await api.get<Blob>(`/projects/${pathUid}/${params.pid}/video-operations/${params.operationId}/audio-download${query}`, {
     headers: { Authorization: `Bearer ${params.token}` }, responseType: "blob",
   });
-  const blobUrl = URL.createObjectURL(response.data);
-  const link = document.createElement("a"); link.href = blobUrl; link.download = "audio.m4a";
-  document.body.appendChild(link); link.click(); link.remove();
-  return blobUrl;
+  return URL.createObjectURL(response.data);
 }
 
 export const createProjectVideoFrameTool = async (params: {
