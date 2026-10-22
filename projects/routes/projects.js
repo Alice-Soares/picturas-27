@@ -339,8 +339,8 @@ router.post("/:user/:project/video/:videoId/conversion", requireAuth, async (req
 });
 
 for (const action of ["remove", "extract", "playback"]) {
-  router.post(`/:user/:project/video/:videoId/audio/${action}`, requireAuth, async (req, res) => {
-    if (String(getCallerId(req)) !== String(req.params.user)) return res.status(403).json({ error: "VIDEO_AUDIO_UNAUTHORIZED" });
+  router.post(`/:user/:project/video/:videoId/audio/${action}`, requireAuth, checkSharePermission, requireEditPermission, async (req, res) => {
+    if (!req.sharedPermission && String(getCallerId(req)) !== String(req.params.user)) return res.status(403).json({ error: "VIDEO_AUDIO_UNAUTHORIZED" });
     try {
       const operation = await createAudioOperation({
         userId: req.params.user,
@@ -355,14 +355,14 @@ for (const action of ["remove", "extract", "playback"]) {
   });
 }
 
-router.post("/:user/:project/video/:videoId/audio/replace", requireAuth, (req, res, next) => {
+router.post("/:user/:project/video/:videoId/audio/replace", requireAuth, checkSharePermission, requireEditPermission, (req, res, next) => {
   audioUpload.single("audio")(req, res, (error) => {
     if (!error) return next();
     if (req.file?.path) fs.rm(req.file.path, { force: true }, () => {});
     return res.status(error.code === "LIMIT_FILE_SIZE" ? 413 : 400).json({ error: error.code === "LIMIT_FILE_SIZE" ? "VIDEO_AUDIO_INVALID" : "VIDEO_AUDIO_INVALID" });
   });
 }, async (req, res) => {
-  if (String(getCallerId(req)) !== String(req.params.user)) { if (req.file?.path) await fs.promises.rm(req.file.path, { force: true }); return res.status(403).json({ error: "VIDEO_AUDIO_UNAUTHORIZED" }); }
+  if (!req.sharedPermission && String(getCallerId(req)) !== String(req.params.user)) { if (req.file?.path) await fs.promises.rm(req.file.path, { force: true }); return res.status(403).json({ error: "VIDEO_AUDIO_UNAUTHORIZED" }); }
   try {
     const operation = await createAudioOperation({ userId: req.params.user, projectId: req.params.project, videoId: req.params.videoId, action: "replace", file: req.file, startSeconds: req.body?.startSeconds, endSeconds: req.body?.endSeconds, profile: await trimProfile(req) });
     return res.status(202).json({ operationId: String(operation._id), status: operation.status });
@@ -370,9 +370,9 @@ router.post("/:user/:project/video/:videoId/audio/replace", requireAuth, (req, r
   finally { if (req.file?.path) await fs.promises.rm(req.file.path, { force: true }); }
 });
 
-router.get("/:user/:project/video-operations/:operationId", requireAuth, async (req, res) => {
+router.get("/:user/:project/video-operations/:operationId", requireAuth, checkSharePermission, async (req, res) => {
   const callerId = getCallerId(req);
-  if (String(callerId) !== String(req.params.user)) {
+  if (!req.sharedPermission && String(callerId) !== String(req.params.user)) {
     return res.status(403).json({ error: "VIDEO_TRIM_UNAUTHORIZED" });
   }
   try {
@@ -412,7 +412,8 @@ router.get("/:user/:project/video-operations/:operationId", requireAuth, async (
   }
 });
 
-router.get("/:user/:project/video-operations/:operationId/audio-download", requireAuth, async (req, res) => {
+router.get("/:user/:project/video-operations/:operationId/audio-download", requireAuth, checkSharePermission, async (req, res) => {
+  if (!req.sharedPermission && String(getCallerId(req)) !== String(req.params.user)) return res.status(403).json({ error: "VIDEO_AUDIO_UNAUTHORIZED" });
   if (String(getCallerId(req)) !== String(req.params.user)) return res.status(403).json({ error: "VIDEO_AUDIO_UNAUTHORIZED" });
   const operation = await VideoOperation.findOne({ _id: req.params.operationId, user_id: req.params.user, project_id: req.params.project }).select("+result_audio_path").exec();
   if (!operation || operation.type !== "audio" || operation.audio_action !== "extract") return res.status(404).json({ error: "VIDEO_AUDIO_NOT_FOUND" });
@@ -429,9 +430,9 @@ router.get("/:user/:project/video-operations/:operationId/audio-download", requi
   });
 });
 
-router.post("/:user/:project/video-operations/:operationId/cancel", requireAuth, async (req, res) => {
+router.post("/:user/:project/video-operations/:operationId/cancel", requireAuth, checkSharePermission, requireEditPermission, async (req, res) => {
   const callerId = getCallerId(req);
-  if (String(callerId) !== String(req.params.user)) {
+  if (!req.sharedPermission && String(callerId) !== String(req.params.user)) {
     return res.status(403).json({ error: "VIDEO_TRIM_UNAUTHORIZED" });
   }
   try {

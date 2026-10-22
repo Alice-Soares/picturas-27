@@ -97,6 +97,8 @@ export function ProjectVideoList({
                 pid={pid}
                 token={token}
                 projectVersion={projectVersion}
+                ownerId={ownerId}
+                shareId={shareId}
                 audioUrl={playbackAudio[selectedVideo._id]}
                 onAudioReady={(videoId, url) => {
                   playbackUrls.current.push(url);
@@ -108,7 +110,7 @@ export function ProjectVideoList({
                 <VideoFrameToolDialog video={selectedVideo} tools={tools} uid={uid} pid={pid} token={token} projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
                 <VideoFrameExtractionDialog video={selectedVideo} uid={uid} pid={pid} token={token} projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} destinationProjects={destinationProjects} canEdit={canEdit} />
                 <VideoConversionDialog video={selectedVideo} uid={uid} pid={pid} token={token} projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
-                <VideoAudioDialog video={selectedVideo} uid={uid} pid={pid} token={token} projectVersion={projectVersion} canEdit={canEdit} />
+                <VideoAudioDialog video={selectedVideo} uid={uid} pid={pid} token={token} projectVersion={projectVersion} ownerId={ownerId} shareId={shareId} canEdit={canEdit} />
               </div>
               {canEdit && (
                 <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>

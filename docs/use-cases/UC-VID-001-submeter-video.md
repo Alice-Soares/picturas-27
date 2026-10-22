@@ -28,6 +28,15 @@ Esta funcionalidade é a base de todo o suporte a vídeo no PictuRAS, porque sem
 
 ## 2. Caso de Uso
 
+### Nota sobre projetos partilhados
+
+Um projeto partilhado continua a pertencer ao utilizador proprietário, mas pode ser
+acedido por outro utilizador autenticado através de um link de partilha. O link
+define a permissão `read` (apenas consulta) ou `edit` (consulta e operações de
+alteração). As operações de vídeo devem validar o link, a sua validade e a
+permissão antes de ler ou alterar conteúdos; o proprietário permanece responsável
+pelo projeto e é usado como identidade do projeto nos serviços internos.
+
 ### 2.1 Cabeçalho
 
 | **Secção**                    | **Detalhes**                                                                                                                                                                                                                                               |

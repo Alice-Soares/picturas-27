@@ -1,6 +1,6 @@
 # UC-VID-006 — Concatenar Múltiplos Vídeos (Merge)
 
-> **Estado de implementação:** Especificado, mas não implementado nesta fase. Não iniciar a implementação de UC-VID-006 sem decisão explícita de âmbito.
+> **Estado de implementação:** Implementado no MVP. A saída é fixa em MP4/H.264/AAC, com normalização automática; o acompanhamento usa polling do estado como fallback operacional aos eventos publicados.
 
 ---
 
@@ -51,12 +51,12 @@ A concatenação permite unir múltiplos vídeos ou excertos recortados previame
 | **Passo** | **Ação do Ator**                                                                                         | **Resposta do Sistema**                                                                                                                                                          |
 | --------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1         | O utilizador acede à biblioteca do projeto e seleciona 2 ou mais vídeos.                                 | O sistema destaca os ficheiros selecionados e ativa a opção "Concatenar Vídeos".                                                                                                 |
-| 2         | O utilizador clica em "Concatenar Vídeos".                                                               | O sistema apresenta a interface de ordenação com as miniaturas dos vídeos e opções de saída (resolução, formato).                                                                |
-| 3         | O utilizador ajusta a ordem de reprodução dos vídeos (drag-and-drop) e seleciona os parâmetros de saída. | O sistema valida se a duração total acumulada e o número de ficheiros respeitam o limite do perfil do utilizador.                                                                |
+| 2         | O utilizador clica em "Concatenar Vídeos".                                                               | O sistema apresenta a interface de ordenação dos vídeos. A saída do MVP é MP4/H.264/AAC, com resolução e taxa de fotogramas normalizadas automaticamente.                       |
+| 3         | O utilizador ajusta a ordem de reprodução dos vídeos (drag-and-drop).                                  | O sistema valida se a duração total acumulada e o número de ficheiros respeitam o limite do perfil do utilizador.                                                                |
 | 4         | O utilizador confirma a operação de concatenação.                                                        | O sistema valida a quota do utilizador e a disponibilidade do armazenamento.                                                                                                     |
 | 5         | —                                                                                                        | O sistema cria um operação de concatenação e envia a operação para a fila de mensagens (RabbitMQ).                                                                                      |
 | 6         | —                                                                                                        | O sistema notifica o utilizador que o processamento iniciou e atualiza o estado para "Em fila".                                                                                  |
-| 7         | O utilizador acompanha o progresso.                                                                      | O sistema comunica periodicamente o progresso em tempo real (%) via WebSocket.                                                                                                   |
+| 7         | O utilizador acompanha o progresso.                                                                      | O sistema publica eventos autorizados e o frontend consulta periodicamente o estado como fallback, atualizando a percentagem apresentada.                                      |
 | 8         | —                                                                                                        | O worker de vídeo  normaliza resoluções/codecs compatíveis, une os ficheiros na ordem definida, preserva as faixas de áudio compatíveis e guarda o resultado final. |
 | 9         | —                                                                                                        | O sistema regista o novo vídeo na base de dados, associa-o ao projeto e aplica a quota de operações avançadas.                                                                        |
 | 10        | —                                                                                                        | O sistema notifica a conclusão com sucesso e disponibiliza o vídeo final na biblioteca.                                                                                          |
@@ -147,7 +147,7 @@ A concatenação permite unir múltiplos vídeos ou excertos recortados previame
 | **Elemento existente afetado** | **Impacto (Manter / Estender / Alterar)** | **Descrição do impacto** | **Requisitos relacionados** |
 |--------------------------------|-------------------------------------------|--------------------------|------------------------------|
 | Projects Service e autorização | Estender | Validar que todos os vídeos pertencem a um projeto acessível e registar o resultado. | MERGE-001, MERGE-003 |
-| RabbitMQ e workers | Estender | Acrescentar worker de concatenação e normalização. | MERGE-002, MERGE-003 |
+| RabbitMQ e workers | Estender | Acrescentar worker de concatenação e normalização; publicar estados para o projeto autorizado. | MERGE-002, MERGE-003 |
 | SeaweedFS / armazenamento temporário | Estender | Ler múltiplos objetos e limpar intermediários após sucesso ou falha. | MERGE-003 |
 | FFmpeg/FFprobe | Novo | Normalizar streams compatíveis e concatenar pela ordem selecionada. | MERGE-002, MERGE-003 |
 

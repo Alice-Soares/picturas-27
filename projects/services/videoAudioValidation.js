@@ -33,7 +33,10 @@ async function validateReplacement(file, startSeconds, endSeconds, inspectAudio 
   }
   const start = startSeconds == null || startSeconds === "" ? 0 : Number(startSeconds);
   const end = endSeconds == null || endSeconds === "" ? null : Number(endSeconds);
-  if (!Number.isFinite(start) || start < 0 || (end !== null && (!Number.isFinite(end) || end <= start || end > metadata.duration))) throw new Error("VIDEO_AUDIO_INVALID");
+  if (!Number.isFinite(start) || start < 0 || start >= metadata.duration ||
+      (end !== null && (!Number.isFinite(end) || end <= start || end > metadata.duration))) {
+    throw new Error("VIDEO_AUDIO_INVALID");
+  }
   return { ...metadata, startSeconds: start, endSeconds: end };
 }
 module.exports = { probeAudio, validateReplacement };

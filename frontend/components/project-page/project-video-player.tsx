@@ -10,11 +10,13 @@ type Props = {
   pid: string;
   token: string;
   projectVersion: number;
+  ownerId?: string;
+  shareId?: string;
   audioUrl?: string;
   onAudioReady: (videoId: string, url: string) => void;
 };
 
-export function ProjectVideoPlayer({ video, uid, pid, token, projectVersion, audioUrl, onAudioReady }: Props) {
+export function ProjectVideoPlayer({ video, uid, pid, token, projectVersion, ownerId, shareId, audioUrl, onAudioReady }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const requestedVideoId = useRef<string | undefined>(undefined);
@@ -25,7 +27,7 @@ export function ProjectVideoPlayer({ video, uid, pid, token, projectVersion, aud
   async function prepareAudio() {
     if (!video.audioCodec || audioUrl || requestedVideoId.current === video._id) return;
     requestedVideoId.current = video._id;
-    const params = { uid, pid, token };
+    const params = { uid, pid, token, ownerId, shareId };
     try {
       setPreparingAudio(true);
       setAudioStatus("A preparar a faixa de áudio para reprodução…");

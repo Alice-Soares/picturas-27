@@ -1,6 +1,6 @@
 # UC-VID-007 — Gerir Áudio do Vídeo (Remover, Substituir ou Extrair)
 
-> **Estado de implementação:** Especificado, mas não implementado nesta fase. Não iniciar a implementação de UC-VID-007 sem decisão explícita de âmbito.
+> **Estado de implementação:** Implementado no MVP. Inclui remoção, substituição e extração autenticada de áudio, com suporte a projetos próprios e projetos partilhados com permissão de edição.
 
 ---
 
@@ -43,7 +43,7 @@ Permite manipular a faixa de áudio de um vídeo: removê-la, substituí-la por 
 | **Âmbito**                    | Módulo de processamento de vídeo e gestão de conteúdos do PictuRAS                                                                                                                                                                                                                                                                        |
 | **Ator Principal**            | Utilizador Registado ou Premium                                                                                                                                                                                                                                                                                                           |
 | **Stakeholders e Interesses** | - **Utilizador**: pretende isolar o áudio ou criar um vídeo sem som para fins de edição.<br>- **Proprietário do Sistema**: garantir armazenamento adequado para ficheiros de áudio gerados.<br>- **Equipa de Desenvolvimento**: validar a manipulação isolada de streams de áudio através de ferramentas de backend. |
-| **Pré-condições**             | - O utilizador tem sessão iniciada com perfil registado ou premium.<br>- O vídeo selecionado está disponível no projeto.                                                                                                          |
+| **Pré-condições**             | - O utilizador tem sessão iniciada com perfil registado ou premium.<br>- O vídeo selecionado está disponível no projeto.<br>- Num projeto partilhado, o link está válido e concede permissão `edit` para remover/substituir/cancelar; a leitura do estado e o download exigem autenticação e acesso ao projeto. |
 | **Trigger**                   | O utilizador seleciona um vídeo na biblioteca e escolhe a opção "Gerir Áudio". |
 
 ### 2.2 Fluxo Principal
@@ -54,7 +54,7 @@ Permite manipular a faixa de áudio de um vídeo: removê-la, substituí-la por 
 | 2         | O utilizador escolhe a operação desejada e confirma.                    | O sistema valida o perfil e, para extração, a existência de áudio no ficheiro de origem. Para substituição, solicita um ficheiro de áudio ou um vídeo e valida que contém uma faixa sonora. |
 | 3         | —                                                                       | O sistema cria um operação de processamento de áudio e coloca-o na fila (RabbitMQ).                                                                |
 | 4         | —                                                                       | O sistema notifica o utilizador que o processamento está em curso.                                                                            |
-| 5         | O utilizador acompanha o estado.                                        | O sistema atualiza o progresso em tempo real via WebSocket.                                                                                   |
+| 5         | O utilizador acompanha o estado.                                        | O sistema publica o estado na sala autorizada e o frontend consulta periodicamente a operação como fallback, atualizando o progresso.       |
 | 6         | —                                                                       | O worker de vídeo, com FFmpeg, remove a faixa de áudio, extrai-a para M4A/AAC ou substitui-a pela faixa escolhida pelo utilizador. |
 | 7         | —                                                                       | Para remoção ou substituição, o sistema guarda o novo vídeo MP4 no projeto. Para extração, prepara um ficheiro M4A/AAC temporário para transferência. |
 | 8         | —                                                                       | O sistema regista a conclusão e, na extração, disponibiliza a transferência autenticada. O áudio extraído não é registado na biblioteca. |
@@ -148,7 +148,7 @@ Permite manipular a faixa de áudio de um vídeo: removê-la, substituí-la por 
 | **Elemento existente afetado** | **Impacto (Manter / Estender / Alterar)** | **Descrição do impacto** | **Requisitos relacionados** |
 |--------------------------------|-------------------------------------------|--------------------------|------------------------------|
 | Projects Service | Estender | Registar cada resultado como novo conteúdo sem reserva de quota diária. | AUD-001, AUD-004, AUD-005 |
-| RabbitMQ e WebSocket Gateway | Estender | Criar operação de áudio e comunicar estados/progresso ao projeto autorizado. | AUD-001, AUD-005 |
+| RabbitMQ e WebSocket Gateway | Estender | Criar operação de áudio e publicar estados/progresso ao projeto autorizado; o frontend usa polling como fallback. | AUD-001, AUD-005 |
 | API Gateway / Projects Service | Estender | Transmitir o M4A/AAC temporário à sessão autorizada e eliminá-lo após download. | AUD-015, COM-018, COM-019 |
 | FFmpeg/FFprobe | Novo | Detetar streams e executar remoção, substituição ou extração. | AUD-001, AUD-002, AUD-003 |
 

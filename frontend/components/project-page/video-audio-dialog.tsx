@@ -18,8 +18,8 @@ function audioErrorMessage(error: unknown) {
   return (error as Error)?.message || "Não foi possível processar o áudio.";
 }
 
-export function VideoAudioDialog({ video, uid, pid, token, projectVersion, canEdit }: { video: ProjectVideo; uid: string; pid: string; token: string; projectVersion: number; canEdit?: boolean }) {
-  const [open, setOpen] = useState(false); const [file, setFile] = useState<File>();
+export function VideoAudioDialog({ video, uid, pid, token, projectVersion, ownerId, shareId, canEdit }: { video: ProjectVideo; uid: string; pid: string; token: string; projectVersion: number; ownerId?: string; shareId?: string; canEdit?: boolean }) {
+  const [open, setOpen] = useState(false); const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false); const [file, setFile] = useState<File>();
   const [start, setStart] = useState(""); const [end, setEnd] = useState(""); const [status, setStatus] = useState(""); const [error, setError] = useState("");
   const [activeOperation, setActiveOperation] = useState<string>();
   const [downloadUrl, setDownloadUrl] = useState<string>();
@@ -28,18 +28,18 @@ export function VideoAudioDialog({ video, uid, pid, token, projectVersion, canEd
   async function run(action: "remove" | "replace" | "extract") {
     setError(""); setStatus("A submeter operação…");
     try {
-      const accepted = await createProjectVideoAudio({ uid, pid, token, videoId: video._id, action, projectVersion, file, startSeconds: start ? Number(start) : undefined, endSeconds: end ? Number(end) : undefined });
+      const accepted = await createProjectVideoAudio({ uid, pid, token, ownerId, shareId, videoId: video._id, action, projectVersion, file, startSeconds: start ? Number(start) : undefined, endSeconds: end ? Number(end) : undefined });
       setActiveOperation(accepted.operationId);
-      let result = await getProjectVideoAudio({ uid, pid, token, operationId: accepted.operationId });
+      let result = await getProjectVideoAudio({ uid, pid, token, ownerId, shareId, operationId: accepted.operationId });
       setStatus(`${result.status} · ${result.progress}%`);
       while (!["completed", "failed", "cancelled"].includes(result.status)) {
         await new Promise((resolve) => setTimeout(resolve, 1500));
-        result = await getProjectVideoAudio({ uid, pid, token, operationId: accepted.operationId });
+        result = await getProjectVideoAudio({ uid, pid, token, ownerId, shareId, operationId: accepted.operationId });
         setStatus(`${result.status} · ${result.progress}%`);
       }
       if (result.status === "completed") {
         if (action === "extract") {
-          const url = await downloadProjectVideoAudio({ uid, pid, token, operationId: accepted.operationId });
+          const url = await downloadProjectVideoAudio({ uid, pid, token, ownerId, shareId, operationId: accepted.operationId });
           setDownloadUrl(url);
           setStatus("Áudio extraído e transferência iniciada.");
         } else {
@@ -56,7 +56,7 @@ export function VideoAudioDialog({ video, uid, pid, token, projectVersion, canEd
     <DialogContent>
       <DialogHeader><DialogTitle>Gerir áudio</DialogTitle><DialogDescription>O vídeo original permanece inalterado.</DialogDescription></DialogHeader>
       <div className="space-y-3">
-        <Button className="w-full" onClick={() => run("remove")}>Remover áudio</Button>
+        <Button className="w-full" onClick={() => setRemoveConfirmOpen(true)}>Remover áudio</Button>
         <div className="space-y-2 rounded border p-3">
           <Input type="file" accept="video/*,.mp3,.m4a,audio/mpeg,audio/mp4" onChange={(event) => setFile(event.target.files?.[0])} />
           <p className="text-xs text-muted-foreground">Podes escolher MP3, M4A ou um vídeo com áudio. De um vídeo será usada apenas a primeira faixa de áudio.</p>
@@ -66,8 +66,20 @@ export function VideoAudioDialog({ video, uid, pid, token, projectVersion, canEd
         <Button className="w-full" variant="secondary" onClick={() => run("extract")}>Extrair faixa de áudio</Button>
         {status && <p role="status" className="text-sm">{status}</p>}{error && <p role="alert" className="text-sm text-destructive">{error}</p>}
         {downloadUrl && <Button variant="outline" onClick={() => { const link = document.createElement("a"); link.href = downloadUrl; link.download = "audio.m4a"; link.click(); }}>Descarregar novamente</Button>}
-        {activeOperation && <Button variant="destructive" onClick={async () => { try { await cancelProjectVideoAudio({ uid, pid, token, operationId: activeOperation }); setStatus("cancelled"); setActiveOperation(undefined); } catch (e) { setError((e as Error).message); } }}>Cancelar operação</Button>}
+        {activeOperation && <Button variant="destructive" onClick={async () => {         try { await cancelProjectVideoAudio({ uid, pid, token, ownerId, shareId, operationId: activeOperation }); setStatus("cancelled"); setActiveOperation(undefined); } catch (e) { setError((e as Error).message); } }}>Cancelar operação</Button>}
       </div>
     </DialogContent>
+    <Dialog open={removeConfirmOpen} onOpenChange={setRemoveConfirmOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Remover áudio?</DialogTitle>
+          <DialogDescription>Será criada uma cópia sem áudio. O vídeo original permanece inalterado.</DialogDescription>
+        </DialogHeader>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={() => setRemoveConfirmOpen(false)}>Cancelar</Button>
+          <Button onClick={() => { setRemoveConfirmOpen(false); void run("remove"); }}>Confirmar remoção</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   </Dialog>;
 }
