@@ -2,9 +2,10 @@
 
 = Rastreabilidade
 
+*TODO*: REVER TODO ESTE CAPITULO COM A IMPLEMENTAÇÃO E OS CAPITULOS ANTERIORES E REQUISITOS
+
 A matriz de origem cobre os requisitos especificados. A matriz de realização abaixo distingue a
-implementação verificada da mera presença de componentes. A cobertura de UC-VID-006 está fundamentada
-em testes executados; as restantes UC necessitam de resultados de execução consolidados.
+implementação verificada da mera presença de componentes. 
 
 == Casos de uso → requisitos
 
@@ -105,7 +106,16 @@ em testes executados; as restantes UC necessitam de resultados de execução con
 
 == Realização e verificação dos requisitos
 
-#tab([Rastreabilidade de realização e verificação — MVP],
+#orientacao[
+  Fecha o ciclo *requisito → componente → teste → estado*. Uma linha por requisito da ERS (podem agrupar
+  requisitos com o mesmo destino). Deve ser possível responder a: "que requisitos estão implementados e
+  verificados?" e "que componentes foram tocados por cada funcionalidade?". Requisitos não implementados não se
+  apagam: ficam com estado "Não implementado" e justificação. Os detalhes estão nos capítulos de Arquitetura e de Testes.
+]
+
+*TODO*: REVER TABELA
+
+#tab([Realização e verificação dos requisitos],
   tabela(
     colunas: (3.0cm, 3.3cm, 2.5cm, 2.1cm, 1fr),
     tamanho: 8.5pt,

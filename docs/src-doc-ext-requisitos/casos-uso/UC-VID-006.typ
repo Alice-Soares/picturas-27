@@ -2,8 +2,6 @@
 
 == UC-VID-006 — Concatenar Múltiplos Vídeos (Merge)
 
-#block(fill: luma(94%), inset: 8pt)[*Estado nesta fase:* Implementado e integrado no ramo do grupo; testes automatizados da funcionalidade aprovados em Docker. Validação ponta-a-ponta da versão final integrada ainda por confirmar.]
-
 === Cabeçalho
 
 #tab([Caso de uso UC-VID-006 — Concatenar Múltiplos Vídeos (Merge)],

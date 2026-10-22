@@ -2,7 +2,27 @@
 
 = Alterações Arquiteturais
 
-== Visão geral do incremento
+#orientacao[
+  Partam do documento de solução arquitetural de base e descrevam apenas o *delta* introduzido pelo suporte a
+  vídeo. O nível de detalhe é o de um MVP: o suficiente para que outra equipa perceba, mantenha e estenda a
+  solução na Fase 2. Cada alteração deve estar ligada aos requisitos que a motivam.
+]
+
+
+
+*TODO*: REVER E DAR EXPLICAÇÕES SUFICIENTES PARA PERCEBER AS DECISÕES MAS CONCISAS
+
+== Visão geral das alterações
+
+#orientacao[
+  A vista de componentes é *opcional*: incluam-na se ajudar a perceber as alterações. A tabela de componentes
+  novos e alterados é suficiente.
+]
+
+#figure(kind: image,
+  figura-pendente[vista de componentes/serviços atualizada, com componentes novos e alterados destacados (`images/arquitetura_componentes.png`)],
+  caption: [Vista de componentes da solução com suporte a vídeo (opcional)],
+)
 
 O incremento de vídeo preserva os serviços de imagem da solução anterior e reutiliza o encaminhamento HTTP,
 a autenticação, a persistência dos projetos e o armazenamento de objetos. Introduz metadados de vídeo,
@@ -14,7 +34,7 @@ a falhas distribuída em todas as ferramentas.
   tabela(
     colunas: (3.0cm, 1.7cm, 1fr, 3.2cm),
     tamanho: 8.5pt,
-    [Componente], [Impacto], [Responsabilidade], [Rastreabilidade],
+      [Componente / serviço], [Estado], [Responsabilidade / alteração], [Requisitos],
     [`frontend`], [Estendido], [Biblioteca, submissão de vídeo, formulários de processamento, estado e apresentação do resultado.], [UC-VID-001 a 007; REQ-VID-SUB, TRIM, FRM, CONV, FEX, MERGE, AUD],
     [`apiGateway`], [Estendido], [Autenticação, autorização, encaminhamento das rotas REST e pedidos de operação.], [REQ-VID-COM-001 a 003; REQ-VID-MERGE-001 a 009],
     [`projects`], [Estendido], [Modelos, validação de perfil, quotas, operações, workers e associação do resultado ao projeto.], [REQ-VID-COM-004 a 019; REQ-VID-MERGE-001 a 015],
@@ -25,11 +45,14 @@ a falhas distribuída em todas as ferramentas.
   ),
 )
 
-A UC-VID-006 encontra-se integrada no backend e no frontend e dispõe de testes automatizados executados
-no ambiente Docker. Para as restantes funcionalidades, a presença de código e de testes no repositório não
-substitui o registo de uma demonstração integrada por caso de uso, indicado no Capítulo 10.
-
 == Decisões arquiteturais
+
+#orientacao[
+  Registo leve de decisões (ao estilo ADR). Uma decisão só merece registo se havia alternativas reais
+  (e.g., processamento síncrono vs. assíncrono via fila; um serviço por ferramenta vs. serviço de vídeo único;
+  onde guardar ficheiros de entrada/saída; como reportar progresso ao _frontend_).
+]
+
 
 #tab([Decisões de arquitetura],
   tabela(
@@ -43,6 +66,22 @@ substitui o registo de uma demonstração integrada por caso de uso, indicado no
     [DA-05], [Consulta REST do estado de merge], [Alternativa especificada: eventos WebSocket com percentagem. A implementação do diálogo de concatenação consulta o estado pela API.], [Acompanhamento funcional, mas divergência face ao requisito de progresso WebSocket; DQ-001 e REQ-VID-COM-011 a 013],
   ),
 )
+
+== Fluxo de processamento de vídeo
+
+
+
+#figure(kind: image,
+  figura-pendente[diagrama de sequência entre componentes para o fluxo principal de processamento de um vídeo (`images/sequencia_processamento.png`)],
+  caption: [Sequência de processamento de um vídeo entre componentes],
+)
+
+*TODO*: 
+#preencher[Explicação do fluxo: pedido, encaminhamento, processamento, armazenamento, notificação de progresso/resultado, falhas.]
+
+
+
+*TODO*: VER SE FAZ SENTIDO TER ESTE TAMBÉM OU BASTA EXPLICAR O DO DIAGRAMA DE SEQUÊNCIA
 
 == Sequência de processamento — UC-VID-006
 
@@ -61,6 +100,8 @@ e resultados remotos parciais. Os testes da pipeline verificam limpeza, compensa
 constitui prova de recuperação completa de todos os cenários de falha distribuída, que fica para uma fase posterior.
 
 == Impacto na instalação e execução
+
+#preencher[Novos serviços/contentores, dependências externas (e.g., binários de processamento de vídeo), volumes, variáveis de configuração. Instruções completas de execução no Anexo A.]
 
 A solução usa `docker compose` para iniciar os serviços já presentes no PictuRAS: frontend, gateway, projetos,
 mensageria, persistência e armazenamento. O processamento de vídeo requer FFmpeg e FFprobe no ambiente de

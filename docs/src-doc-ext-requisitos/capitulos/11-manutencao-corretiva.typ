@@ -2,6 +2,8 @@
 
 = Manutenção Corretiva da Solução de Base
 
+*TODO*: REVER E COMPLETAR ESTE CAPÍTULO
+
 #orientacao[
   Problemas encontrados na solução de base durante o estudo e a integração do vídeo (erros, incoerências com o
   documento de requisitos, dificuldades de execução). Indiquem se foram corrigidos nesta fase. Capítulo

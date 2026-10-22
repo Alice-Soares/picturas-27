@@ -5,6 +5,9 @@
 
 = Instruções de execução e validação
 
+
+#orientacao[Passos mínimos para lançar a solução entregue (`solucao-ext-mvp.zip`) (pré-requisitos, comandos, credenciais de teste, ficheiros de vídeo de exemplo) e para correr os testes automáticos.]
+
 == Pré-requisitos
 
 São necessários Git, Docker Desktop com suporte a Docker Compose, espaço em disco suficiente para

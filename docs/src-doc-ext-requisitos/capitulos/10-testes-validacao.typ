@@ -2,20 +2,38 @@
 
 = Testes e Validação do MVP
 
-== Estratégia e ambiente
+#orientacao[
+  Os critérios de aceitação da ERS (_Dado… Quando… Então…_) são a base dos testes. Cada requisito implementado
+  deve ter pelo menos um teste (automático ou manual) com resultado registado. Para os requisitos não
+  funcionais, registem o valor medido face ao *Alvo*, sempre que aplicável.
+]
+
+
+== Estratégia e ambiente de testes
+
+#preencher[Tipos de teste (unitários, integração, ponta-a-ponta, manuais), ferramentas, ambiente (docker compose), ficheiros de vídeo de teste usados (formatos, durações, tamanhos).]
+
 
 A validação combina testes unitários e de contrato, testes de integração com FFmpeg e testes manuais de
 ponta-a-ponta. O projeto utiliza Node.js, as suites nativas `node --test` e Docker Compose; a execução
 integrada envolve ainda MongoDB, RabbitMQ e SeaweedFS. O sistema é disponibilizado localmente através de
 `https://localhost:8080`, com certificado de desenvolvimento.
 
-Os resultados abaixo referem-se aos comandos efetivamente executados para a UC-VID-006 na branch derivada
-da `main` de Alice, após integração com as operações de áudio. A compilação dos serviços não prova por si só
-a correção de todos os casos de uso. As restantes funcionalidades devem ser demonstradas em conjunto,
-registando a data, responsável, ficheiros utilizados e evidência de saída.
 
-== Execuções documentadas
+== Testes realizados
 
+*TODO:* PREENCHER A TABELA 
+
+#tab([Testes e resultados],
+  tabela(
+    colunas: (2.2cm, 1.6cm, 1fr, 2.8cm, 1.6cm),
+    tamanho: 8.5pt,
+    [ID], [Tipo], [Descrição (Dado… Quando… Então…)], [Requisito(s)], [Resultado],
+    [TST-#preencher[FUNC]-01], [#preencher[Automático / Manual]], [#preencher[…]], [#preencher[IDs]], [#preencher[Passa]],
+  ),
+)
+
+*TODO*: USAR ISTO PARA PRENCHER A TABELA DE CIMA SEM ALTERAR O FORMATO DA TABELA DE CIMA
 #tab([Resultados confirmados de testes da UC-VID-006],
   tabela(
     colunas: (2cm, 2cm, 1fr, 3.0cm, 1.7cm),
@@ -57,6 +75,8 @@ A rastreabilidade relaciona os grupos de requisitos com componentes e testes. Na
 de execução, a equipa não deve apresentar um cenário como aprovado por mera presença de um ficheiro de teste.
 
 == Limitações e defeitos conhecidos
+
+*TODO*: REVER ISTO PARA NAO FALAR APENAS DO UC006
 
 - O seguimento da UC-VID-006 é realizado por consulta periódica da API; a entrega de percentagens em WebSocket,
   prevista nos requisitos transversais, não está demonstrada para esta operação.

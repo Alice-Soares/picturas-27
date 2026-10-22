@@ -18,10 +18,16 @@
 
 Este capítulo apresenta o catálogo consolidado de requisitos da extensão de vídeo para a plataforma PictuRAS, derivado dos casos de uso de `UC-VID-001` a `UC-VID-007`. A indicação *NOVO* identifica capacidades inéditas no sistema, enquanto *ALT* indica alterações ou extensões a mecanismos existentes (e.g., regras de negócio, limitações de perfil ou gestão de quotas).
 
+*TODO:* REVER TODO ESTE CAPIULO PARA VER SE ESTA COERENTE COM O FICHEIRO RAS-requisitos-video.md, COM A IMPLEMENTAÇÃO E COM O S CAPITULOS ANTERIORES DO RELATORIO
+
 
 == Requisitos Funcionais
 
+*TODO:* Rever a priorização MoSCoW de alguns requisitos, especialmente os de qualidade, para refletir a importância relativa no MVP.
 
+*TODO*: REVER OS REQUISITOS PARA COERENCIA COM O FICHEIRO RAS-requisitos-video.md, COM A IMPLEMENTAÇÃO E COM O S CAPITULOS ANTERIORES DO RELATORIO
+
+*TODO:* REVER OS REQUISITOS ALT PARA GARANTIR COERENCIA DE RASTREABILIDADE DE ALTERAÇÃO COM O DOCUMENTO BASELINE especifica_o_de_requisitos.md OU TROCAR PARA NOVO SE FOR O CASO
 
 #tab([Requisitos funcionais],
   tabela(
@@ -223,7 +229,7 @@ Este capítulo apresenta o catálogo consolidado de requisitos da extensão de v
 
 A tabela seguinte apresenta a avaliação sistemática da completude dos requisitos face às dimensões operacionais do sistema, assegurando que o âmbito do MVP de vídeo se encontra delimitado, sem omissões e devidamente coberto pelas especificações funcionais e não funcionais.
 
-
+*TODO:* REVER TABELA 
 
 #tab([Verificação da completude e limites de âmbito],
   tabela(
