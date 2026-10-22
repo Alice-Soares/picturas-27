@@ -23,7 +23,7 @@
       - O utilizador tem sessão iniciada com um perfil registado ou premium .
       - O vídeo está associado a um projeto válido e acessível no armazenamento.
       - Existe pelo menos uma ferramenta disponível para processamento de imagem.
-      - O vídeo está dentro dos limites de duração e quota do perfil.
+      - O vídeo está dentro dos limites técnicos do perfil. Se a ferramenta selecionada for classificada como avançada, o utilizador Registado tem quota disponível.
     ],
     [_Trigger_], [O utilizador seleciona um vídeo e escolhe a opção de aplicar uma ferramenta a todos os fotogramas.],
   ),
@@ -37,7 +37,7 @@
     [Passo], [Ação do Ator], [Resposta do Sistema],
     [1], [O utilizador abre um projeto com vídeos disponíveis.], [O sistema apresenta a biblioteca de vídeos e a opção de processamento por fotogramas.],
     [2], [O utilizador seleciona um vídeo e escolhe a opção "Aplicar Ferramenta a Fotogramas".], [—],
-    [3], [—], [O sistema valida o perfil do utilizador, a presença do vídeo e a quota disponível. Apresenta as ferramentas disponíveis e os parâmetros configuráveis.],
+    [3], [—], [O sistema valida o perfil e o vídeo. Se o utilizador selecionar uma ferramenta  classificada como avançada, verifica também a quota. Apresenta as ferramentas disponíveis e os parâmetros configuráveis.],
     [4], [O utilizador seleciona a ferramenta e define os parâmetros.], [—],
     [5], [—], [O sistema apresenta as opções de intervalo temporal e a taxa de fotogramas de saída.],
     [6], [O utilizador confirma o intervalo e a configuração.], [—],
@@ -70,8 +70,8 @@
     [Condição], [Comportamento do Sistema],
     [Vídeo com codec não suportado], [O sistema rejeita a operação e informa que o formato ou codec do vídeo não é compatível com a extração por fotogramas.],
     [Ferramenta incompatível com fotogramas], [Se a ferramenta selecionada gere metadados em vez de imagem (e.g., contagem/deteção), o sistema informa o utilizador e solicita confirmação antes de continuar.],
-    [Quota esgotada], [O sistema bloqueia a operação e indica que a quota do perfil já foi usada.],
-    [Falha persistente no processamento de um fotograma], [O sistema marca a operação como falhada, elimina os fotogramas/resultados temporários, mantém o vídeo original intacto e devolve qualquer quota reservada.],
+    [Quota esgotada para ferramenta avançada], [Se o utilizador Registado selecionar uma ferramenta classificada como avançada e não tiver quota, o sistema bloqueia a operação e informa-o. As ferramentas que não estão sujeitas a quota continuam disponíveis.],
+    [Falha persistente no processamento de um fotograma], [O sistema marca a operação como falhada, elimina os fotogramas/resultados temporários, mantém o vídeo original intacto e devolve a quota apenas se tiver sido reservada para uma ferramenta avançada.],
   ),
 )
 
@@ -90,7 +90,7 @@
   colunas: (1.4cm, 1fr),
   [ID], [Regra],
   [RN1], [Utilizadores anónimos não têm acesso a esta funcionalidade.],
-  [RN2], [Cada operação de aplicação de ferramenta conta como uma operação avançada, independentemente do número de fotogramas processados; utilizadores premium não têm limite diário.],
+  [RN2], [A quota diária só se aplica ao utilizador Registado quando a operação usa uma ferramenta classificada como avançada. Reserva-se uma unidade por operação, independentemente do número de fotogramas. Utilizadores Premium não têm limite diário para estas ferramentas.],
   [RN3], [O vídeo deve respeitar os limites do perfil: 5 minutos e 1920×1080 para registados; 30 minutos e 3840×2160 para premium.],
   [RN4], [O vídeo resultante mantém a faixa de áudio original e a resolução do vídeo de origem.],
   [RN5], [As ferramentas de IA só podem ser aplicadas a intervalos limitados e não ao vídeo completo, salvo decisão posterior documentada.],
@@ -110,7 +110,7 @@
 #tabela(
   colunas: (1.4cm, 1fr, 5cm),
   [ID], [Questão], [Resolução],
-  [Q1], [O sistema deve permitir que o utilizador escolha um intervalo temporal específico para reduzir o número de fotogramas processados?], [Decidida -> Passo 5 do fluxo principal e RNG-05: seleção de intervalo permitida.],
+  [Q1], [O sistema deve permitir que o utilizador escolha um intervalo temporal específico para reduzir o número de fotogramas processados?], [Decidida: o utilizador pode definir um intervalo temporal, conforme o passo 5 do fluxo principal e o requisito `REQ-VID-FRM-004`.],
   [Q2], [Qual deve ser o comportamento quando uma ferramenta de IA gera metadados em vez de imagem?], [Decidida -> Exceção 2 / RN5: apenas ferramentas que geram imagem reconstroem vídeo; deteções operam sobre fotogramas isolados.],
   [Q3], [Deve existir um limite de paralelismo para o processamento dos fotogramas de um vídeo em função do perfil do utilizador?], [Adiada para Fase 2 (dimensionamento de infraestrutura e workers RabbitMQ).],
 )

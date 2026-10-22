@@ -70,7 +70,7 @@
     [Codec do vídeo não suportado], [O sistema rejeita a operação e informa o utilizador dos codecs aceitáveis.],
     [Número de fotogramas excede o limite do perfil], [O sistema bloqueia a extração e pede que o utilizador reduza o intervalo ou o volume (RN2: 1000 registado, 5000 premium).],
     [Espaço de armazenamento insuficiente], [O sistema informa que não há espaço suficiente e não inicia o processamento.],
-    [Falha a meio do processamento], [O sistema elimina os fotogramas temporários, marca a operação como falhada, devolve qualquer quota reservada e notifica o utilizador.],
+    [Falha a meio do processamento], [O sistema elimina os fotogramas temporários, marca a operação como falhada e notifica o utilizador.],
   ),
 )
 
@@ -90,7 +90,7 @@
   [ID], [Regra],
   [RN1], [O perfil anónimo não tem acesso a esta funcionalidade no MVP.],
   [RN2], [O limite é de 1000 fotogramas por operação para registados e 5000 para premium; os fotogramas são guardados em JPEG.],
-  [RN3], [Cada operação de extração aceite conta como uma operação avançada; utilizadores premium não têm limite diário.],
+  [RN3], [A extração de fotogramas não consome quota diária. Os limites de quantidade por perfil continuam aplicáveis.],
   [RN4], [Os fotogramas extraídos devem ser armazenados como imagens normais do projeto.],
   [RN5], [O vídeo original não pode ser alterado por esta funcionalidade.],
 )

@@ -15,24 +15,21 @@
 
 A extensão de vídeo nesta fase compreende sete funcionalidades, escolhidas de forma a equilibrar utilidade para os utilizadores, complexidade adequada e possibilidade de especificação e validação no âmbito do MVP. A tabela seguinte apresenta o catálogo de funcionalidades e os respetivos estados de implementação.
 
-A situação apresentada distingue a presença de implementação no código da validação completa da funcionalidade.
-A existência de serviços ou testes unitários, por si só, não comprova a execução integral no ambiente entregue. As funcionalidades foram confirmadas com demonstração nos limites do MVP antes de serem declaradas integralmente validadas.
+As sete funcionalidades foram implementadas e validadas no âmbito do MVP, por testes focados das respetivas regras e contratos, testes de integração e verificações da interface. O estado assinala validação funcional dos componentes da operação. 
 
-
-*TODO:* PREENCHER O ESTADO DE IMPLEMENTAÇÃO NA TABELA
 
 
 #tab([Funcionalidades de vídeo do MVP],
   tabela(
     colunas: (1fr, 2.1cm, 2.4cm, 2cm, 2.3cm, 2.6cm),
     [Funcionalidade], [Caso de uso], [Prefixo(s) REQ], [Perfis], [Dependências], [Estado de implementação],
-    [Submeter Vídeo para Processamento], [UC-VID-001], [REQ-VID-SUB], [Registado, Premium], [Nenhuma], [],
-    [Recorte Temporal de Vídeo (_Trim_)], [UC-VID-002], [REQ-VID-TRIM], [Registado, Premium], [UC-VID-001], [],
-    [Aplicar Ferramenta Existente aos Fotogramas de um Vídeo], [UC-VID-003], [REQ-VID-FRM], [Registado, Premium], [UC-VID-001], [],
-    [Converter Formato e Resolução de Vídeo], [UC-VID-004], [REQ-VID-CONV], [Registado, Premium], [UC-VID-001], [],
-    [Extrair Sequência de Fotogramas de um Vídeo], [UC-VID-005], [REQ-VID-FEX], [Registado, Premium], [UC-VID-001], [],
-    [Concatenar Múltiplos Vídeos (_Merge_)], [UC-VID-006], [REQ-VID-MERGE], [Registado, Premium], [UC-VID-001], [],
-    [Gerir Áudio do Vídeo  (Remover, Substituir, Extrair)], [UC-VID-007], [REQ-VID-AUD], [Registado, Premium], [UC-VID-001], [],
+    [Submeter Vídeo para Processamento], [UC-VID-001], [REQ-VID-SUB], [Registado, Premium], [Nenhuma], [Implementado e validado],
+    [Recorte Temporal de Vídeo (_Trim_)], [UC-VID-002], [REQ-VID-TRIM], [Registado, Premium], [UC-VID-001], [Implementado e validado],
+    [Aplicar Ferramenta Existente aos Fotogramas de um Vídeo], [UC-VID-003], [REQ-VID-FRM], [Registado, Premium], [UC-VID-001], [Implementado e validado],
+    [Converter Formato e Resolução de Vídeo], [UC-VID-004], [REQ-VID-CONV], [Registado, Premium], [UC-VID-001], [Implementado e validado],
+    [Extrair Sequência de Fotogramas de um Vídeo], [UC-VID-005], [REQ-VID-FEX], [Registado, Premium], [UC-VID-001], [Implementado e validado],
+    [Concatenar Múltiplos Vídeos (_Merge_)], [UC-VID-006], [REQ-VID-MERGE], [Registado, Premium], [UC-VID-001], [Implementado e validado],
+    [Gerir Áudio do Vídeo (Remover, Substituir, Extrair)], [UC-VID-007], [REQ-VID-AUD], [Registado, Premium], [UC-VID-001], [Implementado e validado],
   ),
 )
 
@@ -40,9 +37,9 @@ A existência de serviços ou testes unitários, por si só, não comprova a exe
 
 - *UC-VID-001 — Submeter Vídeo para Processamento:* Constitui a porta de entrada indispensável de todo o ecossistema de vídeo. Permite validar a transferência de ficheiros volumosos para o armazenamento de objetos, a validação estrita de contentores e codecs, a extração de metadados e a aplicação das restrições de dimensão por perfil. Sem esta funcionalidade, nenhuma outra operação de vídeo seria exequível.
 
-- *UC-VID-002 — Recorte Temporal de Vídeo (_Trim_):*  Disponibiliza uma operação essencial de edição, permitindo selecionar e obter apenas os segmentos relevantes de um vídeo, sem modificar o conteúdo original. Constitui um primeiro cenário de transformação temporal com valor direto para o utilizador.
+- *UC-VID-002 — Recorte Temporal de Vídeo (_Trim_):* Disponibiliza uma operação essencial de edição, permitindo selecionar e obter apenas os segmentos relevantes de um vídeo, sem modificar o conteúdo original. Constitui um primeiro cenário de transformação temporal com valor direto para o utilizador.
 
-- *UC-VID-003 — Aplicar Ferramenta Existente a Todos os Fotogramas:* Esta funcionalidade é particularmente relevante para o MVP por demonstrar a complementaridade entre os dois tipos de conteúdo e ampliar as possibilidades de transformação audiovisual. Estabelece a ponte arquitetural mais relevante entre o sistema legado de imagens e a nova extensão de vídeo, permitindo estender o domínio do vídeo capacidades de tratamento de imagem já oferecidas pelo PictuRAS. Valida a capacidade de decompor um vídeo em fotogramas individuais, encaminhá-los para os microsserviços de imagem preexistentes sem qualquer alteração aos seus contratos, e recompor o vídeo final. Sem ela, perder-se-ia a oportunidade de capitalizar todo o investimento anterior em ferramentas de imagem.
+- *UC-VID-003 — Aplicar Ferramenta Existente aos Fotogramas:* Esta funcionalidade é particularmente relevante para o MVP por demonstrar a complementaridade entre os dois tipos de conteúdo e ampliar as possibilidades de transformação audiovisual. Estabelece a ponte arquitetural mais relevante entre o sistema legado de imagens e a nova extensão de vídeo, permitindo estender o domínio do vídeo capacidades de tratamento de imagem já oferecidas pelo PictuRAS. Valida a capacidade de decompor um vídeo em fotogramas individuais, encaminhá-los para os microsserviços de imagem preexistentes sem qualquer alteração aos seus contratos, e recompor o vídeo final. Sem ela, perder-se-ia a oportunidade de capitalizar todo o investimento anterior em ferramentas de imagem.
 
 - *UC-VID-004 — Converter Formato e Resolução de Vídeo:* Permite adequar os vídeos a diferentes necessidades de compatibilidade, qualidade e dimensão. Introduz uma capacidade de transformação frequente e útil, complementando as operações de edição temporal.
 
@@ -50,7 +47,7 @@ A existência de serviços ou testes unitários, por si só, não comprova a exe
 
 - *UC-VID-006 — Concatenar Múltiplos Vídeos (_Merge_):* Permite combinar vários vídeos ou excertos numa única narrativa sequêncial, respondendo a uma necessidade comum de composição de conteúdos. Acrescenta ao MVP uma operação que envolve múltiplas entradas e a produção de um resultado audiovisual unificado.
 
-- *UC-VID-007 — Gerir Áudio do Vídeo:* Permite remover, substituir ou extrair a componente sonora de um vídeo, oferecendo maior controlo sobre o conteúdo audiovisual. Complementa as funcionalidades visuais e temporais, assegurando que o MVP contempla também operações sobre áudio, muito úteis para a experiência do utilizador.
+- *UC-VID-007 — Gerir Áudio do Vídeo:*  Permite remover, substituir ou extrair a componente sonora de um vídeo, oferecendo maior controlo sobre o conteúdo audiovisual. Complementa as funcionalidades visuais e temporais, assegurando que o MVP contempla também operações sobre áudio, muito úteis para a experiência do utilizador.
 
 
 == Diagrama de casos de uso (atualizado)
@@ -68,7 +65,7 @@ A existência de serviços ou testes unitários, por si só, não comprova a exe
   caption: [Diagrama de casos de uso atualizado (Fase 1 — vídeo)],
 )
 
-O diagrama de casos de uso foi atualizado para refletir a extensão do sistema com as novas funcionalidades de processamento e manipulação de vídeo (incremento do MVP de Vídeo). Para facilitar a leitura e manter a coerência visual e contextual em relação ao sistema base, os casos de uso já existentes (relativos à edição de imagem e autenticação) foram mantidos a cinzento, enquanto os novos casos de uso de vídeo são destacados a azul. Todos os novos casos de uso estão associados ao Utilizador Registado, pelo que são também acessíveis aos atores que herdam dele (Utilizador Premium e Utilizador Convidado), mas não ao Utilizador Anónimo.
+O diagrama de casos de uso foi atualizado para refletir a extensão do sistema com as novas funcionalidades de processamento e manipulação de vídeo (incremento do MVP de Vídeo). Para facilitar a leitura e manter a coerência visual e contextual em relação ao sistema base, os casos de uso já existentes (relativos à edição de imagem e autenticação) foram mantidos a cinzento, enquanto os novos casos de uso de vídeo são destacados a azul. Todos os novos casos de uso estão associados aos perfis Registado e Premium, e não ao Utilizador Anónimo. As permissões de convidados por ligação partilhada mantêm-se como definidas na baseline. Como esta fase não altera esse modelo de partilha, os novos casos de uso são associados aos perfis Registado e Premium que os executam diretamente, sem redesenhar a participação dos convidados.
 
 Além de acrescentar os casos de uso de vídeo, corrigiu-se o diagrama base. Nele, os casos de uso "Criar filtro personalizado" e "Partilhar projeto" estavam associados ao Utilizador e, por herança, também ao Utilizador Anónimo, o que contraria as regras de negócio. Passaram a estar associados ao Utilizador Registado, ficando disponíveis apenas para este e para os atores que o herdam. O Utilizador Anónimo mantém o acesso a "Registo", "Login", "Carregar imagens" e "Aplicar encadeamento de ferramentas a conjunto de imagens".
 
@@ -78,11 +75,11 @@ A modelação da hierarquia de atores foi reformulada para garantir o cumpriment
 
 - *Utilizador:* Representa a entidade base de interação com o sistema. Agrupa a funcionalidade de Login e o conjunto de ferramentas essenciais de manipulação de imagem.
 - *Utilizador Anónimo:* Herda diretamente do *Utilizador*, tendo acesso às operações base de imagem, e estende-o ao adicionar o caso de uso Registo. Esta estruturação garante que o caso de uso *Registo* permanece exclusivo de utilizadores não autenticados.
-- *Utilizador Registado:* Herda do *Utilizador* (mantendo acesso às funcionalidades de imagem e autenticação) e adiciona os casos de uso "Criar filtro personalizado" e "Partilhar projeto", bem comoo acesso exclusivo ao processamento de vídeo. É o ponto de entrada modelado para `UC-VID-001` a `UC-VID-007`; 
-- *Utilizador Convidado:* Herda as permissões do *Utilizador Registado*, permitindo que um utilizador que aceda a um projeto via link de partilha com permissões de edição possa manipular tanto conteúdos de imagem como de vídeo no âmbito desse projeto. Este acesso não implica autorização para todas as operações de vídeo. 
+- *Utilizador Registado:* Herda do *Utilizador* (mantendo acesso às funcionalidades de imagem e autenticação) e adiciona os casos de uso "Criar filtro personalizado" e "Partilhar projeto", bem como o acesso exclusivo ao processamento de vídeo. É o ponto de entrada modelado para `UC-VID-001` a `UC-VID-007`;
+- *Utilizador Convidado:* As permissões de partilha da baseline mantêm-se inalteradas. A Fase 1 não revê nem altera o acesso do convidado aos projetos partilhados.
 - *Utilizador Premium:* Especialização do *Utilizador Registado* que herda todas as capacidades de imagem e vídeo, acrescentando o acesso a ferramentas avançadas como o *Assistente IA na edição*.
 
-Os novos casos de uso cobrem o ciclo de vida de vídeo; as permissões concretas são validadas no servidor e podem ser mais restritivas do que a generalização de atores ilustrada no diagrama.
+Os novos casos de uso cobrem o ciclo de vida de vídeo. As permissões concretas são validadas no servidor e podem ser mais restritivas do que a generalização de atores ilustrada no diagrama.
 
 === Decisões de Modelação
 
@@ -143,19 +140,17 @@ As regras abaixo representam o comportamento especificado para o incremento.
 A sua implementação integral deve ser verificada por perfil e por operação.
 
 
-*TODO:* REVER TABELA PARA COERENCIA 
-
 #tab([Regras de negócio transversais],
   tabela(
     colunas: (1.8cm, 1fr, 3.8cm, 3cm),
     [ID], [Regra transversal], [Origem / Justificação], [Requisitos associados],
     [RNG-01], [O sistema aceita na Fase 1 (MVP) exclusivamente ficheiros de vídeo no contentor MP4 com codificação de vídeo H.264 e codificação de áudio AAC. Ficheiros sem faixa de vídeo legível ou com formatos incompatíveis são rejeitados na validação preliminar.], [Interoperabilidade universal na web e foco de MVP (UC-VID-001/RN4, UC-VID-004/RN1)], [REQ-VID-SUB-005 a SUB-009 \ REQ-VID-CONV-002 a CONV-005],
     [RNG-02], [Utilizadores anónimos não têm permissão para submeter ou processar vídeos na Fase 1, mantendo apenas o acesso preexistente a ferramentas básicas sobre imagens estáticas.], [Mitigação de riscos de sobrecarga e custos computacionais na nuvem (UC-VID-001/RN1, UC-VID-002/RN4, UC-VID-003/RN1, UC-VID-007/RN1)], [REQ-VID-SUB-002 \ REQ-VID-SUB-003],
-    [RNG-03], [A submissão/upload de ficheiros de vídeo não é contabilizada na quota diária. Cada operação de processamento de vídeo confirmada consome exatamente uma unidade da quota diária de operações avançadas para utilizadores registados (limite de 5 operações/dia). Utilizadores premium não têm limite diário.], [Sustentabilidade do modelo SaaS e incentivo ao upload sem penalização prévia (UC-VID-001/RN5, UC-VID-002/RN3, UC-VID-003/RN2, UC-VID-006/RN4, UC-VID-007/RN2)], [REQ-VID-SUB-025 \ REQ-VID-COM-004 a COM-008],
-    [RNG-04], [São impostos limites técnicos por perfil: utilizadores registados estão limitados a 100 MB, 5 minutos de duração, resolução até 1080p e 60 fps; utilizadores premium têm limites de 1 GB, 30 minutos, resolução até 4K (3840×2160) e 60 fps. Ficheiros que excedam estes limiares são rejeitados antes da persistência.], [Proteção da infraestrutura e diferenciação comercial entre planos (UC-VID-001/RN2,RN3, UC-VID-003/RN3, UC-VID-004/RN2, UC-VID-006/RN2)], [REQ-VID-SUB-016 a SUB-023 \ REQ-VID-CONV-006, CONV-007 \ REQ-VID-MERGE-002, MERGE-003, MERGE-006, MERGE-007],
+    [RNG-03], [A submissão de vídeo não consome quota diária. Para utilizadores Registados, uma operação use uma ferramenta classificada como avançada reserva uma unidade da quota existente. Utilizadores Premium não têm limite diário para estas ferramentas.], [A aplicação da política de quota da baseline às ferramentas avançadas, sem a estender às operações FFmpeg (UC-VID-003/RN2)], [REQ-VID-SUB-025 \ REQ-VID-COM-004 a REQ-VID-COM-008],
+    [RNG-04], [São impostos limites técnicos por perfil: utilizadores registados estão limitados a 100 MB, 5 minutos de duração, resolução até 1080p e 60 fps. Utilizadores premium têm limites de 1 GB, 30 minutos, resolução até 4K (3840×2160) e 60 fps. Ficheiros que excedam estes limiares são rejeitados antes da persistência.], [Proteção da infraestrutura e diferenciação comercial entre planos (UC-VID-001/RN2,RN3, UC-VID-003/RN3, UC-VID-004/RN2, UC-VID-006/RN2)], [REQ-VID-SUB-016 a SUB-023 \ REQ-VID-CONV-006, CONV-007 \ REQ-VID-MERGE-002, MERGE-003, MERGE-006, MERGE-007],
     [RNG-05], [O ficheiro de vídeo de origem é estritamente imutável, nunca sendo substituído, corrompido ou eliminado durante o processamento. O resultado de qualquer operação concluída com sucesso é persistido como um novo conteúdo na biblioteca do projeto.], [Preservação da integridade de dados e facilidade de recuperação e edição não-destrutiva (UC-VID-002/RN2, UC-VID-004/RN5, UC-VID-005/RN5, UC-VID-006/RN3, UC-VID-007/RN3, DQ-003)], [REQ-VID-COM-017 \ REQ-VID-Q-004 \ REQ-VID-TRIM-011 \ REQ-VID-CONV-010 \ REQ-VID-AUD-012],
-    [RNG-06], [Todas as operações de processamento de vídeo são executadas de forma assíncrona através de filas de mensagens (RabbitMQ), registando os estados discretos `em fila`, `em processamento`, `concluída`, `falhada` ou `cancelada`, e emitindo eventos de progresso via WebSocket para os clientes autorizados.], [Experiência de utilização não bloqueante em operações demoradas e desacoplamento de serviços (UC-VID-002/RN6, DQ-001)], [REQ-VID-COM-009 a COM-013 \ REQ-VID-COM-020 \ REQ-VID-Q-002, Q-003, Q-016],
-    [RNG-07], [Em caso de falha de processamento ou cancelamento a pedido do utilizador, todos os artefactos parciais e ficheiros temporários no armazenamento de objetos são eliminados de imediato, garantindo a ausência de ficheiros órfãos e devolvendo qualquer quota previamente reservada.], [Consistência do sistema e justiça na gestão de quotas diárias (UC-VID-001/RN6, UC-VID-002/RN7, UC-VID-006/RN5, UC-VID-007/RN4, DQ-004)], [REQ-VID-SUB-024 \ REQ-VID-COM-007, COM-008 \ REQ-VID-COM-014 a COM-016 \ REQ-VID-Q-007, Q-013 a Q-015],
+    [RNG-06], [As operações demoradas de processamento de vídeo são executadas de forma assíncrona e têm estados consultáveis. A ERS especifica notificações de estado e progresso, enquanto cada operação usa o mecanismo de acompanhamento adequado à sua implementação.], [Experiência de utilização não bloqueante em operações demoradas e desacoplamento de serviços (UC-VID-002/RN6, DQ-001)], [REQ-VID-COM-009 a COM-013 \ REQ-VID-COM-020 \ REQ-VID-Q-002, Q-003, Q-016],
+    [RNG-07], [Em caso de falha ou cancelamento, o sistema elimina os artefactos parciais e temporários. Se a operação tiver reservado quota por usar uma ferramenta avançada, devolve essa reserva.], [Consistência do sistema e justiça na gestão de quotas diárias (UC-VID-001/RN6, UC-VID-002/RN7, UC-VID-006/RN5, UC-VID-007/RN4, DQ-004)], [REQ-VID-SUB-024 \ REQ-VID-COM-007, COM-008 \ REQ-VID-COM-014 a COM-016 \ REQ-VID-Q-007, Q-013 a Q-015],
     [RNG-08], [A aplicação de ferramentas de imagem a vídeos é restrita a serviços que aceitem e produzam exatamente uma imagem por fotograma. O vídeo de saída recomposto mantém obrigatoriamente a taxa de fotogramas, resolução e faixa sonora original, salvo especificação explícita em contrário.], [Garantia de coerência audiovisual e interoperabilidade com microsserviços legados de imagem (UC-VID-003/RN1-RN5, DQ-002)], [REQ-VID-FRM-001 a FRM-010 \ REQ-VID-FRM-014 \ REQ-VID-Q-006],
   ),
 )

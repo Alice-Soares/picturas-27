@@ -39,7 +39,7 @@ Em estrita conformidade com o princípio de *"extensão, não reescrita"*, este 
   [Repositório da solução desenvolvida], [#link("https://github.com/Alice-Soares/picturas-27")[github.com/Alice-Soares/picturas-27] \ (Entrega: `solucao-ext-mvp.zip`)],
   [Documento de extensão de requisitos], [`doc-ext-requisitos.pdf` (compilado a partir das fontes Typst em `src-doc-ext-requisitos.zip`)],
   caption: [Artefactos de referência e identificação da solução desenvolvida.],
-) 
+)
 
 
 Todos os requisitos e casos de uso preexistentes referenciados neste relatório mantêm os seus identificadores originais (`UCnn`, `RFnn`, `RNFnn`) sempre que são objeto de alteração (`ALT`) ou de extensão, sendo os novos requisitos categorizados exclusivamente sob o prefixo normalizado `REQ-VID-{FUNC}-nnn` e os novos casos de uso sob `UC-VID-nnn`.
@@ -47,17 +47,13 @@ Todos os requisitos e casos de uso preexistentes referenciados neste relatório 
 == Resumo do trabalho realizado
 
 
-*TODO:* REVER ESTA SECÇÃO PARA COERENCIA
-
-O trabalho desenvolvido compreende a especificação, implementação e validação de uma extensão funcional do PictuRAS orientada para o processamento de vídeo digital.
+O trabalho desenvolvido compreende a especificação, implementação e validação de uma extensão funcional do PictuRAS orientada para o processamento de vídeo digital, incluindo sete casos de uso e a sua validação. 
 
 Ao nível da especificação, foram analisadas as necessidades associadas à introdução de vídeo, definidos os casos de uso e requisitos correspondentes e identificadas as alterações necessárias aos elementos existentes da plataforma. Este processo incluiu a revisão do modelo de domínio, das regras de negócio e das restrições aplicáveis aos diferentes perfis de utilização.
 
-O âmbito funcional considerado abrange a submissão e validação de vídeos, operações de edição e transformação, como recorte temporal e conversão de formato ou resolução, e funcionalidades de extração e processamento de fotogramas. A seleção destas capacidades procura estabelecer uma base funcional coerente para a evolução da plataforma, aproveitando, quando aplicável, mecanismos de processamento já disponíveis para imagens.
+O âmbito especificado abrange submissão, recorte temporal, aplicação de ferramentas de imagem a fotogramas, conversão, extração de fotogramas, concatenação e gestão de áudio. A seleção destas capacidades procura estabelecer uma base funcional coerente para a evolução da plataforma, aproveitando, quando aplicável, mecanismos de processamento já disponíveis para imagens.
 
 A componente de desenvolvimento contempla as adaptações arquiteturais e a integração das funcionalidades selecionadas na solução existente, com recurso a ferramentas e agentes de Inteligência Artificial como apoio às atividades de engenharia de software. A validação do incremento é realizada através de testes, permitindo avaliar o cumprimento dos requisitos e identificar limitações da solução.
-
-A relação entre as funcionalidades especificadas, os respetivos casos de uso e requisitos, as dependências e o estado efetivo de implementação encontra-se sistematizada na tabela-resumo da Secção 3.1. Esta distinção permite delimitar o âmbito do MVP efetivamente concretizado face às funcionalidades apenas especificadas ou parcialmente implementadas.
 
 
 == Organização do documento

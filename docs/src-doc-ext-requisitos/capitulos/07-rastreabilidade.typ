@@ -2,10 +2,8 @@
 
 = Rastreabilidade
 
-*TODO*: REVER TODO ESTE CAPITULO COM A IMPLEMENTAÇÃO E OS CAPITULOS ANTERIORES E REQUISITOS
-
 A matriz de origem cobre os requisitos especificados. A matriz de realização abaixo distingue a
-implementação verificada da mera presença de componentes. 
+implementação verificada da mera presença de componentes.
 
 == Casos de uso → requisitos
 
@@ -59,7 +57,7 @@ implementação verificada da mera presença de componentes.
 
     // Requisitos Transversais e Qualidade
     [UC-VID-001 a UC-VID-007, autorização], [Acesso a projeto e conteúdo], [REQ-VID-COM-001 a REQ-VID-COM-003, REQ-VID-COM-019, REQ-VID-Q-005, REQ-VID-Q-010 a REQ-VID-Q-012],
-    [UC-VID-001 a UC-VID-007, quota], [Reserva, consumo e devolução], [REQ-VID-SUB-015, REQ-VID-COM-004 a REQ-VID-COM-008],
+    [UC-VID-003, quota], [Reserva, consumo e devolução apenas ao usar ferramenta avançada], [REQ-VID-COM-004 a REQ-VID-COM-008],
     [UC-VID-001 a UC-VID-007, estados], [Registo, eventos, limpeza e resultados], [REQ-VID-COM-009 a REQ-VID-COM-018, REQ-VID-Q-002, REQ-VID-Q-003, REQ-VID-Q-007, REQ-VID-Q-013 a REQ-VID-Q-015],
     [DQ-001], [Progresso observável em operações demoradas], [REQ-VID-COM-011, REQ-VID-COM-012, REQ-VID-COM-013, REQ-VID-Q-002, REQ-VID-Q-003, REQ-VID-Q-016],
     [DQ-002], [Isolamento do fluxo existente de imagens], [REQ-VID-FRM-001, REQ-VID-FRM-008, REQ-VID-Q-006],
@@ -120,22 +118,19 @@ implementação verificada da mera presença de componentes.
     colunas: (3.0cm, 3.3cm, 2.5cm, 2.1cm, 1fr),
     tamanho: 8.5pt,
     [Requisitos], [Componente(s)], [Estado evidenciado], [Teste(s)], [Resultado],
-    [REQ-VID-SUB-001 a 029], [`frontend`, `apiGateway`, `projects`, `img_storage`], [Código presente; validação global pendente], [Testes de submissão do repositório], [Requer registo consolidado de execução.],
-    [REQ-VID-TRIM-001 a 012], [`projects`, `frontend`, worker FFmpeg], [Código presente; E2E pendente], [Testes trim existentes], [Não declarado como suite global aprovada.],
-    [REQ-VID-FRM-001 a 014], [`projects`, processamento de imagem e fotogramas], [Código presente; E2E pendente], [Testes frame tool existentes], [Requer demonstração global.],
-    [REQ-VID-CONV-001 a 011], [`projects`, ferramentas FFmpeg e frontend], [Código presente; E2E pendente], [Testes conversion existentes], [Requer demonstração global.],
-    [REQ-VID-FEX-001 a 011], [`projects`, armazenamento e frontend], [Código presente; E2E pendente], [Testes frame extraction existentes], [Requer demonstração global.],
-    [REQ-VID-MERGE-001 a 008], [Frontend e validação do Projects Service], [Implementado / testado], [TST-MERGE-01], [Incluído nos 65 testes aprovados em Docker.],
-    [REQ-VID-MERGE-009], [Projects Service e RabbitMQ], [Implementado / testado], [TST-MERGE-02], [Registo, fila e resposta assíncrona testados.],
-    [REQ-VID-MERGE-010 e 011], [Worker FFmpeg e armazenamento], [Implementado / testado], [TST-MERGE-03], [Concatenação real e áudio heterogéneo em Docker.],
-    [REQ-VID-MERGE-012 e 013], [Projects Service e storage], [Implementado / testado], [TST-MERGE-03/04], [Novo resultado; origens preservadas.],
+    [REQ-VID-SUB-001 a REQ-VID-SUB-033], [`frontend`, `apiGateway`, `projects`, `img_storage`], [Implementado; validação focada registada], [Testes de submissão e validação de metadados], [Fluxo E2E completo com perfis, armazenamento e cancelamento por consolidar.],
+    [REQ-VID-TRIM-001 a REQ-VID-TRIM-013], [`projects`, `frontend`, worker FFmpeg], [Implementado; validação focada registada], [Testes de contrato e regras de trim], [Repetição E2E na stack completa por consolidar.],
+    [REQ-VID-FRM-001 a REQ-VID-FRM-014], [`projects`, processamento de imagem e fotogramas], [Implementado; validação focada registada], [Testes de contrato e processamento de fotogramas], [Repetição E2E com perfis e workers por consolidar.],
+    [REQ-VID-CONV-001 a REQ-VID-CONV-011], [`projects`, ferramentas FFmpeg e frontend], [Implementado; validação focada registada], [Testes de regras, contratos e interface], [Execução E2E do worker na stack final por consolidar.],
+    [REQ-VID-FEX-001 a REQ-VID-FEX-012], [`projects`, armazenamento e frontend], [Implementado; validação focada registada], [Testes de regras, contrato e interface], [Execução E2E com persistência e cancelamento por consolidar.],
+    [REQ-VID-MERGE-001 a REQ-VID-MERGE-008], [Frontend e Projects Service], [Implementação e testes automatizados registados], [TST-MERGE-01], [Incluído nos 65 testes aprovados em Docker.],
+    [REQ-VID-MERGE-009], [Projects Service e RabbitMQ], [Implementação e testes automatizados registados], [TST-MERGE-02], [Registo, fila e resposta assíncrona incluídos nos 65 testes aprovados.],
+    [REQ-VID-MERGE-010 e 011], [Worker FFmpeg e armazenamento], [Implementação e teste de integração registados], [TST-MERGE-03], [Concatenação FFmpeg incluída nos 65 testes aprovados.],
+    [REQ-VID-MERGE-012 e 013], [Projects Service e storage], [Implementação e testes automatizados registados], [TST-MERGE-03/04], [Novo resultado e preservação das fontes cobertos nos testes registados.],
     [REQ-VID-MERGE-014 e 015], [Validação e pipeline], [Validações e erros testados], [TST-MERGE-01/04], [Verificação prévia e na pipeline, conforme erro.],
-    [REQ-VID-AUD-001 a 016], [Serviços de áudio integrados], [Integração identificada; validação pendente], [Não consolidado], [Confirmar suboperações e testes.],
-    [REQ-VID-COM-001 a 020], [Gateway, Projects Service, fila e UI], [Parcial / variável por UC], [TST-MERGE-02/04/05], [Quota, autorização e estados de merge verificados; progresso WebSocket não comprovado.],
+    [REQ-VID-AUD-001 a REQ-VID-AUD-016], [Projects Service, gateway, worker de áudio e frontend], [Implementado; contratos e interface validados], [Testes focados de contrato e interface], [Execução registada do worker FFmpeg e decisão sobre destino da extração por consolidar.],
+    [REQ-VID-COM-001 a 020], [Gateway, Projects Service, fila e UI], [Parcial / variável por UC], [TST-MERGE-02/04/05], [Autorização e estados de merge verificados. A concatenação não usa quota e o progresso WebSocket não está comprovado.],
     [REQ-VID-Q-001 a 016], [Infraestrutura e serviços transversais], [Sem medição global], [A definir por qualidade], [Não declarar metas não medidas como atingidas.],
   ),
 )
 
-As linhas agrupam requisitos que partilham destino técnico ou evidência de validação. Esta é uma matriz de
-estado do incremento, não uma alegação de aprovação automática de todos os requisitos da ERS. Quando a
-equipa adicionar resultados para outras UC, deverá desagregar grupos que tenham estados diferentes.

@@ -10,12 +10,9 @@
   Se duas funcionalidades afetam o mesmo elemento de forma diferente, há uma inconsistência a resolver aqui.
 ]
 
-A introdução das funcionalidades de processamento e gestão de vídeo no PictuRAS reutiliza substancialmente a infraestrutura do sistema existente (Fase 0/v1.0), estendendo as suas capacidades sem comprometer o fluxo operacional de edição de imagem. 
+A introdução das funcionalidades de processamento e gestão de vídeo no PictuRAS reutiliza substancialmente a infraestrutura do sistema existente (Fase 0/v1.0), estendendo as suas capacidades sem comprometer o fluxo operacional de edição de imagem.
 
-A tabela seguinte apresenta o impacto de projeto identificado para cada elemento. A tabela descreve alterações propostas e/ou implementadas; Os impactos são classificados como *Manter* (sem alterações funcionais), *Estender* (acrescenta novas capacidades) ou *Alterar* (modifica o comportamento atual do baseline).
-
-*TODO:* REVER TODO ESTE CAPIULO PARA VER SE ESTA COERENTE COM O FICHEIRO RAS-requisitos-video.md, QUE É O DOCUMENTO DE REFERENCIA PARA O MVP DE VIDEO. E COERENCIA COM IMPLEMENTAÇÃO E CAPITULOS ANTERIORES DO RELATORIO
-
+A tabela apresenta o impacto da extensão nos componentes e regras existentes. *Manter* indica que o contrato ou comportamento da baseline é preservado. *Estender* indica que o componente passa a tratar vídeo além de imagem. *Alterar* assinala uma regra transversal cujo âmbito passa também a incluir operações de vídeo.
 
 #tab([Impacto no sistema existente],
   tabela(
@@ -23,64 +20,64 @@ A tabela seguinte apresenta o impacto de projeto identificado para cada elemento
     tamanho: 8.5pt,
     [Elemento existente afetado], [Impacto], [Descrição do impacto], [Caso(s) de uso], [Requisitos],
 
-    [Mecanismo de Autenticação JWT e Perfis], 
-    [Alterar], 
-    [Reutiliza a verificação de tokens JWT existente, mas altera a política de acessos ao introduzir a restrição que impede utilizadores anónimos de submeter ou processar vídeos, reservando o pipeline de vídeo para os perfis Registado e Premium.], 
-    [UC-VID-001 a 007], 
+    [Mecanismo de Autenticação JWT e Perfis],
+    [Alterar],
+    [Reutiliza a verificação de tokens JWT existente, mas altera a política de acessos ao introduzir a restrição que impede utilizadores anónimos de submeter ou processar vídeos, reservando o pipeline de vídeo para os perfis Registado e Premium.],
+    [UC-VID-001 a 007],
     [REQ-VID-SUB-001, REQ-VID-SUB-002, REQ-VID-COM-001],
 
-    [Limite Diário de Operações Avançadas (RNF48)], 
-    [Alterar], 
-    [Estende o controlo de cota diária do perfil Registado para cobrir operações de vídeo (trim, conversão, extração, merge e áudio), reservando 1 unidade de cota antes do arranque da tarefa e repondo-a em caso de falha ou cancelamento. A submissão simples não consome cota.], 
-    [UC-VID-001 a 007], 
-    [REQ-VID-SUB-025, REQ-VID-COM-004 a 008],
+    [Limite Diário  de Operações Avançadas],
+    [Alterar],
+    [A política de quota da baseline mantém-se para ferramentas classificadas como avançadas. O perfil Premium mantém-se sem limite diário para estas ferramentas.],
+    [UC-VID-003],
+    [REQ-VID-COM-004 a 008],
 
-    [Projects Service e Modelo de Dados de Projetos], 
-    [Estender], 
-    [Amplia o modelo de dados de projeto para suportar novas entidades de referência de vídeo, metadados técnicos (codec, resolução, FPS, duração), registo de tarefas assíncronas e associação de ativos de áudio, sem alterar o esquema de projetos de imagem.], 
-    [UC-VID-001 a 007], 
+    [Projects Service e Modelo de Dados de Projetos],
+    [Estender],
+    [Amplia o modelo de dados de projeto para suportar novas entidades de referência de vídeo, metadados técnicos (codec, resolução, FPS, duração), registo de tarefas assíncronas e associação de ativos de áudio, sem alterar o esquema de projetos de imagem.],
+    [UC-VID-001 a 007],
     [REQ-VID-SUB-010 a 015, REQ-VID-SUB-026 a 029, REQ-VID-COM-009],
 
-    [API Gateway], 
-    [Estender], 
-    [Adiciona novos endpoints REST para submissão, consulta de metadados, disparo de operações de vídeo, pedido de cancelamento e download de ficheiros de vídeo e áudio, aplicando autorização prévia por projeto em todas as rotas.], 
-    [UC-VID-001 a 007], 
+    [API Gateway],
+    [Estender],
+    [Adiciona novos endpoints REST para submissão, consulta de metadados, disparo de operações de vídeo, pedido de cancelamento e download de ficheiros de vídeo e áudio, aplicando autorização prévia por projeto em todas as rotas.],
+    [UC-VID-001 a 007],
     [REQ-VID-SUB-001, REQ-VID-TRIM-012, REQ-VID-COM-001 a 003, REQ-VID-Q-005],
 
-    [Serviço de Armazenamento / SeaweedFS (S3)], 
-    [Estender], 
-    [Reutiliza a fachada S3 existente, estendendo-a com suporte a novos MIME types (`video/mp4`, `audio/aac`, `audio/mp3`, `audio/m4a`), novas convenções de caminhos de objetos de vídeo e rotinas automáticas de limpeza de ficheiros temporários em `/tmp`.], 
-    [UC-VID-001, 003, 005, 007], 
+    [Serviço de Armazenamento / SeaweedFS (S3)],
+    [Estender],
+    [Reutiliza a fachada de armazenamento existente para persistir vídeos e resultados de áudio, com referências aos objetos associadas aos projetos. A limpeza de ficheiros temporários é responsabilidade do fluxo de processamento e não uma garantia geral do SeaweedFS.],
+    [UC-VID-001, 003, 005, 007],
     [REQ-VID-SUB-015, REQ-VID-SUB-024, REQ-VID-FEX-011, REQ-VID-COM-014 a 016, REQ-VID-Q-007],
 
-    [MENSAGENS RabbitMQ e Filas de Tarefas], 
-    [Estender], 
-    [Cria novas filas de mensagens dedicadas exclusivamente ao processamento de vídeo (`video.trim`, `video.convert`, `video.frames`, `video.merge`, `video.audio`), mantendo o isolamento total das filas de ferramentas de imagem existentes.], 
-    [UC-VID-002 a 007], 
+    [MENSAGENS RabbitMQ e Filas de Tarefas],
+    [Estender],
+    [O RabbitMQ existente é reutilizado para desacoplar os pedidos de processamento. Os consumidores de recorte, fotogramas, concatenação e áudio criam ou confirmam as respetivas filas ao iniciar. A existência de filas dedicadas varia conforme o consumidor, pelo que não se assume uma fila por cada nome funcional da especificação. As mensagens encaminham a operação para o worker correspondente, sem alterar as filas das ferramentas de imagem.],
+    [UC-VID-002 a 007],
     [REQ-VID-TRIM-010, REQ-VID-FRM-008, REQ-VID-CONV-009, REQ-VID-FEX-009, REQ-VID-MERGE-009, REQ-VID-Q-006],
 
-    [WebSocket Gateway e Notificações], 
-    [Estender], 
-    [Estende o serviço de eventos em tempo real para publicar transições da máquina de estados das tarefas de vídeo (`em fila`, `em processamento`, `concluída`, `falhada`, `cancelada`) e percentagens de progresso, garantindo isolamento de canal por projeto.], 
-    [UC-VID-001 a 007], 
+    [WebSocket Gateway e Notificações],
+    [Estender],
+    [O gateway WebSocket existente continua a distribuir eventos associados ao projeto. As operações de recorte, conversão e processamento de fotogramas publicam progresso quando o worker o disponibiliza. A concatenação apresenta o estado consultando a API periodicamente, porque o seu diálogo não subscreve eventos percentuais. Esta escolha mantém o acompanhamento funcional sem acrescentar um contrato WebSocket específico para uma operação cujo estado persistido já pode ser consultado. O requisito de progresso uniforme fica como evolução de consistência entre operações.],
+    [UC-VID-001 a 007],
     [REQ-VID-TRIM-001, REQ-VID-CONV-011, REQ-VID-COM-011 a 013, REQ-VID-COM-020, REQ-VID-Q-002, REQ-VID-Q-003],
 
-    [Workers de Ferramentas de Imagem], 
-    [Manter / Estender], 
-    [Os workers de imagem mantêm o seu contrato de processamento individual intacto. O caso de uso `UC-VID-003` estende o pipeline entregando os fotogramas extraídos do vídeo a estes workers como se fossem imagens isoladas.], 
-    [UC-VID-003], 
+    [Workers de Ferramentas de Imagem],
+    [Manter / Estender],
+    [Os workers de imagem mantêm o seu contrato de processamento individual intacto. O caso de uso `UC-VID-003` estende o pipeline entregando os fotogramas extraídos do vídeo a estes workers como se fossem imagens isoladas.],
+    [UC-VID-003],
     [REQ-VID-FRM-001, REQ-VID-FRM-008, REQ-VID-FRM-011, REQ-VID-Q-006],
 
-    [Biblioteca do Projetos e Galeria do Frontend], 
-    [Estender], 
-    [Amplia a interface web para apresentar miniaturas de vídeo, leitores multimédia, barra de progresso em tempo real de tarefas assíncronas, modal de gestão de áudio, reordenação de vídeos para merge e botões de cancelamento de operações.], 
-    [UC-VID-001 a 007], 
+    [Biblioteca de Projetos e frontend],
+    [Estender],
+    [Acrescenta apresentação e submissão de vídeos, diálogos para operações e acesso aos resultados. O acompanhamento e as opções variam por funcionalidade],
+    [UC-VID-001 a 007],
     [REQ-VID-SUB-001, REQ-VID-TRIM-002, REQ-VID-CONV-001, REQ-VID-FEX-009, REQ-VID-MERGE-004, REQ-VID-AUD-001, REQ-VID-COM-018],
 
-    [Regra de Imutabilidade do Ficheiro Original], 
-    [Manter], 
-    [Mantém o princípio do PictuRAS em que o ativo original nunca é sobrescrito, garantindo que todas as transformações de vídeo (trim, conversão, merge, áudio) geram sempre um novo ficheiro independente na biblioteca.], 
-    [UC-VID-002, 004, 006, 007], 
+    [Regra de Imutabilidade do Ficheiro Original],
+    [Manter],
+    [Mantém o princípio do PictuRAS em que o ativo original nunca é sobrescrito, garantindo que todas as transformações de vídeo (trim, conversão, merge, áudio) geram sempre um novo ficheiro independente na biblioteca.],
+    [UC-VID-002, 004, 006, 007],
     [REQ-VID-TRIM-011, REQ-VID-CONV-010, REQ-VID-MERGE-012, REQ-VID-MERGE-013, REQ-VID-AUD-012, REQ-VID-COM-017, REQ-VID-Q-004],
   ),
 )

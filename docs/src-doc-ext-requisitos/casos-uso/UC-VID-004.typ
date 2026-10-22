@@ -67,7 +67,6 @@
     [Condição], [Comportamento do Sistema],
     [Formato de origem não suportado], [O sistema rejeita a conversão e informa o utilizador dos formatos aceites.],
     [Combinação de formato e codec inválida], [O sistema bloqueia a configuração e solicita uma combinação compatível.],
-    [Quota de operações avançadas esgotada], [O sistema impede a conversão e informa que o limite do perfil foi atingido.],
     [Falha durante a transcodificação], [O sistema marca a operação como falhada, elimina ficheiros temporários e informa o utilizador.],
   ),
 )
@@ -88,7 +87,7 @@
   [ID], [Regra],
   [RN1], [O MVP aceita MP4 com vídeo H.264 e áudio AAC; outros formatos só são aceites se forem explicitamente adicionados à lista de combinações suportadas.],
   [RN2], [A resolução de saída não pode exceder 1920×1080 para registados nem 3840×2160 para premium.],
-  [RN3], [Cada operação de conversão aceite conta como uma operação avançada; utilizadores premium não têm limite diário.],
+  [RN3], [A conversão usa FFmpeg e não consome quota diária. Está disponível sem limite diário para utilizadores autenticados.],
   [RN4], [O áudio de saída deve ser AAC quando o contentor de saída for MP4.],
   [RN5], [O vídeo original deve permanecer inalterado após a conversão.],
 )
@@ -109,7 +108,7 @@
 #tabela(
   colunas: (1.4cm, 1fr, 5cm),
   [ID], [Questão], [Resolução],
-  [Q1], [O sistema deve permitir conversão em paralelo para vários vídeos ou apenas uma transcodificação por vídeo de cada vez?], [Decidida -> Fila RabbitMQ gere tarefas assincronamente; paralelismo determinado pelos workers (REQ-VID-Q-001).],
+  [Q1], [O sistema deve permitir conversão em paralelo para vários vídeos ou apenas uma transcodificação por vídeo de cada vez?], [Decidida: o utilizador submete uma operação por pedido. As operações são colocadas na fila e o paralelismo depende do número de workers ativos, sem garantia de concorrência configurável por utilizador no MVP.],
   [Q2], [Os vídeos convertidos devem substituir o original ou ser armazenados como versões separadas do projeto?], [Decidida -> DQ-003 / RN5: conteúdo original é estritamente imutável; resultado criado como novo vídeo.],
   [Q3], [O sistema deve gerar perfis de conversão automáticos para utilizadores menos experientes?], [Decidida -> FA3: suporte a presets Web e Mobile no frontend.],
 )

@@ -119,7 +119,7 @@
 #tabela(
   colunas: (1.4cm, 1fr, 5cm),
   [ID], [Questão], [Resolução],
-  [Q1], [Os vídeos usam os buckets por utilizador já adotados pela fachada S3, com uma nova convenção de chave/estágio, ou devem usar um bucket separado?], [Decidida -> Assunção A1 / DQ-002: reutilização do bucket por utilizador com prefixo/chave de vídeo.],
+  [Q1], [Os vídeos usam os buckets por utilizador já adotados pela fachada S3, com uma nova convenção de chave/estágio, ou devem usar um bucket separado?], [Decidida para o MVP: reutiliza-se a fachada e o bucket por utilizador existentes, com o estágio `video-src` e uma chave própria para cada objeto. Não se cria um bucket separado.],
   [Q2], [O sistema deve gerar automaticamente uma miniatura para cada vídeo submetido com sucesso?], [Adiada para Fase 2 (no MVP a pré-visualização apoia-se no elemento HTML5 nativo).],
   [Q3], [A interface deve suportar drag-and-drop além do seletor de ficheiros tradicional?], [Adiada para Fase 2 (melhoria de interface; MVP suporta seletor de ficheiros).],
   [Q4], [Deve existir um limite máximo de uploads simultâneos por utilizador?], [Adiada para Fase 2 (no MVP cada submissão é individual e sequencial no frontend).],

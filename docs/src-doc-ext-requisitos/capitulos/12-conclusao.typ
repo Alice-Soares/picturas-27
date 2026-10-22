@@ -8,6 +8,8 @@
   consideram prioritários para melhoria por _refactoring_.
 ]
 
+*todo*: rever e completar este capítulo
+
 A Fase 1 permitiu estender a arquitetura de processamento de imagens do PictuRAS com suporte a vídeo,
 contemplando submissão de conteúdos audiovisuais e várias operações de transformação. Os sete casos de
 uso foram especificados e existem módulos de implementação associados ao incremento. A UC-VID-006 foi
