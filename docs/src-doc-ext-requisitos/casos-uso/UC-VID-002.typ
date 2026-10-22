@@ -29,7 +29,6 @@
   ),
 )
 
-*TODO:* rever para talvez retirar referencias a cenas de implementação como rabbit mq e assim
 
 === Fluxo Principal
 
@@ -113,7 +112,6 @@
   [A5], [A fila RabbitMQ consegue processar operações de recorte sem perda relevante.],
 )
 
-*TODO:* REVER ESTAS RESOLUÇÕES DAS QUESTOES
 
 === Questões em Aberto
 

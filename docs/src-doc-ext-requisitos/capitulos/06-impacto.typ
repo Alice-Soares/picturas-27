@@ -12,9 +12,8 @@
 
 A introdução das funcionalidades de processamento e gestão de vídeo no PictuRAS reutiliza substancialmente a infraestrutura do sistema existente (Fase 0/v1.0), estendendo as suas capacidades sem comprometer o fluxo operacional de edição de imagem. 
 
-A tabela seguinte detalha o impacto em cada elemento arquitetural, serviço de backend, mecanismo de persistência e regra de negócio herdada, classificando-o como *Manter* (sem alterações funcionais), *Estender* (acrescenta novas capacidades) ou *Alterar* (modifica o comportamento atual do baseline).
+A tabela seguinte apresenta o impacto de projeto identificado para cada elemento. A tabela descreve alterações propostas e/ou implementadas; a extensão de eventos WebSocket, em particular, não é considerada comprovada para a UC-VID-006, cujo acompanhamento atual utiliza consultas REST. Os estados efetivos devem ser confirmados nos testes da entrega. Os impactos são classificados como *Manter* (sem alterações funcionais), *Estender* (acrescenta novas capacidades) ou *Alterar* (modifica o comportamento atual do baseline).
 
-*TODO:* REVER TODO ESTE CAPIULO PARA VER SE ESTA COERENTE COM O FICHEIRO RAS-requisitos-video.md, QUE É O DOCUMENTO DE REFERENCIA PARA O MVP DE VIDEO. E COERENCIA COM USE CASES E RELATORIO PARA TRAS 
 REVER O CONTEUDO TAMBEM
 
 

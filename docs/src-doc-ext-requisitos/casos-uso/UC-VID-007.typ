@@ -2,7 +2,7 @@
 
 == UC-VID-007 — Gerir Áudio do Vídeo (Remover, Substituir ou Extrair)
 
-#block(fill: luma(94%), inset: 8pt)[*Estado nesta fase:* Especificado, mas não implementado. Fora do MVP entregue.]
+#block(fill: luma(94%), inset: 8pt)[*Estado nesta fase:* Código de gestão de áudio integrado na versão conjunta; validação ponta-a-ponta e cobertura integral deste caso de uso não verificadas nesta revisão.]
 
 === Cabeçalho
 

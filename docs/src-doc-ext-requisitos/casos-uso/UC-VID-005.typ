@@ -105,7 +105,6 @@
   [A3], [O FFmpeg ou equivalente está disponível para extrair fotogramas do vídeo.],
 )
 
-*TODO:* REVER ESTAS RESOLUÇÕES DAS QUESTOES
 === Questões em Aberto
 
 #tabela(

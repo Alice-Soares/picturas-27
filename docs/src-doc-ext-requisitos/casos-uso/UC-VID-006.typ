@@ -2,7 +2,7 @@
 
 == UC-VID-006 — Concatenar Múltiplos Vídeos (Merge)
 
-#block(fill: luma(94%), inset: 8pt)[*Estado nesta fase:* Especificado, mas não implementado. Fora do MVP entregue.]
+#block(fill: luma(94%), inset: 8pt)[*Estado nesta fase:* Implementado e integrado no ramo do grupo; testes automatizados da funcionalidade aprovados em Docker. Validação ponta-a-ponta da versão final integrada ainda por confirmar.]
 
 === Cabeçalho
 
@@ -37,26 +37,26 @@
     colunas: (1.2cm, 1fr, 1fr),
     [Passo], [Ação do Ator], [Resposta do Sistema],
     [1], [O utilizador acede à biblioteca do projeto e seleciona 2 ou mais vídeos.], [O sistema destaca os ficheiros selecionados e ativa a opção "Concatenar Vídeos".],
-    [2], [O utilizador clica em "Concatenar Vídeos".], [O sistema apresenta a interface de ordenação com as miniaturas dos vídeos e opções de saída (resolução, formato).],
-    [3], [O utilizador ajusta a ordem de reprodução dos vídeos (drag-and-drop) e seleciona os parâmetros de saída.], [O sistema valida se a duração total acumulada e o número de ficheiros respeitam o limite do perfil do utilizador.],
+    [2], [O utilizador clica em "Concatenar Vídeos".], [O sistema apresenta o diálogo de concatenação, com seleção e ordenação dos vídeos de origem.],
+    [3], [O utilizador define a ordem dos vídeos. A saída desta implementação é normalizada automaticamente para MP4, sem seleção manual de formato ou resolução.], [O sistema valida se a duração total acumulada e o número de ficheiros respeitam o limite do perfil do utilizador.],
     [4], [O utilizador confirma a operação de concatenação.], [O sistema valida a quota do utilizador e a disponibilidade do armazenamento.],
     [5], [—], [O sistema cria uma operação de concatenação e envia a operação para a fila de mensagens (RabbitMQ).],
     [6], [—], [O sistema notifica o utilizador que o processamento iniciou e atualiza o estado para "Em fila".],
-    [7], [O utilizador acompanha o progresso.], [O sistema comunica periodicamente o progresso em tempo real (%) via WebSocket.],
+    [7], [O utilizador acompanha o progresso.], [A interface consulta o estado da operação pela API e apresenta a situação atual (em fila, em processamento, concluída, falhada ou cancelada). Não se comprova uma percentagem em tempo real via WebSocket para esta UC.],
     [8], [—], [O sistema normaliza resoluções/codecs compatíveis, une os ficheiros na ordem definida, preserva as faixas de áudio compatíveis e guarda o resultado final.],
-    [9], [—], [O sistema regista o novo vídeo na base de dados, associa-o ao projeto e aplica a quota de operações avançadas.],
-    [10], [—], [O sistema notifica a conclusão com sucesso e disponibiliza o vídeo final na biblioteca.],
+    [9], [—], [O sistema regista o novo vídeo na base de dados, associa-o ao projeto e consolida o consumo da quota previamente reservada quando aplicável.],
+    [10], [—], [O vídeo resultante passa a constar da biblioteca do projeto e fica disponível para visualização.],
   ),
 )
 
-*TODO:* rever para nao ter referencias a implementação??
+
 === Fluxos Alternativos
 
 #tab([UC-VID-006 — Fluxos alternativos],
   tabela(
     colunas: (4cm, 1fr),
     [Fluxo], [Descrição (passo de origem: condição -> comportamento -> retorno)],
-    [FA1 – Normalização Automática de Resolução], [No passo 8: Se os vídeos selecionados tiverem resoluções ou taxas de fotogramas diferentes, o sistema ajusta automaticamente todos os vídeos para a resolução do primeiro elemento ou para a resolução configurada pelo utilizador.],
+    [FA1 – Normalização Automática de Resolução], [No passo 8: Se os vídeos tiverem parâmetros distintos, o processamento normaliza automaticamente os fluxos para possibilitar a concatenação. Não existe escolha manual de resolução de saída neste MVP.],
     [FA2 – Cancelamento pelo Utilizador], [No passo 7: Durante a execução, o utilizador pode cancelar a operação: o sistema interrompe o FFmpeg, elimina os ficheiros temporários gerados, marca a operação como cancelada e devolve a quota reservada.],
   ),
 )
@@ -68,8 +68,8 @@
     colunas: (1fr, 1fr),
     [Condição], [Comportamento do Sistema],
     [Duração total combinada excede o limite do perfil], [O sistema impede a submissão, destaca a duração excedida e sugere a remoção de vídeos ou upgrade de perfil (5 min registado, 30 min premium).],
-    [Ficheiro de entrada corrompido ou inacessível], [O sistema assinala o ficheiro inválido no lote, interrompe a criação da operação e notifica o utilizador.],
-    [Quota de operações avançadas esgotada], [O sistema bloqueia o início da operação e exibe o horário de reposição da quota.],
+    [Ficheiro de entrada corrompido ou inacessível], [O sistema assinala o erro de entrada e rejeita a operação ou marca-a como falhada quando o defeito só é detetável durante o processamento.],
+    [Quota de operações avançadas esgotada], [O sistema rejeita a operação e informa que a quota não é suficiente; a indicação do horário de reposição não está comprovada nesta interface.],
     [Falha técnica durante a composição (FFmpeg)], [O sistema interceta o erro, marca a operação como falhada, limpa temporários, liberta a quota e disponibiliza o botão "Tentar novamente".],
   ),
 )
@@ -95,16 +95,16 @@
   [RN5], [Operações canceladas ou falhadas não consomem quota de operações avançadas.],
 )
 
-*TODO:* rever para nao ter referencias a implementação?
+
 === Assunções
 
 #tabela(
   colunas: (1.4cm, 1fr),
   [ID], [Assunção],
-  [A1], [O FFmpeg está configurado com os filtros adequados (concat demuxer / complex filter) para unir vídeos heterogéneos.],
+  [A1], [O ambiente de processamento dispõe de FFmpeg/FFprobe e dos recursos necessários à normalização e união dos vídeos.],
   [A2], [O armazenamento temporário dos workers tem capacidade suficiente para alojar os ficheiros intermédios durante o processo.],
 )
-*TODO:* REVER RESOLUÇÕES DAS QUESTOES
+
 
 === Questões em Aberto
 
@@ -112,6 +112,6 @@
   colunas: (1.4cm, 1fr, 5cm),
   [ID], [Questão], [Resolução],
   [Q1], [Deve ser possível adicionar efeitos de transição (ex: fade, crossfade) entre os vídeos concatenados no MVP?], [Adiada para Fase 3 (o MVP realiza união direta / direct cut sem transições gráficas).],
-  [Q2], [Se um vídeo não tiver faixa de áudio, o sistema deve inserir áudio silencioso para manter a sincronização?], [Decidida -> FFmpeg filter: áudio silencioso gerado automaticamente para assegurar sincronia no stream final.],
+  [Q2], [Se um vídeo não tiver faixa de áudio, o sistema deve inserir áudio silencioso para manter a sincronização?], [Decidida para o MVP: é introduzido áudio silencioso quando uma entrada não tem faixa áudio, permitindo um fluxo concatenado sincronizado.],
 )
 

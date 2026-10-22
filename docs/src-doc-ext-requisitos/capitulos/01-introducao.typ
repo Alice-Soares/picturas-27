@@ -46,7 +46,6 @@ Todos os requisitos e casos de uso preexistentes referenciados neste relatório 
 
 == Resumo do trabalho realizado
 
-*TODO:* REVER ESTA SECÇÃO NO FIM PARA COERENCIA
 
 O trabalho desenvolvido compreende a especificação, implementação e validação de uma extensão funcional do PictuRAS orientada para o processamento de vídeo digital.
 
@@ -61,7 +60,6 @@ A relação entre as funcionalidades especificadas, os respetivos casos de uso e
 
 == Organização do documento
 
-*TODO:* REVER ESTA SECÇÃO NO FIM PARA COERENCIA
 
 O relatório encontra-se organizado em três partes complementares, refletindo as diferentes etapas de especificação, desenvolvimento e validação do incremento.
 

@@ -2,7 +2,9 @@
 
 = Rastreabilidade
 
-*TODO*: REVER TODO ESTE CAPITULO
+A matriz de origem cobre os requisitos especificados. A matriz de realização abaixo distingue a
+implementação verificada da mera presença de componentes. A cobertura de UC-VID-006 está fundamentada
+em testes executados; as restantes UC necessitam de resultados de execução consolidados.
 
 == Casos de uso → requisitos
 
@@ -74,48 +76,56 @@
     tamanho: 8.5pt,
     [ID], [Decisão de qualidade], [Justificação], [Requisitos],
 
-    [DQ-001], 
-    [As operações de vídeo demoradas devem ser assíncronas e publicar estado e progresso através do WebSocket autorizado do projeto.], 
-    [Uploads e processamento de vídeo podem demorar mais do que um pedido HTTP normal. O utilizador deve conseguir acompanhar a operação sem bloquear o pedido nem consultar repetidamente a API.], 
+    [DQ-001],
+    [As operações de vídeo demoradas devem ser assíncronas. O objetivo de disponibilizar progresso por WebSocket mantém-se; a UC-VID-006 disponibiliza estado por consulta REST no MVP.],
+    [Uploads e processamento de vídeo podem demorar mais do que um pedido HTTP normal. O utilizador deve conseguir acompanhar a operação sem bloquear o pedido; a consulta periódica da API é uma limitação conhecida desta versão.],
     [REQ-VID-COM-011, REQ-VID-COM-012, REQ-VID-COM-013, REQ-VID-Q-002, REQ-VID-Q-003, REQ-VID-Q-016],
 
-    [DQ-002], 
-    [O processamento de vídeo deve ser isolado do contrato e das filas atuais de processamento de imagens.], 
-    [O PictuRAS existente processa imagens através de ferramentas independentes e RabbitMQ. A extensão não deve introduzir regressões nem obrigar as ferramentas atuais a compreender vídeos.], 
+    [DQ-002],
+    [O processamento de vídeo deve ser isolado do contrato e das filas atuais de processamento de imagens.],
+    [O PictuRAS existente processa imagens através de ferramentas independentes e RabbitMQ. A extensão não deve introduzir regressões nem obrigar as ferramentas atuais a compreender vídeos.],
     [REQ-VID-FRM-001, REQ-VID-FRM-008, REQ-VID-Q-006],
 
-    [DQ-003], 
-    [Os conteúdos originais devem ser imutáveis e cada resultado deve ser persistido como novo conteúdo.], 
-    [Esta decisão reduz o risco de perda de dados e permite voltar a usar o vídeo original noutras operações. É também necessária para garantir a recuperação após falhas.], 
+    [DQ-003],
+    [Os conteúdos originais devem ser imutáveis e cada resultado deve ser persistido como novo conteúdo.],
+    [Esta decisão reduz o risco de perda de dados e permite voltar a usar o vídeo original noutras operações. É também necessária para garantir a recuperação após falhas.],
     [REQ-VID-TRIM-011, REQ-VID-CONV-010, REQ-VID-MERGE-012, REQ-VID-AUD-012, REQ-VID-COM-017, REQ-VID-Q-004],
 
-    [DQ-004], 
-    [Operações falhadas ou canceladas devem limpar temporários antes de serem apresentadas como terminadas.], 
-    [Ficheiros parciais não podem aparecer na biblioteca nem ocupar armazenamento indefinidamente. A limpeza é uma condição de consistência do MVP.], 
+    [DQ-004],
+    [Operações falhadas ou canceladas devem limpar temporários antes de serem apresentadas como terminadas.],
+    [Ficheiros parciais não podem aparecer na biblioteca nem ocupar armazenamento indefinidamente. A limpeza é uma condição de consistência do MVP.],
     [REQ-VID-SUB-024, REQ-VID-FEX-011, REQ-VID-COM-014, REQ-VID-COM-015, REQ-VID-COM-016, REQ-VID-Q-007, REQ-VID-Q-013 a REQ-VID-Q-015],
 
-    [DQ-005], 
-    [A autorização deve ser aplicada ao projeto, ao conteúdo, ao resultado e aos eventos de progresso.], 
-    [Não basta proteger o endpoint inicial: uma referência de vídeo, um resultado ou um evento WebSocket não podem ser usados para obter dados de outro projeto.], 
+    [DQ-005],
+    [A autorização deve ser aplicada ao projeto, ao conteúdo, ao resultado e aos eventos de progresso.],
+    [Não basta proteger o endpoint inicial: uma referência de vídeo, um resultado ou um evento WebSocket não podem ser usados para obter dados de outro projeto.],
     [REQ-VID-COM-001, REQ-VID-COM-002, REQ-VID-COM-003, REQ-VID-COM-013, REQ-VID-Q-005, REQ-VID-Q-010 a REQ-VID-Q-012],
   ),
 )
 
 == Realização e verificação dos requisitos
 
-#orientacao[
-  Fecha o ciclo *requisito → componente → teste → estado*. Uma linha por requisito da ERS (podem agrupar
-  requisitos com o mesmo destino). Deve ser possível responder a: "que requisitos estão implementados e
-  verificados?" e "que componentes foram tocados por cada funcionalidade?". Requisitos não implementados não se
-  apagam: ficam com estado "Não implementado" e justificação. Os detalhes estão nos capítulos de Arquitetura e de Testes.
-]
-
-#tab([Realização e verificação dos requisitos],
+#tab([Rastreabilidade de realização e verificação — MVP],
   tabela(
-    colunas: (2.6cm, 3.2cm, 2.4cm, 2.2cm, 1fr),
+    colunas: (3.0cm, 3.3cm, 2.5cm, 2.1cm, 1fr),
     tamanho: 8.5pt,
-    [Requisito], [Componente(s)], [Estado], [Teste(s)], [Resultado / observações],
-    [REQ-VID-#preencher[FUNC]-001], [#preencher[e.g., serviço de recorte, frontend]], [#preencher[Implementado / Parcial / Não impl.]], [TST-#preencher[FUNC]-01], [#preencher[Passa / Falha; …]],
-    [REQ-VID-#preencher[FUNC]-010], [#preencher[…]], [#preencher[…]], [#preencher[…]], [#preencher[…]],
+    [Requisitos], [Componente(s)], [Estado evidenciado], [Teste(s)], [Resultado],
+    [REQ-VID-SUB-001 a 029], [`frontend`, `apiGateway`, `projects`, `img_storage`], [Código presente; validação global pendente], [Testes de submissão do repositório], [Requer registo consolidado de execução.],
+    [REQ-VID-TRIM-001 a 012], [`projects`, `frontend`, worker FFmpeg], [Código presente; E2E pendente], [Testes trim existentes], [Não declarado como suite global aprovada.],
+    [REQ-VID-FRM-001 a 014], [`projects`, processamento de imagem e fotogramas], [Código presente; E2E pendente], [Testes frame tool existentes], [Requer demonstração global.],
+    [REQ-VID-CONV-001 a 011], [`projects`, ferramentas FFmpeg e frontend], [Código presente; E2E pendente], [Testes conversion existentes], [Requer demonstração global.],
+    [REQ-VID-FEX-001 a 011], [`projects`, armazenamento e frontend], [Código presente; E2E pendente], [Testes frame extraction existentes], [Requer demonstração global.],
+    [REQ-VID-MERGE-001 a 008], [Frontend e validação do Projects Service], [Implementado / testado], [TST-MERGE-01], [Incluído nos 65 testes aprovados em Docker.],
+    [REQ-VID-MERGE-009], [Projects Service e RabbitMQ], [Implementado / testado], [TST-MERGE-02], [Registo, fila e resposta assíncrona testados.],
+    [REQ-VID-MERGE-010 e 011], [Worker FFmpeg e armazenamento], [Implementado / testado], [TST-MERGE-03], [Concatenação real e áudio heterogéneo em Docker.],
+    [REQ-VID-MERGE-012 e 013], [Projects Service e storage], [Implementado / testado], [TST-MERGE-03/04], [Novo resultado; origens preservadas.],
+    [REQ-VID-MERGE-014 e 015], [Validação e pipeline], [Validações e erros testados], [TST-MERGE-01/04], [Verificação prévia e na pipeline, conforme erro.],
+    [REQ-VID-AUD-001 a 016], [Serviços de áudio integrados], [Integração identificada; validação pendente], [Não consolidado], [Confirmar suboperações e testes.],
+    [REQ-VID-COM-001 a 020], [Gateway, Projects Service, fila e UI], [Parcial / variável por UC], [TST-MERGE-02/04/05], [Quota, autorização e estados de merge verificados; progresso WebSocket não comprovado.],
+    [REQ-VID-Q-001 a 016], [Infraestrutura e serviços transversais], [Sem medição global], [A definir por qualidade], [Não declarar metas não medidas como atingidas.],
   ),
 )
+
+As linhas agrupam requisitos que partilham destino técnico ou evidência de validação. Esta é uma matriz de
+estado do incremento, não uma alegação de aprovação automática de todos os requisitos da ERS. Quando a
+equipa adicionar resultados para outras UC, deverá desagregar grupos que tenham estados diferentes.

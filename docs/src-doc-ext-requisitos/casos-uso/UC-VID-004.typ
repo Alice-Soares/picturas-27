@@ -103,7 +103,6 @@
   [A3], [O armazenamento do projeto consegue guardar ficheiros de vídeo convertidos sem corrupção.],
 )
 
-*TODO:* REVER ESTAS RESOLUÇÕES DAS QUESTOES
 
 === Questões em Aberto
 

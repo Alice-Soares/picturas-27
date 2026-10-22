@@ -105,7 +105,6 @@
   [A2], [A infraestrutura de filas e armazenamento suporta a criação temporária de milhares de fotogramas durante o processamento.],
   [A3], [O FFmpeg ou equivalente está disponível para a decomposição e recomposição do vídeo.],
 )
-*TODO:* REVER ESTAS RESOLUÇÕES DAS QUESTOES
 === Questões em Aberto
 
 #tabela(
