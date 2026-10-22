@@ -16,6 +16,7 @@ import { LoaderCircle, Plus } from "lucide-react";
 import { useAddProjectImages } from "@/lib/mutations/projects";
 import { createBlobUrlFromFile } from "@/lib/utils";
 import { useProjectInfo } from "@/providers/project-provider";
+import { useSearchParams } from "next/navigation";
 import { useSession } from "@/providers/session-provider";
 import { useToast } from "@/hooks/use-toast";
 import { getErrorMessage } from "@/lib/error-messages";
@@ -28,11 +29,16 @@ export function AddImagesDialog() {
 
   const { _id: pid, version} = useProjectInfo();
   const session = useSession();
+  const searchParams = useSearchParams();
+  const ownerId = searchParams.get("owner") ?? session.user._id;
+  const shareId = searchParams.get("share") ?? undefined;
 
   const addImages = useAddProjectImages(
     session.user._id,
     pid as string,
     session.token,
+    ownerId,
+    shareId,
   );
 
   function onDrop(files: File[]) {

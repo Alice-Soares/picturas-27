@@ -92,7 +92,7 @@ export default function Project({
   const [currentImage, setCurrentImage] = useState<ProjectImage | null>(null);
   const [processing, setProcessing] = useState<boolean>(false);
   const [processingProgress, setProcessingProgress] = useState<number>(0);
-  const [processingSteps, setProcessingSteps] = useState<number>(1);
+  const [processingSteps, setProcessingSteps] = useState<number>(0);
   const [waitingForPreview, setWaitingForPreview] = useState<string>("");
   const [canEdit, setCanEdit] = useState(true);
 
@@ -314,7 +314,7 @@ useEffect(() => {
             setProcessing(false);
             if (!isMobile) sidebar.setOpen(true);
             setProcessingProgress(0);
-            setProcessingSteps(1);
+            setProcessingSteps(0);
 
             // avisar o ProjectProvider que o Apply terminou
             setWaitingForPreview("__APPLY_DONE__");
@@ -395,7 +395,7 @@ useEffect(() => {
     console.error("process-error", payload);
     setProcessing(false);
     setProcessingProgress(0);
-    setProcessingSteps(1);
+    setProcessingSteps(0);
     toast({
       title: "Falha no processamento",
       description:
@@ -545,7 +545,7 @@ const handleCancel = () => {
   // parar tudo no UI
   setProcessing(false);
   setProcessingProgress(0);
-  setProcessingSteps(1);
+  setProcessingSteps(0);
 
   // reabrir a sidebar em desktop 
   if (!isMobile) {

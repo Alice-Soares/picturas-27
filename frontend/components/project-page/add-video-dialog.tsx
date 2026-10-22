@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import VideoSubmissionArea from "../video-submission-area";
 import { useProjectInfo } from "@/providers/project-provider";
+import { useSearchParams } from "next/navigation";
 import { useSession } from "@/providers/session-provider";
 import { useAddProjectVideo } from "@/lib/mutations/projects";
 import { useToast } from "@/hooks/use-toast";
@@ -17,8 +18,11 @@ export function AddVideoDialog() {
   const abortRef = useRef<AbortController | null>(null);
   const { _id: pid, version } = useProjectInfo();
   const session = useSession();
+  const searchParams = useSearchParams();
+  const ownerId = searchParams.get("owner") ?? session.user._id;
+  const shareId = searchParams.get("share") ?? undefined;
   const { toast } = useToast();
-  const upload = useAddProjectVideo(session.user._id, pid as string, session.token);
+  const upload = useAddProjectVideo(session.user._id, pid as string, session.token, ownerId, shareId);
 
   function submit() {
     if (!video) return;

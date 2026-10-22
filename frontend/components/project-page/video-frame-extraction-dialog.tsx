@@ -36,7 +36,7 @@ export function VideoFrameExtractionDialog({
   const get = useGetProjectVideoFrameExtraction(uid, pid, token, ownerId, shareId);
   const cancel = useCancelProjectVideoTrim(uid, pid, token, ownerId, shareId);
   const { toast } = useToast();
-  const operation = get.data;
+  const operation = get.data?.id === operationId ? get.data : undefined;
   const refreshOperation = get.mutate;
 
   useEffect(() => {
@@ -120,7 +120,7 @@ export function VideoFrameExtractionDialog({
         <DialogFooter>
           {active && <Button variant="outline" onClick={() => operationId && cancel.mutate(operationId)}>Cancelar operação</Button>}
           {!operationId && <Button onClick={submit} disabled={create.isPending}>{create.isPending && <LoaderCircle className="mr-2 size-4 animate-spin" />} Extrair JPEGs</Button>}
-          {operation?.status === "completed" && <Button onClick={() => setOpen(false)}>Concluir</Button>}
+          {operation?.status === "completed" && <Button onClick={() => { setOpen(false); setOperationId(null); }}>Concluir</Button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>

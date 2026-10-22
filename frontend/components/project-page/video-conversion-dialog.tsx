@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { ProjectVideo } from "@/lib/projects";
 import {
@@ -26,7 +27,7 @@ export function VideoConversionDialog(props: {
   const create = useCreateProjectVideoConversion(uid, pid, token, ownerId, shareId);
   const get = useGetProjectVideoConversion(uid, pid, token, ownerId, shareId);
   const cancel = useCancelProjectVideoConversion(uid, pid, token, ownerId, shareId);
-  const operation = get.data;
+  const operation = get.data?.id === operationId ? get.data : undefined;
   const limit = options.data?.resolutionLimits;
   const source = options.data?.source;
   const outputSizeEstimate = source?.size && source.width && source.height
@@ -49,17 +50,19 @@ export function VideoConversionDialog(props: {
   }
 
   function show() {
+    if (operation && ["completed", "failed", "cancelled"].includes(operation.status)) setOperationId(null);
     setOpen(true);
     options.mutate(video._id);
   }
 
   return (
-    <>
+    <Dialog open={open} onOpenChange={setOpen}>
       <Button size="sm" variant="outline" disabled={!canEdit} onClick={show}>Converter</Button>
-      {open && (
-        <div role="dialog" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md space-y-4 rounded-lg bg-background p-6 shadow-lg">
-            <h2 className="font-semibold">Converter {video.name}</h2>
+      <DialogContent className="max-h-[85dvh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Converter {video.name}</DialogTitle>
+              <DialogDescription>Escolha a resolução do novo vídeo.</DialogDescription>
+            </DialogHeader>
             {!operationId ? (
               <>
                 <p className="text-sm text-muted-foreground">Origem: {video.container} · {video.videoCodec} · {video.width}×{video.height}</p>
@@ -82,7 +85,7 @@ export function VideoConversionDialog(props: {
                 {operation?.errorCode && <p className="text-sm text-destructive">{operation.errorCode}</p>}
               </>
             )}
-            <div className="flex justify-end gap-2">
+            <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>Fechar</Button>
               {operationId && !["completed", "failed", "cancelled"].includes(operation?.status ?? "") &&
                 <Button variant="outline" onClick={() => cancel.mutate(operationId)}>Cancelar</Button>}
@@ -92,10 +95,8 @@ export function VideoConversionDialog(props: {
                 Number(width) > limit.width || Number(height) > limit.height}>
                 Iniciar conversão
               </Button>}
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+            </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

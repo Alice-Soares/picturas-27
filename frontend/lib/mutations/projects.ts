@@ -157,10 +157,10 @@ export const useAddProjectImages = (uid: string, pid: string, token: string, own
         projectVersion: args.projectVersion,
       }),
 
-    onSuccess: (newVersionHeader) => {
+    onSuccess: async (newVersionHeader) => {
       bumpProjectVersion(qc, projectKey, newVersionHeader);
-      qc.invalidateQueries({ queryKey: projectKey, refetchType: "all" });
-      qc.invalidateQueries({ queryKey: ["projectImages", uid, pid, token, ownerId, shareId], refetchType: "all" });
+      await qc.invalidateQueries({ queryKey: projectKey, refetchType: "all" });
+      await qc.invalidateQueries({ queryKey: ["projectImages", uid, pid, token], refetchType: "all" });
     },
   });
 };
@@ -171,9 +171,9 @@ export const useAddProjectVideo = (uid: string, pid: string, token: string, owne
   return useMutation({
     mutationFn: (args: { video: File; projectVersion: number; duplicateAction?: "keep" | "cancel"; signal?: AbortSignal }) =>
       addProjectVideo({ uid, pid, token, ownerId, shareId, ...args }),
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       bumpProjectVersion(qc, projectKey, result.newVersionHeader);
-      qc.invalidateQueries({ queryKey: projectKey, refetchType: "all" });
+      await qc.invalidateQueries({ queryKey: projectKey, refetchType: "all" });
     },
   });
 };
@@ -200,16 +200,41 @@ export const useCreateProjectVideoTrim = (
   });
 };
 
+// A consulta do estado também reconcilia os resultados persistidos. Funciona
+// mesmo quando o evento WebSocket não chegou ao cliente.
+function useVideoOperationStatus<T extends { status: string; targetProjectId?: string | null }>(
+  uid: string,
+  pid: string,
+  token: string,
+  fetchOperation: (operationId: string) => Promise<T>,
+) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: fetchOperation,
+    onSuccess: async (operation) => {
+      if (!["completed", "failed", "cancelled"].includes(operation.status)) return;
+      const projectIds = new Set([pid, operation.targetProjectId].filter(Boolean));
+      await Promise.all([
+        ...[...projectIds].flatMap((projectId) =>
+          ["project", "projectImages", "projectResults"].map((name) =>
+            qc.invalidateQueries({ queryKey: [name, uid, projectId, token], refetchType: "all" }),
+          ),
+        ),
+        qc.invalidateQueries({ queryKey: ["projects", uid, token], refetchType: "all" }),
+      ]);
+    },
+  });
+}
+
 export const useGetProjectVideoTrim = (
   uid: string,
   pid: string,
   token: string,
   ownerId?: string,
   shareId?: string,
-) => useMutation({
-  mutationFn: (operationId: string) =>
-    getProjectVideoTrim({ uid, pid, token, ownerId, shareId, operationId }),
-});
+) => useVideoOperationStatus(uid, pid, token, (operationId) =>
+  getProjectVideoTrim({ uid, pid, token, ownerId, shareId, operationId }),
+);
 
 export const useCancelProjectVideoTrim = (
   uid: string,
@@ -245,10 +270,9 @@ export const useCreateProjectVideoConversion = (
 
 export const useGetProjectVideoConversion = (
   uid: string, pid: string, token: string, ownerId?: string, shareId?: string,
-) => useMutation({
-  mutationFn: (operationId: string) =>
-    getProjectVideoTrim({ uid, pid, token, ownerId, shareId, operationId }),
-});
+) => useVideoOperationStatus(uid, pid, token, (operationId) =>
+  getProjectVideoTrim({ uid, pid, token, ownerId, shareId, operationId }),
+);
 
 export const useCancelProjectVideoConversion = (
   uid: string, pid: string, token: string, ownerId?: string, shareId?: string,
@@ -271,9 +295,9 @@ export const useCreateProjectVideoFrameTool = (
 
 export const useGetProjectVideoFrameTool = (
   uid: string, pid: string, token: string, ownerId?: string, shareId?: string,
-) => useMutation({
-  mutationFn: (operationId: string) => getProjectVideoFrameTool({ uid, pid, token, ownerId, shareId, operationId }),
-});
+) => useVideoOperationStatus(uid, pid, token, (operationId) =>
+  getProjectVideoFrameTool({ uid, pid, token, ownerId, shareId, operationId }),
+);
 
 export const useCreateProjectVideoFrameExtraction = (
   uid: string, pid: string, token: string, ownerId?: string, shareId?: string,
@@ -291,9 +315,9 @@ export const useCreateProjectVideoFrameExtraction = (
 
 export const useGetProjectVideoFrameExtraction = (
   uid: string, pid: string, token: string, ownerId?: string, shareId?: string,
-) => useMutation({
-  mutationFn: (operationId: string) => getProjectVideoFrameExtraction({ uid, pid, token, ownerId, shareId, operationId }),
-});
+) => useVideoOperationStatus(uid, pid, token, (operationId) =>
+  getProjectVideoFrameExtraction({ uid, pid, token, ownerId, shareId, operationId }),
+);
 
 export const useDeleteProjectImages = (
   uid: string,
@@ -455,6 +479,7 @@ export const useAddProjectTool = (uid: string, pid: string, token: string, owner
 
     onSuccess: (newVersionHeader) => {
       bumpProjectVersion(qc, ["project", uid, pid, token, ownerId, shareId], newVersionHeader);
+      qc.invalidateQueries({ queryKey: ["project", uid, pid, token], refetchType: "all" });
       qc.invalidateQueries({ refetchType: "all", queryKey: ["project", uid, pid, token, ownerId, shareId] });
       qc.invalidateQueries({ refetchType: "all", queryKey: ["projectResults", uid, pid, token, ownerId, shareId] });
     },
@@ -700,6 +725,7 @@ export const useClearProjectTools = (
       }),
     onSuccess: (newVersionHeader) => {
       bumpProjectVersion(qc, ["project", uid, pid, token, ownerId, shareId], newVersionHeader);
+      qc.invalidateQueries({ queryKey: ["project", uid, pid, token], refetchType: "all" });
       qc.invalidateQueries({ queryKey: ["projectResults", uid, pid, token, ownerId, shareId], refetchType: "all" });
     },
   });
@@ -755,9 +781,9 @@ export const useCreateProjectVideoMerge = (uid: string, pid: string, token: stri
   });
 
 export const useGetProjectVideoMerge = (uid: string, pid: string, token: string) =>
-  useMutation({
-    mutationFn: (operationId: string) => getProjectVideoMerge({ uid, pid, token, operationId }),
-  });
+  useVideoOperationStatus(uid, pid, token, (operationId) =>
+    getProjectVideoMerge({ uid, pid, token, operationId }),
+  );
 
 export const useCancelProjectVideoMerge = (uid: string, pid: string, token: string) =>
   useMutation({

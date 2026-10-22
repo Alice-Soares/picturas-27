@@ -44,7 +44,7 @@ export function VideoTrimDialog({
   const get = useGetProjectVideoTrim(uid, pid, token, ownerId, shareId);
   const cancel = useCancelProjectVideoTrim(uid, pid, token, ownerId, shareId);
   const { toast } = useToast();
-  const operation = get.data;
+  const operation = get.data?.id === operationId ? get.data : undefined;
 
   useEffect(() => {
     if (!operationId || !open || ["completed", "failed", "cancelled"].includes(operation?.status ?? "")) return;
@@ -117,7 +117,7 @@ export function VideoTrimDialog({
           {!operationId && <Button onClick={submit} disabled={create.isPending}>
             {create.isPending && <LoaderCircle className="mr-2 size-4 animate-spin" />} Criar recorte
           </Button>}
-          {operation?.status === "completed" && <Button onClick={() => setOpen(false)}>Concluir</Button>}
+          {operation?.status === "completed" && <Button onClick={() => { setOpen(false); setOperationId(null); }}>Concluir</Button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>

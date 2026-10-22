@@ -67,12 +67,21 @@ export function ProjectProvider({
   useEffect(() => {
     if (!socket.data) return;
     const projectId = project._id;
-    socket.data.emit("join-project", { projectId, ownerId: ownerId || project.user_id, shareId });
+    const connection = socket.data;
+    const joinProject = () => {
+      connection.emit("join-project", { projectId, ownerId: ownerId || project.user_id, shareId });
+      for (const name of ["project", "projectImages", "projectResults"]) {
+        qc.invalidateQueries({ queryKey: [name, session.user._id, projectId, session.token] });
+      }
+    };
+    joinProject();
+    connection.on("connect", joinProject);
 
     return () => {
-      socket.data?.emit("leave-project", projectId);
+      connection.off("connect", joinProject);
+      connection.emit("leave-project", projectId);
     };
-  }, [socket.data, project._id, project.user_id, ownerId, shareId]);
+  }, [socket.data, project._id, project.user_id, ownerId, shareId, qc, session.user._id, session.token]);
 
   // manter state tools alinhado com o project vindo do backend
   useEffect(() => {
@@ -180,8 +189,15 @@ export function ProjectProvider({
     if (!socket.data) return;
 
     const handler = (msg: any) => {
-      const { op } = msg || {};
-      if (!op) return;
+      const { op, projectId } = msg || {};
+      if (!op || (projectId && projectId !== project._id)) return;
+
+      if (op.targetProjectId && op.status === "completed") {
+        for (const name of ["project", "projectImages", "projectResults"]) {
+          qc.invalidateQueries({ queryKey: [name, session.user._id, String(op.targetProjectId), session.token] });
+        }
+        qc.invalidateQueries({ queryKey: ["projects", session.user._id, session.token] });
+      }
 
       const opId = op.opId ?? null;
       if (opId && seenOps.current.has(opId)) return;
@@ -211,7 +227,7 @@ export function ProjectProvider({
               });
             } else {
               // fallback seguro
-              qc.invalidateQueries({ queryKey: ["project", ownerId ?? session.user._id, project._id, session.token, ownerId, shareId] });
+              qc.invalidateQueries({ queryKey: ["project", session.user._id, project._id, session.token] });
             }
             break;
           }
@@ -221,7 +237,7 @@ export function ProjectProvider({
             if (toolId) {
               setTools((prev) => prev.filter((t: any) => String(t._id) !== String(toolId)));
             } else {
-              qc.invalidateQueries({ queryKey: ["project", ownerId ?? session.user._id, project._id, session.token, ownerId, shareId] });
+              qc.invalidateQueries({ queryKey: ["project", session.user._id, project._id, session.token] });
             }
             break;
           }
@@ -231,7 +247,7 @@ export function ProjectProvider({
             if (Array.isArray(toolsFromServer)) {
               setTools(toolsFromServer);
             } else {
-              qc.invalidateQueries({ queryKey: ["project", ownerId ?? session.user._id, project._id, session.token, ownerId, shareId] });
+              qc.invalidateQueries({ queryKey: ["project", session.user._id, project._id, session.token] });
             }
             break;
           }
@@ -252,19 +268,19 @@ export function ProjectProvider({
                 )
               );
             } else {
-              qc.invalidateQueries({ queryKey: ["project", ownerId ?? session.user._id, project._id, session.token, ownerId, shareId] });
+              qc.invalidateQueries({ queryKey: ["project", session.user._id, project._id, session.token] });
             }
             break;
           }
 
           default: {
             // evento desconhecido -> resync
-            qc.invalidateQueries({ queryKey: ["project", ownerId ?? session.user._id, project._id, session.token, ownerId, shareId] });
+            qc.invalidateQueries({ queryKey: ["project", session.user._id, project._id, session.token] });
           }
         }
 
         // opcional: atualizar resultados/previews se estiverem a ser mostrados
-        qc.invalidateQueries({ queryKey: ["projectResults", ownerId ?? session.user._id, project._id, session.token, ownerId, shareId] });
+        qc.invalidateQueries({ queryKey: ["projectResults", session.user._id, project._id, session.token] });
 
       } finally {
         applyingRemote.current = false;

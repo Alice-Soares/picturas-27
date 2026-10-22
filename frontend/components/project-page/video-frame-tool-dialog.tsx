@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { ProjectToolResponse, ProjectVideo } from "@/lib/projects";
+import { VideoToolControls, videoToolLabels } from "./video-tool-controls";
 import { ToolNames } from "@/lib/tool-types";
 import { useCancelProjectVideoTrim, useCreateProjectVideoFrameTool, useGetProjectVideoFrameTool } from "@/lib/mutations/projects";
 
@@ -38,17 +39,17 @@ export function VideoFrameToolDialog({
 }) {
   const compatibleProjectTools = tools.filter((tool) => availableVideoTools.some(({ procedure }) => procedure === tool.procedure));
   function defaultParams(procedure: ToolNames): Record<string, number> {
-    if (procedure === "cut") return { left: 0, top: 0, right: Math.max(1, video.width), bottom: Math.max(1, video.height) };
+    if (procedure === "cut") return { left: 0, top: 0, right: 0, bottom: 0 };
     if (procedure === "resize") return { width: Math.max(1, video.width), height: Math.max(1, video.height) };
     return availableVideoTools.find((tool) => tool.procedure === procedure)?.params ?? {};
   }
   const [open, setOpen] = useState(false);
-  const [chain, setChain] = useState<Array<{ procedure: ToolNames; params: string }>>(
+  const [chain, setChain] = useState<Array<{ procedure: ToolNames; params: Record<string, unknown> }>>(
     compatibleProjectTools.length
       ? [...compatibleProjectTools]
         .sort((left, right) => left.position - right.position)
-        .map((tool) => ({ procedure: tool.procedure, params: JSON.stringify(tool.params ?? defaultParams(tool.procedure), null, 2) }))
-      : [{ procedure: "brightness", params: JSON.stringify(defaultParams("brightness"), null, 2) }],
+        .map((tool) => ({ procedure: tool.procedure, params: { ...defaultParams(tool.procedure), ...tool.params } }))
+      : [{ procedure: "brightness", params: defaultParams("brightness") }],
   );
   const [start, setStart] = useState("0");
   const [end, setEnd] = useState(String(Math.max(1, video.duration)));
@@ -58,7 +59,7 @@ export function VideoFrameToolDialog({
   const get = useGetProjectVideoFrameTool(uid, pid, token, ownerId, shareId);
   const cancel = useCancelProjectVideoTrim(uid, pid, token, ownerId, shareId);
   const { toast } = useToast();
-  const operation = get.data;
+  const operation = get.data?.id === operationId ? get.data : undefined;
 
   useEffect(() => {
     if (!operationId || !open || ["completed", "failed", "cancelled"].includes(operation?.status ?? "")) return;
@@ -71,18 +72,11 @@ export function VideoFrameToolDialog({
     const startSeconds = Number(start);
     const endSeconds = Number(end);
     const outputFps = Number(fps);
-    let parsedTools: Array<{ procedure: ToolNames; position: number; params: Record<string, unknown> }>;
-    try {
-      parsedTools = chain.map((item, position) => ({
-        procedure: item.procedure,
-        position,
-        params: JSON.parse(item.params),
-      }));
-      if (parsedTools.some((item) => !item.params || Array.isArray(item.params) || typeof item.params !== "object")) {
-        throw new Error("invalid params");
-      }
-    } catch (_) {
-      toast({ title: "Parâmetros inválidos", description: "Use um objeto JSON válido em cada ferramenta.", variant: "destructive" });
+    const parsedTools = chain.map((item, position) => ({ ...item, position }));
+    if (parsedTools.some((item) => Object.values(item.params).some(
+      (value) => typeof value === "number" && !Number.isFinite(value),
+    ))) {
+      toast({ title: "Parâmetros inválidos", description: "Preencha os valores de cada ferramenta.", variant: "destructive" });
       return;
     }
     if (chain.length === 0 || !Number.isFinite(startSeconds) || !Number.isFinite(endSeconds) ||
@@ -116,7 +110,7 @@ export function VideoFrameToolDialog({
           <WandSparkles className="mr-2 size-4" /> Aplicar ferramenta
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Aplicar ferramenta a {video.name}</DialogTitle>
           <DialogDescription>Processa os fotogramas e cria um novo vídeo.</DialogDescription>
@@ -126,14 +120,14 @@ export function VideoFrameToolDialog({
             <p className="text-sm">Cadeia de ferramentas</p>
             {chain.map((item, index) => <div className="space-y-1 rounded-md border p-2" key={`${index}-${item.procedure}`}>
               <div className="flex gap-2">
-                <select className="w-full rounded-md border bg-background p-2" value={item.procedure}
+                <select aria-label={`Ferramenta ${index + 1}`} className="w-full rounded-md border bg-background p-2" value={item.procedure}
                   onChange={(event) => setChain((current) => current.map((entry, entryIndex) => {
                     if (entryIndex !== index) return entry;
                     const procedure = event.target.value as ToolNames;
                     const configured = compatibleProjectTools.find((tool) => tool.procedure === procedure);
-                    return { procedure, params: JSON.stringify(configured?.params ?? defaultParams(procedure), null, 2) };
+                    return { procedure, params: { ...defaultParams(procedure), ...configured?.params } };
                   }))}>
-                  {availableVideoTools.map((tool) => <option key={tool.procedure} value={tool.procedure}>{tool.procedure}</option>)}
+                  {availableVideoTools.map((tool) => <option key={tool.procedure} value={tool.procedure}>{videoToolLabels[tool.procedure]}</option>)}
                 </select>
                 <Button type="button" variant="outline" disabled={index === 0}
                   onClick={() => setChain((current) => current.map((entry, entryIndex) =>
@@ -144,16 +138,15 @@ export function VideoFrameToolDialog({
                 <Button type="button" variant="outline" disabled={chain.length === 1}
                   onClick={() => setChain((current) => current.filter((_, entryIndex) => entryIndex !== index))}>Remover</Button>
               </div>
-              <textarea className="min-h-16 w-full rounded-md border bg-background p-2 font-mono text-xs"
-                value={item.params}
-                onChange={(event) => setChain((current) => current.map((entry, entryIndex) =>
-                  entryIndex === index ? { ...entry, params: event.target.value } : entry))} />
+              <VideoToolControls procedure={item.procedure} params={item.params}
+                onChange={(params) => setChain((current) => current.map((entry, entryIndex) =>
+                  entryIndex === index ? { ...entry, params } : entry))} />
             </div>)}
             <Button type="button" variant="outline" onClick={() => {
               const first = availableVideoTools[0];
               if (first) setChain((current) => [...current, {
                 procedure: first.procedure,
-                params: JSON.stringify(defaultParams(first.procedure), null, 2),
+                params: defaultParams(first.procedure),
               }]);
             }}>Adicionar ferramenta</Button>
           </div>
@@ -170,7 +163,7 @@ export function VideoFrameToolDialog({
         <DialogFooter>
           {active && <Button variant="outline" onClick={() => operationId && cancel.mutate(operationId)}>Cancelar operação</Button>}
           {!operationId && <Button onClick={submit} disabled={create.isPending || chain.length === 0}>{create.isPending && <LoaderCircle className="mr-2 size-4 animate-spin" />} Processar vídeo</Button>}
-          {operation?.status === "completed" && <Button onClick={() => setOpen(false)}>Concluir</Button>}
+          {operation?.status === "completed" && <Button onClick={() => { setOpen(false); setOperationId(null); }}>Concluir</Button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>

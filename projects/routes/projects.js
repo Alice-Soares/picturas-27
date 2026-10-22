@@ -671,13 +671,6 @@ if (/preview/.test(msg_id) && (type == "text" || next_pos >= project.tools.lengt
 
       if(/preview/.test(msg_id) && next_pos >= project.tools.length) return;
 
-      if (!/preview/.test(msg_id))
-        send_msg_client(
-          user_msg_id,
-          timestamp,
-          runnerId
-        );
-
       if (!/preview/.test(msg_id) && (type == "text" || next_pos >= project.tools.length)) {
         const file_path = path.join(__dirname, `/../${output_file_uri}`);
         const file_name = path.basename(file_path);
@@ -752,6 +745,13 @@ if (/preview/.test(msg_id) && (type == "text" || next_pos >= project.tools.lengt
               }
             });
 
+            // Publicar apenas depois de os resultados ficarem consultáveis.
+            send_msg_project_op({
+              projectId: String(process.project_id),
+              ownerId: String(process.user_id),
+              op: { type: "RESULTS_READY", token: process.token || 0 },
+            });
+
             console.log(`[COMMIT] project=${process.project_id} committedToken=${process.token || 0}`);
 
           } else {
@@ -761,6 +761,13 @@ if (/preview/.test(msg_id) && (type == "text" || next_pos >= project.tools.lengt
           }
         }
       }
+
+      if (!/preview/.test(msg_id))
+        send_msg_client(
+          user_msg_id,
+          timestamp,
+          runnerId
+        );
 
       if (next_pos >= project.tools.length) return;
 
