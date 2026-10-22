@@ -16,7 +16,10 @@
 A extensão de vídeo nesta fase compreende sete funcionalidades, escolhidas de forma a equilibrar utilidade para os utilizadores, complexidade adequada e possibilidade de especificação e validação no âmbito do MVP. A tabela seguinte apresenta o catálogo de funcionalidades e os respetivos estados de implementação.
 
 
-*TODO:* PREENCHER O ESTADO DE IMPLEMENTAÇÃO NO FIM 
+A situação apresentada distingue a presença de implementação no código da validação completa da funcionalidade.
+A existência de serviços ou testes unitários, por si só, não comprova a execução integral no ambiente entregue.
+A UC-VID-006 dispõe de testes automatizados em Docker na versão integrada; as restantes funcionalidades
+requerem confirmação conjunta de demonstração, regressão e limites do MVP antes de serem declaradas integralmente validadas.
 
 #tab([Funcionalidades de vídeo do MVP],
   tabela(
@@ -38,9 +41,9 @@ A extensão de vídeo nesta fase compreende sete funcionalidades, escolhidas de 
 
 - *UC-VID-002 — Recorte Temporal de Vídeo (_Trim_):*  Disponibiliza uma operação essencial de edição, permitindo selecionar e obter apenas os segmentos relevantes de um vídeo, sem modificar o conteúdo original. Constitui um primeiro cenário de transformação temporal com valor direto para o utilizador.
 
-- *UC-VID-003 — Aplicar Ferramenta Existente a Todos os Fotogramas:* Esta funcionalidade é particularmente relevante para o MVP por demonstrar a complementaridade entre os dois tipos de conteúdo e ampliar as possibilidades de transformação audiovisual. Estabelece a ponte arquitetural mais relevante entre o sistema legado de imagens e a nova extensão de vídeo, permitindo estender o domínio do vídeo capacidades de tratamento de imagem já oferecidas pelo PictuRAS. Valida a capacidade de decompor um vídeo em fotogramas individuais, encaminhá-los para os microsserviços de imagem preexistentes sem qualquer alteração aos seus contratos, e recompor o vídeo final. Sem ela, perder-se-ia a oportunidade de capitalizar todo o investimento anterior em ferramentas de imagem. 
+- *UC-VID-003 — Aplicar Ferramenta Existente a Todos os Fotogramas:* Esta funcionalidade é particularmente relevante para o MVP por demonstrar a complementaridade entre os dois tipos de conteúdo e ampliar as possibilidades de transformação audiovisual. Estabelece a ponte arquitetural mais relevante entre o sistema legado de imagens e a nova extensão de vídeo, permitindo estender o domínio do vídeo capacidades de tratamento de imagem já oferecidas pelo PictuRAS. Valida a capacidade de decompor um vídeo em fotogramas individuais, encaminhá-los para os microsserviços de imagem preexistentes sem qualquer alteração aos seus contratos, e recompor o vídeo final. Sem ela, perder-se-ia a oportunidade de capitalizar todo o investimento anterior em ferramentas de imagem.
 
-- *UC-VID-004 — Converter Formato e Resolução de Vídeo:* Permite adequar os vídeos a diferentes necessidades de compatibilidade, qualidade e dimensão. Introduz uma capacidade de transformação frequente e útil, complementando as operações de edição temporal. 
+- *UC-VID-004 — Converter Formato e Resolução de Vídeo:* Permite adequar os vídeos a diferentes necessidades de compatibilidade, qualidade e dimensão. Introduz uma capacidade de transformação frequente e útil, complementando as operações de edição temporal.
 
 - *UC-VID-005 — Extrair Sequência de Fotogramas de um Vídeo:* Conecta o fluxo temporal de volta ao domínio estático, permitindo gerar coleções de imagens a partir de excertos de vídeo. É essencial para tarefas de amostragem, inspeção detalhada e preparação de conteúdos para análise posterior pelas ferramentas avançadas de IA do PictuRAS. Reforça a ligação entre o processamento de vídeo e as funcionalidades de imagem da plataforma.
 
@@ -64,7 +67,7 @@ A extensão de vídeo nesta fase compreende sete funcionalidades, escolhidas de 
   caption: [Diagrama de casos de uso atualizado (Fase 1 — vídeo)],
 )
 
-O diagrama de casos de uso foi atualizado para refletir a extensão do sistema com as novas funcionalidades de processamento e manipulação de vídeo (incremento do MVP de Vídeo). Para facilitar a leitura e manter a coerência visual e contextual em relação ao sistema base, os casos de uso já existentes (relativos à edição de imagem e autenticação) foram mantidos a cinzento, enquanto os novos casos de uso de vídeo são destacados a azul. Todos os novos casos de uso estão associados ao Utilizador Registado, pelo que são também acessíveis aos atores que herdam dele (Utilizador Premium e Utilizador Convidado), mas não ao Utilizador Anónimo.
+O diagrama de casos de uso foi atualizado para refletir a extensão do sistema com as novas funcionalidades de processamento e manipulação de vídeo (incremento do MVP de Vídeo). Para facilitar a leitura e manter a coerência visual e contextual em relação ao sistema base, os casos de uso já existentes (relativos à edição de imagem e autenticação) foram mantidos a cinzento, enquanto os novos casos de uso de vídeo são destacados a azul. Os casos de uso de vídeo estão modelados para o Utilizador Registado e Premium; a autorização efetiva exige sempre acesso ao projeto. Na implementação da UC-VID-006, a criação é restrita ao proprietário autenticado, pelo que a herança de permissões do Utilizador Convidado no diagrama não representa, nesta funcionalidade, uma autorização operacional confirmada.
 
 Além de acrescentar os casos de uso de vídeo, corrigiu-se o diagrama base. Nele, os casos de uso "Criar filtro personalizado" e "Partilhar projeto" estavam associados ao Utilizador e, por herança, também ao Utilizador Anónimo, o que contraria as regras de negócio. Passaram a estar associados ao Utilizador Registado, ficando disponíveis apenas para este e para os atores que o herdam. O Utilizador Anónimo mantém o acesso a "Registo", "Login", "Carregar imagens" e "Aplicar encadeamento de ferramentas a conjunto de imagens".
 
@@ -74,11 +77,11 @@ A modelação da hierarquia de atores foi reformulada para garantir o cumpriment
 
 - *Utilizador:* Representa a entidade base de interação com o sistema. Agrupa a funcionalidade de Login e o conjunto de ferramentas essenciais de manipulação de imagem.
 - *Utilizador Anónimo:* Herda diretamente do *Utilizador*, tendo acesso às operações base de imagem, e estende-o ao adicionar o caso de uso Registo. Esta estruturação garante que o caso de uso *Registo* permanece exclusivo de utilizadores não autenticados.
-- *Utilizador Registado:* Herda do *Utilizador* (mantendo acesso às funcionalidades de imagem e autenticação) e adiciona os casos de uso "Criar filtro personalizado" e "Partilhar projeto", bem comoo acesso exclusivo ao processamento de vídeo. É o ponto de entrada para todas as funcionalidades de vídeo do MVP (`UC-VID-001` a `UC-VID-007`), que os atores que herdam dele também possuem.
-- *Utilizador Convidado:* Herda as permissões do *Utilizador Registado*, permitindo que um utilizador que aceda a um projeto via link de partilha com permissões de edição possa manipular tanto conteúdos de imagem como de vídeo no âmbito desse projeto.
+- *Utilizador Registado:* Herda do *Utilizador* (mantendo acesso às funcionalidades de imagem e autenticação) e adiciona os casos de uso "Criar filtro personalizado" e "Partilhar projeto", bem comoo acesso exclusivo ao processamento de vídeo. É o ponto de entrada modelado para `UC-VID-001` a `UC-VID-007`; cada operação aplica adicionalmente autorização de projeto e, em alguns casos, de propriedade.
+- *Utilizador Convidado:* Herda as permissões do *Utilizador Registado*, representando o acesso partilhado com permissões de edição; este acesso não implica autorização para todas as operações de vídeo. A UC-VID-006, por exemplo, exige o proprietário do projeto.
 - *Utilizador Premium:* Especialização do *Utilizador Registado* que herda todas as capacidades de imagem e vídeo, acrescentando o acesso a ferramentas avançadas como o *Assistente IA na edição*.
 
-Os novos casos de uso introduzidos cobrem o ciclo de vida e manipulação de ficheiros de vídeo no sistema, estando todos associados ao *Utilizador Registado* (e, por herança, aos perfis *Utilizador Convidado* e *Premium*):
+Os novos casos de uso cobrem o ciclo de vida de vídeo; as permissões concretas são validadas no servidor e podem ser mais restritivas do que a generalização de atores ilustrada no diagrama.
 
 === Decisões de Modelação
 
@@ -135,7 +138,10 @@ Os restantes conceitos e relações do domínio permanecem inalterados, nomeadam
   (`UC-VID-001/RN2`). As decisões de qualidade (`DQ-nnn`) estão reunidas no capítulo de Rastreabilidade.
 ]
 
-*TODO:* REVER ISTO, NAO REVI
+As regras abaixo representam o comportamento especificado para o incremento.
+A sua implementação integral deve ser verificada por perfil e por operação: em particular, o
+acompanhamento por WebSocket é um objetivo transversal que não deve ser confundido com a consulta periódica
+REST usada na interface da UC-VID-006.
 
 #tab([Regras de negócio transversais],
   tabela(

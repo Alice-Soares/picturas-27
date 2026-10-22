@@ -101,7 +101,6 @@
 )
 
 
-*NOTA:* REVER SE AQUI DEVIAMOS TIRAR REFERENCIAS A CENAS DE IMPLEMENTAÇÃO COMO SEAWEEDFS, S3, ETC.
 
 === Assunções
 
@@ -115,7 +114,6 @@
   [A5], [O serviço de armazenamento e a base de dados estão disponíveis durante o processo de submissão.],
 )
 
-*NOTA:* REVER ISTO PRINCIPALMENTE AS RESOLUÇÕES DAS QUESTOES
 === Questões em Aberto
 
 #tabela(

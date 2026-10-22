@@ -18,13 +18,10 @@
 
 Este capítulo apresenta o catálogo consolidado de requisitos da extensão de vídeo para a plataforma PictuRAS, derivado dos casos de uso de `UC-VID-001` a `UC-VID-007`. A indicação *NOVO* identifica capacidades inéditas no sistema, enquanto *ALT* indica alterações ou extensões a mecanismos existentes (e.g., regras de negócio, limitações de perfil ou gestão de quotas).
 
-*TODO:* REVER TODO ESTE CAPIULO PARA VER SE ESTA COERENTE COM O FICHEIRO RAS-requisitos-video.md, QUE É O DOCUMENTO DE REFERENCIA PARA O MVP DE VIDEO. E COERENCIA COM USE CASES E RELATORIO PARA TRAS 
 
 == Requisitos Funcionais
 
-*TODO:* Rever a priorização MoSCoW de alguns requisitos, especialmente os de qualidade, para refletir a importância relativa no MVP. estao quase todos em must, mas alguns poderiam ser should ou could, para não sobrecarregar o desenvolvimento inicial, se calhar ir buscar as coisas das questoes em abertod epois e meter em could ou assim
 
-*TODO:* QUANDO O REQUISITO DIZ ALT O REQUISITO REFERENCIADO ACHO QUE ESTA MAL, É PRECISO REVER COM O doc-ext-requisitos que tem os requisitos base anteriores, para ver se o requisito é mesmo uma alteração ou se é um requisito novo. e se for alteração meter a referencia ao requisito certo
 
 #tab([Requisitos funcionais],
   tabela(
@@ -133,6 +130,7 @@ Este capítulo apresenta o catálogo consolidado de requisitos da extensão de v
     [REQ-VID-MERGE-006], [O sistema deve rejeitar uma duração total superior a 5 minutos para utilizadores registados.], [#must], [NOVO], [UC-VID-006, RN2], [Limite de tempo acumulado no perfil gratuito.], [Dado a soma das durações > 5 min num utilizador registado, Quando submetida, Então o sistema rejeita.],
     [REQ-VID-MERGE-007], [O sistema deve rejeitar uma duração total superior a 30 minutos para utilizadores premium.], [#must], [NOVO], [UC-VID-006, RN2], [Limite máximo de tempo acumulado no perfil premium.], [Dado a soma das durações > 30 min num utilizador premium, Quando submetida, Então o sistema rejeita.],
     [REQ-VID-MERGE-008], [O sistema deve rejeitar um vídeo de entrada inacessível antes de criar a operação.], [#must], [NOVO], [UC-VID-006, exceção], [Garante disponibilidade de todas as fontes antes de submeter ao worker.], [Dado um vídeo removido entretanto do S3, Quando iniciado o merge, Então o sistema alerta o erro.],
+    [REQ-VID-MERGE-009], [O sistema deve registar uma operação de concatenação e encaminhá-la para processamento assíncrono, sem bloquear a resposta HTTP.], [#must], [NOVO], [UC-VID-006, passos 4-6], [Operações potencialmente demoradas devem ser executadas por worker através da fila de mensagens.], [Dado um pedido válido de concatenação, Quando confirmado, Então o sistema regista a operação e responde com estado aceite para processamento.],
     [REQ-VID-MERGE-010], [O sistema deve concatenar os vídeos pela ordem confirmada pelo utilizador.], [#must], [NOVO], [UC-VID-006, passos 3, 8], [Fidelidade ao pedido de junção.], [Dado o processamento no FFmpeg, Quando concluído, Então os segmentos surgem exatamente na ordem definida.],
     [REQ-VID-MERGE-011], [O sistema deve preservar as faixas de áudio quando forem compatíveis com a concatenação.], [#must], [NOVO], [UC-VID-006, passo 8], [Qualidade sonora no vídeo unificado.], [Dado vídeos de entrada com áudio AAC compatível, Quando unidos, Então o vídeo resultante mantém a faixa sonora fluida.],
     [REQ-VID-MERGE-012], [O sistema deve guardar a concatenação como novo vídeo.], [#must], [NOVO], [UC-VID-006, RN3, pós-condição], [Geração de novo ativo de vídeo.], [Dado o sucesso do merge, Quando gravado, Então cria uma nova entrada independente no projeto.],
@@ -190,7 +188,6 @@ Este capítulo apresenta o catálogo consolidado de requisitos da extensão de v
   exigido a uma solução em produção. Prioridade segundo MoSCoW.
 ]
 
-*TODO:* TALVEZ SEPARAR EM DUAS TABELAS OS NAO FUNCIONAIS DOS DE QUALIDADE, PARA MELHOR VISUALIZAÇÃO. 
 
 #tab([Requisitos não funcionais e de qualidade da extensão de vídeo],
   tabela(
@@ -226,7 +223,6 @@ Este capítulo apresenta o catálogo consolidado de requisitos da extensão de v
 
 A tabela seguinte apresenta a avaliação sistemática da completude dos requisitos face às dimensões operacionais do sistema, assegurando que o âmbito do MVP de vídeo se encontra delimitado, sem omissões e devidamente coberto pelas especificações funcionais e não funcionais.
 
-*TODO:* REVER ISTO 
 
 
 #tab([Verificação da completude e limites de âmbito],
