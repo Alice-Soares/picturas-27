@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useProjectVideoOperation } from "@/lib/queries/projects";
+import { getProjectVideoFrameTool } from "@/lib/projects";
+
+import { useState } from "react";
 import { LoaderCircle, WandSparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -10,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ProjectToolResponse, ProjectVideo } from "@/lib/projects";
 import { VideoToolControls, videoToolLabels } from "./video-tool-controls";
 import { ToolNames } from "@/lib/tool-types";
-import { useCancelProjectVideoTrim, useCreateProjectVideoFrameTool, useGetProjectVideoFrameTool } from "@/lib/mutations/projects";
+import { useCancelProjectVideoTrim, useCreateProjectVideoFrameTool } from "@/lib/mutations/projects";
 
 const availableVideoTools: Array<{ procedure: ToolNames; params: Record<string, number> }> = [
   { procedure: "border", params: { borderWidth: 1, r: 0, g: 0, b: 0 } },
@@ -56,17 +59,12 @@ export function VideoFrameToolDialog({
   const [fps, setFps] = useState(String(video.fps || 25));
   const [operationId, setOperationId] = useState<string | null>(null);
   const create = useCreateProjectVideoFrameTool(uid, pid, token, ownerId, shareId);
-  const get = useGetProjectVideoFrameTool(uid, pid, token, ownerId, shareId);
+  const get = useProjectVideoOperation(uid, pid, token, operationId, open, getProjectVideoFrameTool, ownerId, shareId);
   const cancel = useCancelProjectVideoTrim(uid, pid, token, ownerId, shareId);
   const { toast } = useToast();
   const operation = get.data?.id === operationId ? get.data : undefined;
 
-  useEffect(() => {
-    if (!operationId || !open || ["completed", "failed", "cancelled"].includes(operation?.status ?? "")) return;
-    const timer = window.setInterval(() => get.mutate(operationId), 2000);
-    get.mutate(operationId);
-    return () => window.clearInterval(timer);
-  }, [operationId, open, operation?.status]);
+
 
   function submit() {
     const startSeconds = Number(start);
@@ -102,7 +100,7 @@ export function VideoFrameToolDialog({
     } });
   }
 
-  const active = operation && !["completed", "failed", "cancelled"].includes(operation.status);
+  const active = !!operationId && !["completed", "failed", "cancelled"].includes(operation?.status ?? "");
   return (
     <Dialog open={open} onOpenChange={(next) => { setOpen(next); if (!next) setOperationId(null); }}>
       <DialogTrigger asChild>
@@ -156,8 +154,12 @@ export function VideoFrameToolDialog({
             <label className="text-sm">FPS<Input type="number" min={1} value={fps} onChange={(event) => setFps(event.target.value)} /></label>
           </div>
         </div> : <div className="space-y-3">
-          <div className="flex justify-between text-sm"><span>Estado: {operation?.status ?? "queued"}</span><span>{operation?.progress ?? 0}%</span></div>
+          <div className="flex justify-between text-sm"><span>Estado: {operation?.status ?? (get.isError ? "Erro de ligação" : "A consultar estado…")}</span><span>{operation?.progress ?? 0}%</span></div>
           <Progress value={operation?.progress ?? 0} />
+          {get.isError && <div role="alert" className="space-y-2 text-sm text-destructive">
+            <p>Não foi possível consultar o estado. A operação pode continuar no servidor.</p>
+            <Button variant="outline" onClick={() => void get.refetch()}>Tentar novamente</Button>
+          </div>}
           {operation?.errorCode && <p className="text-sm text-destructive">{operation.errorCode}</p>}
         </div>}
         <DialogFooter>

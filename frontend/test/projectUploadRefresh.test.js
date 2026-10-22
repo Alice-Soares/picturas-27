@@ -217,3 +217,55 @@ test("barra de progresso contém o preenchimento nos limites e expõe o mesmo va
     assert.match(tree.props.className, /overflow-hidden/);
   }
 });
+
+test("consulta de estado publica a conclusão enquanto a biblioteca ainda está a carregar", async () => {
+  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  let finishLibrary;
+  let slowLibrary = false;
+  const library = new QueryObserver(qc, {
+    queryKey: ["project", "viewer", "pid", "token", "owner"],
+    queryFn: () => slowLibrary ? new Promise((resolve) => { finishLibrary = resolve; }) : Promise.resolve("original"),
+  });
+  const unsubscribeLibrary = library.subscribe(() => {});
+  let observer;
+  let unsubscribeOperation;
+  let queryOptions;
+  const effects = [];
+  const hooks = load("lib/queries/projects.ts", {
+    react: { useEffect: (effect) => effects.push(effect) },
+    "@tanstack/react-query": {
+      useQueryClient: () => qc,
+      useQuery: (options) => {
+        queryOptions = options;
+        if (!observer) {
+          observer = new QueryObserver(qc, options);
+          unsubscribeOperation = observer.subscribe(() => {});
+        }
+        return observer.getCurrentResult();
+      },
+    },
+  });
+  try {
+    await library.refetch();
+    const fetchOperation = async () => ({ id: "op", status: "completed", progress: 100, errorCode: null });
+    hooks.useProjectVideoOperation("viewer", "pid", "token", "op", true, fetchOperation, "owner");
+    await observer.refetch();
+    slowLibrary = true;
+    effects.length = 0;
+    const result = hooks.useProjectVideoOperation("viewer", "pid", "token", "op", true, fetchOperation, "owner");
+    effects.forEach((effect) => effect());
+    assert.equal(library.getCurrentResult().isFetching, true);
+    assert.equal(result.data.status, "completed");
+    assert.equal(result.data.progress, 100);
+    assert.equal(queryOptions.refetchInterval({ state: { data: result.data } }), false);
+    assert.equal(queryOptions.refetchInterval({ state: { data: { status: "processing" } } }), 2000);
+    finishLibrary("processed");
+    while (qc.isFetching()) await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(library.getCurrentResult().data, "processed");
+  } finally {
+    finishLibrary?.("processed");
+    unsubscribeOperation?.();
+    unsubscribeLibrary();
+    qc.clear();
+  }
+});

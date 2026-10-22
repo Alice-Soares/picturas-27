@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchProjects,
   fetchProject,
@@ -103,3 +104,47 @@ export const useResolveShareLink = (shareId?: string | null) => {
     retry: false,
   });
 };
+
+// O estado deve ficar visível assim que o GET termina. A atualização da
+// biblioteca decorre separadamente e não bloqueia nem reinicia esta consulta.
+export function useProjectVideoOperation<T extends {
+  id: string;
+  status: string;
+  progress: number;
+  errorCode: string | null;
+  targetProjectId?: string | null;
+}>(
+  uid: string,
+  pid: string,
+  token: string,
+  operationId: string | null,
+  open: boolean,
+  fetchOperation: (params: {
+    uid: string; pid: string; token: string; operationId: string;
+    ownerId?: string; shareId?: string;
+  }) => Promise<T>,
+  ownerId?: string,
+  shareId?: string,
+) {
+  const qc = useQueryClient();
+  const query = useQuery({
+    queryKey: ["videoOperation", uid, pid, token, ownerId, shareId, operationId],
+    queryFn: () => fetchOperation({ uid, pid, token, ownerId, shareId, operationId: operationId! }),
+    enabled: open && !!operationId && !!token,
+    refetchInterval: (query) =>
+      ["completed", "failed", "cancelled"].includes(query.state.data?.status ?? "") ? false : 2000,
+    retry: false,
+  });
+  const status = query.data?.status;
+  const targetProjectId = query.data?.targetProjectId;
+  useEffect(() => {
+    if (!operationId || !["completed", "failed", "cancelled"].includes(status ?? "")) return;
+    for (const projectId of new Set([pid, targetProjectId].filter(Boolean))) {
+      for (const name of ["project", "projectImages", "projectResults"]) {
+        void qc.invalidateQueries({ queryKey: [name, uid, projectId, token], refetchType: "all" });
+      }
+    }
+    void qc.invalidateQueries({ queryKey: ["projects", uid, token], refetchType: "all" });
+  }, [qc, uid, pid, token, operationId, status, targetProjectId]);
+  return query;
+}

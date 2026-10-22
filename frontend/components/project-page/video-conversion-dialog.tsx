@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useProjectVideoOperation } from "@/lib/queries/projects";
+import { getProjectVideoTrim } from "@/lib/projects";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -9,8 +12,7 @@ import { ProjectVideo } from "@/lib/projects";
 import {
   useCancelProjectVideoConversion,
   useCreateProjectVideoConversion,
-  useGetProjectVideoConversion,
-  useGetProjectVideoConversionOptions,
+    useGetProjectVideoConversionOptions,
 } from "@/lib/mutations/projects";
 
 export function VideoConversionDialog(props: {
@@ -25,7 +27,7 @@ export function VideoConversionDialog(props: {
   const [audio, setAudio] = useState("aac");
   const options = useGetProjectVideoConversionOptions(uid, pid, token, ownerId, shareId);
   const create = useCreateProjectVideoConversion(uid, pid, token, ownerId, shareId);
-  const get = useGetProjectVideoConversion(uid, pid, token, ownerId, shareId);
+  const get = useProjectVideoOperation(uid, pid, token, operationId, open, getProjectVideoTrim, ownerId, shareId);
   const cancel = useCancelProjectVideoConversion(uid, pid, token, ownerId, shareId);
   const operation = get.data?.id === operationId ? get.data : undefined;
   const limit = options.data?.resolutionLimits;
@@ -34,13 +36,7 @@ export function VideoConversionDialog(props: {
     ? Math.round(source.size * (Number(width) * Number(height)) / (source.width * source.height))
     : null;
 
-  useEffect(() => {
-    if (!open || operation?.status === "completed" || operation?.status === "failed" || operation?.status === "cancelled") return;
-    if (!operationId) return;
-    const timer = window.setInterval(() => get.mutate(operationId), 2000);
-    get.mutate(operationId);
-    return () => window.clearInterval(timer);
-  }, [open, operationId, operation?.status]);
+
 
   function start() {
     create.mutate({
@@ -80,8 +76,12 @@ export function VideoConversionDialog(props: {
               </>
             ) : (
               <>
-                <p className="text-sm">Estado: {operation?.status ?? "queued"}</p>
+                <p className="text-sm">Estado: {operation?.status ?? (get.isError ? "Erro de ligação" : "A consultar estado…")}</p>
                 <Progress value={operation?.progress ?? 0} />
+          {get.isError && <div role="alert" className="space-y-2 text-sm text-destructive">
+            <p>Não foi possível consultar o estado. A operação pode continuar no servidor.</p>
+            <Button variant="outline" onClick={() => void get.refetch()}>Tentar novamente</Button>
+          </div>}
                 {operation?.errorCode && <p className="text-sm text-destructive">{operation.errorCode}</p>}
               </>
             )}

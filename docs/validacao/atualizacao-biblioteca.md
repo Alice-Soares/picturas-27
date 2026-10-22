@@ -106,3 +106,35 @@ cenários de parâmetros e progresso); TypeScript e `git diff --check` passaram.
 O mecanismo de execução compatível com Node 16 é o descrito acima. Não foi
 realizada inspeção visual num browser, pelo que o resultado visual integrado
 continua a requerer confirmação nesse ambiente. Apoio de IA e baseline mantêm-se.
+
+## Correção do estado preso em «queued — 0%»
+
+Evidência adicional do utilizador: capturas com progresso em 0% e sem botão de
+cancelamento, mesmo depois de a operação terminar. Verificação no ambiente Docker:
+os 162 pedidos de consulta de operação nas últimas 300 linhas do acesso Nginx
+responderam HTTP 200; as três operações de ferramentas mais recentes estavam
+`completed`, com progresso 100 e sem código de erro. A consulta da base de dados
+foi apenas de leitura e os resultados registados não incluem identificadores.
+
+Causa identificada no cliente: a consulta por `useMutation` aguardava a atualização
+assíncrona da biblioteca dentro de `onSuccess` antes de publicar `data`, enquanto
+o temporizador iniciava outra mutação a cada dois segundos. Assim, a interface
+podia continuar sem dados, usando o texto de fallback `queued` e progresso zero.
+
+Correção: `useProjectVideoOperation` usa `useQuery`, com chave por operação,
+consulta imediata, polling sem pedidos sobrepostos e paragem em estado terminal.
+A reconciliação da biblioteca é disparada num efeito independente depois de
+publicado o estado. Aplicado a ferramentas de fotogramas, recorte, conversão e
+extração. Em falhas de consulta, a UI apresenta erro e permite tentar novamente;
+o cancelamento está disponível desde que exista ID de operação ativo.
+
+Teste novo: um QueryObserver real mantém a biblioteca pendente enquanto a
+consulta já apresenta `completed` e 100%; confirma também a paragem do polling.
+Os 20 testes de frontend passaram, com o adaptador Node 16 já descrito.
+TypeScript passou. A validação visual anterior não tinha coberto esta condição
+assíncrona; as capturas do utilizador motivaram esta correção adicional.
+
+Aplicação local: `docker compose up -d --build --no-deps frontend` concluiu com
+sucesso, incluindo compilação Next.js, verificação de tipos e geração das páginas.
+O contentor frontend foi recriado e iniciado. O build emitiu apenas avisos de lint
+em ficheiros existentes. Não foram alteradas operações ou dados dos utilizadores.

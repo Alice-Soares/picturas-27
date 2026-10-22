@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useProjectVideoOperation } from "@/lib/queries/projects";
+import { getProjectVideoTrim } from "@/lib/projects";
+
+import { useState } from "react";
 import { LoaderCircle, Scissors } from "lucide-react";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader,
@@ -14,8 +17,7 @@ import { ProjectVideo } from "@/lib/projects";
 import {
   useCancelProjectVideoTrim,
   useCreateProjectVideoTrim,
-  useGetProjectVideoTrim,
-} from "@/lib/mutations/projects";
+  } from "@/lib/mutations/projects";
 
 export function VideoTrimDialog({
   video,
@@ -41,17 +43,12 @@ export function VideoTrimDialog({
   const [end, setEnd] = useState(String(Math.max(1, video.duration)));
   const [operationId, setOperationId] = useState<string | null>(null);
   const create = useCreateProjectVideoTrim(uid, pid, token, ownerId, shareId);
-  const get = useGetProjectVideoTrim(uid, pid, token, ownerId, shareId);
+  const get = useProjectVideoOperation(uid, pid, token, operationId, open, getProjectVideoTrim, ownerId, shareId);
   const cancel = useCancelProjectVideoTrim(uid, pid, token, ownerId, shareId);
   const { toast } = useToast();
   const operation = get.data?.id === operationId ? get.data : undefined;
 
-  useEffect(() => {
-    if (!operationId || !open || ["completed", "failed", "cancelled"].includes(operation?.status ?? "")) return;
-    const timer = window.setInterval(() => get.mutate(operationId), 2000);
-    get.mutate(operationId);
-    return () => window.clearInterval(timer);
-  }, [operationId, open, operation?.status]);
+
 
   function submit() {
     const startSeconds = Number(start);
@@ -83,7 +80,7 @@ export function VideoTrimDialog({
     if (!next) setOperationId(null);
   }
 
-  const active = operation && !["completed", "failed", "cancelled"].includes(operation.status);
+  const active = !!operationId && !["completed", "failed", "cancelled"].includes(operation?.status ?? "");
 
   return (
     <Dialog open={open} onOpenChange={close}>
@@ -105,10 +102,14 @@ export function VideoTrimDialog({
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
-              <span>Estado: {operation?.status ?? "queued"}</span>
+              <span>Estado: {operation?.status ?? (get.isError ? "Erro de ligação" : "A consultar estado…")}</span>
               <span>{operation?.progress ?? 0}%</span>
             </div>
             <Progress value={operation?.progress ?? 0} />
+          {get.isError && <div role="alert" className="space-y-2 text-sm text-destructive">
+            <p>Não foi possível consultar o estado. A operação pode continuar no servidor.</p>
+            <Button variant="outline" onClick={() => void get.refetch()}>Tentar novamente</Button>
+          </div>}
             {operation?.errorCode && <p className="text-sm text-destructive">{operation.errorCode}</p>}
           </div>
         )}
