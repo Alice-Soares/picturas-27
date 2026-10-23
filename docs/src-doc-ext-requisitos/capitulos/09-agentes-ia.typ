@@ -66,12 +66,13 @@ Apesar das vantagens desta abordagem, a utilização do Spec Kit não garante, p
 
 === Contexto e instruções fornecidos aos agentes
 
+Todos os documentos PDF utilizados como fontes de contexto foram convertidos para formato Markdown (.md), facilitando a leitura e interpretação do seu conteúdo pelos agentes de IA e permitindo fornecer contexto mais estruturado e acessível. Esta conversão procurou melhorar a compreensão dos requisitos e das decisões do projeto, reduzindo o risco de omissões ou interpretações incorretas durante a especificação e a implementação.
+
 Para reduzir inconsistências na interpretação dos requisitos e orientar o comportamento dos agentes de IA, o projeto utiliza dois ficheiros principais de instruções: AGENTS.md e .specify/memory/constitution.md.
 
 O ficheiro AGENTS.md estabelece a hierarquia das fontes de informação que devem orientar os agentes, privilegiando as diretrizes da Fase 1, o catálogo consolidado de requisitos e os casos de uso, seguindo-se o enunciado do projeto, a documentação geral, o código existente e os artefactos do Spec Kit.
 
 Por sua vez, o ficheiro constitution.md define os princípios, as regras e as restrições gerais que devem orientar o trabalho realizado com o Spec Kit. Funciona como uma referência normativa para o GitHub Copilot durante o processo de desenvolvimento, devendo as suas instruções ser respeitadas ao longo da especificação e da implementação, de modo a manter a coerência com as regras estabelecidas para o projeto.
-
 
 
 Em conjunto, estes ficheiros procuram assegurar que os agentes preservam os identificadores dos requisitos, distinguem decisões aprovadas de pressupostos e não introduzem funcionalidades, limites ou contratos sem fundamento nas fontes do projeto. Desta forma, o comportamento dos agentes é orientado por regras explícitas e por requisitos documentados, reduzindo o risco de interpretações incorretas e de soluções incompatíveis com o âmbito definido, mantendo-se a responsabilidade humana pela interpretação dos requisitos, aceitação das propostas e validação dos resultados. Em termos de processo, a equipa consultou primeiro as diretrizes da Fase 1, o catálogo consolidado e os casos de uso, e depois comparou as propostas com a implementação e os testes disponíveis. Na integração da UC-VID-006, o trabalho avançou por etapas: validação de limites e perfis, pipeline FFmpeg, acesso ao armazenamento, fila RabbitMQ, rotas do gateway, modelo da operação e interface. Por exemplo, a reaplicação dos commits `44f3d37` e `5c4fc9c` à base do grupo permitiu rever o âmbito das alterações antes da integração.
@@ -87,7 +88,7 @@ Em conjunto, estes ficheiros procuram assegurar que os agentes preservam os iden
     [GitHub Copilot / Spec Kit], [Qualidade dos artefactos], [Análise de coerência entre requisitos, casos de uso e planos através do fluxo `/speckit-analyze`.], [A equipa confirmou as discrepâncias identificadas antes de as incorporar nos documentos.], [`specs/*/checklists/`, histórico Git],
     [ChatGPT Codex — GPT-6], [UC-VID-006 / backend], [Implementação do processamento FFmpeg, validação, integração com armazenamento, RabbitMQ e modelo de operação.], [Revisão do diff, testes unitários e de integração no contentor, incluindo cenários com FFmpeg real.], [Commits `44f3d37`, `5c4fc9c`. `projects/test/videoMerge*.test.js`],
     [ChatGPT Codex — GPT-6], [UC-VID-006 / API Gateway], [Encaminhamento da operação, identidade, autorização do projeto e preservação da ordem dos vídeos.], [Testes automatizados do gateway verificaram identidade, autorização, ordem e mapeamento de erros.], [3 testes de gateway registados. `videoMergeGatewayRoute.test.js`],
-    [ChatGPT Codex — GPT-6], [Integração UC-VID-006 / UC-VID-007], [Resolução de conflitos entre o modelo de concatenação e os campos/rotas da gestão de áudio.], [Revisão do esquema e execução de testes de regressão que confirmaram que os contratos de áudio existentes permaneciam disponíveis.], [`videoMergeModelSchemaAlice.test.js`, commits de integração],
+    [ChatGPT Codex — GPT-6], [Integração UC-VID-006 / UC-VID-007], [Resolução de conflitos entre o modelo de concatenação e os campos/rotas da gestão de áudio.], [Revisão do esquema e execução de testes de regressão que confirmaram que os contratos de áudio existentes permaneciam disponíveis.], [ commits de integração],
     [ChatGPT Codex — GPT-6], [Frontend de vídeo], [Diálogos de operação, consulta de estados, reconciliação da biblioteca, controlos de parâmetros e apresentação do progresso.], [Testes de frontend, verificação TypeScript e build Docker. Não foi registada inspeção visual no browser para todos os fluxos.], [`docs/validacao/atualizacao-biblioteca.md`, testes `frontend/test/`],
     [ChatGPT Codex — GPT-6], [Documentação e manutenção], [Diagnóstico de defeitos, atualização da rastreabilidade e preparação de instruções de validação.], [Conferência dos resultados com os registos e separação entre testes executados, testes existentes e cenários pendentes.], [`docs/validacao/`, quickstarts em `specs/`],
   ),
@@ -97,32 +98,10 @@ Os comandos do fluxo Spec Kit documentados no projeto são `/speckit-constitutio
 
 == Análise crítica
 
-O apoio de IA acelerou a exploração do código, a elaboração de alterações e a preparação de testes. Também foram detetadas propostas incompletas durante a revisão. Na integração da concatenação, o modelo da operação e uma rota do gateway não ficaram inicialmente ligados ao contrato completo. A equipa encontrou a lacuna ao inspecionar os ficheiros alterados e executar os testes do esquema e do gateway. A correção completou a integração sem remover os campos usados pela operação de áudio.
+A utilização de agentes de inteligência artificial revelou-se útil para acelerar a implementação, explorar soluções técnicas e apoiar a integração de diferentes componentes. A organização dos requisitos e das tarefas através do Spec Kit, complementada pelas instruções definidas em `AGENTS.md` e `constitution.md`, forneceu contexto estruturado aos agentes e facilitou a comparação das propostas com as decisões do projeto. No entanto, esta abordagem não eliminou a necessidade de intervenção humana. Na integração da funcionalidade de concatenação, por exemplo, o modelo da operação e uma rota do gateway não ficaram inicialmente associados ao contrato completo. A revisão dos ficheiros alterados permitiu identificar a omissão e corrigi-la sem comprometer os campos utilizados pela funcionalidade de áudio.
 
-Esta experiência evidencia que os agentes podem acelerar a implementação, mas não substituem a revisão
-da equipa nem garantem, por si só, que o resultado observado corresponde ao contrato completo.
-A análise dos ficheiros alterados e dos testes de modelo/gateway permitiu detetar a omissão, corrigir os
-contratos e preservar em simultâneo a funcionalidade de áudio de outro elemento.
+Outro risco identificado foi a inclusão de alterações fora do âmbito previsto. Na integração da UC-VID-006, a seleção dos commits específicos e a análise das diferenças face à versão de referência permitiram controlar melhor o conteúdo incorporado. Este caso demonstra que os agentes conseguem apoiar tarefas complexas, mas não garantem a compatibilidade entre componentes, a preservação de funcionalidades existentes ou a ausência de alterações indevidas.
 
-Outro risco foi a importação de alterações alheias ao âmbito da tarefa. Para reduzir esse risco, foram
-selecionados os commits específicos da UC-VID-006 sobre a base atualizada e inspecionado o diferencial
-face à `main` de Alice. Esta experiência evidencia que os agentes podem apoiar operações complexas de
-integração, mas não conseguem garantir por si só autoria, compatibilidade nem ausência de regressões.
+A experiência evidenciou também que a documentação estruturada e as instruções fornecidas aos agentes reduzem ambiguidades, mas não impedem interpretações incorretas. Foram identificadas divergências entre a documentação e as decisões técnicas aprovadas, nomeadamente na especificação de áudio, na transferência sem recurso a uma biblioteca e no número de repetições por fotograma. A sua correção reforçou a importância de confrontar o conteúdo produzido com as fontes de referência, em vez de assumir que uma resposta coerente está necessariamente correta.
 
-A equipa é responsável por rever os requisitos, as decisões, as permissões de acesso e o resultado dos
-testes antes da entrega. A validação humana permanece necessária para distinguir funcionalidade
-implementada de funcionalidade apenas especificada, e teste executado de teste simplesmente existente.
-
-
-
-
-
-
-
-== Validação e limites da evidência
-
-Na revisão de 23 de outubro de 2026 foram executados 49 testes gerais de Projects, 20 testes de frontend, três testes do gateway e cinco testes do worker de áudio. A verificação TypeScript passou. A suite completa de concatenação foi interrompida com código 137 em duas execuções, incluindo uma sequencial; não se atribui esse resultado a um defeito funcional sem diagnóstico adicional. O frontend não estava em execução na stack consultada, pelo que não foi efetuada aceitação manual integrada.
-
-Foi corrigida uma proposta anterior do agente que confundia a presença de código e testes com validação integral: o resumo e a rastreabilidade passam a distinguir implementação, testes focados e aceitação pendente. A revisão detetou também a divergência entre a UC Typst de áudio e a decisão de transferência sem biblioteca, bem como a referência incorreta a três repetições por fotograma; ambas foram alinhadas com as fontes aprovadas. As alterações documentais são verificadas por compilação e por conferência dos IDs e referências. A equipa mantém a responsabilidade de rever o PDF e realizar a aceitação funcional.
-
-Não foram registadas versões exatas de todos os modelos usados no trabalho histórico. Apenas se identifica GPT-6 nas intervenções Codex cuja sessão o documenta; não se atribuem retroativamente versões ou validações sem evidência.
+Conclui-se que a principal vantagem da IA reside no apoio à produtividade e à exploração de soluções, enquanto a sua principal limitação está na impossibilidade de garantir autonomamente a conformidade com todos os requisitos e decisões do projeto. A equipa mantém, por isso, a responsabilidade de avaliar as propostas, controlar as alterações integradas e assegurar a coerência entre especificações, implementação e documentação. A utilização destas ferramentas revelou-se vantajosa quando acompanhada por revisão crítica, rastreabilidade e validação humana, devendo os resultados gerados ser tratados como propostas a verificar e não como soluções automaticamente aceites.

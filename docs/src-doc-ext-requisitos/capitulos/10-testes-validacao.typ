@@ -2,17 +2,24 @@
 
 = Testes e Validação do MVP
 
-== Estratégia e ambiente
+#orientacao[
+  Os critérios de aceitação da ERS (_Dado… Quando… Então…_) são a base dos testes. Cada requisito implementado
+  deve ter pelo menos um teste (automático ou manual) com resultado registado. Para os requisitos não
+  funcionais, registem o valor medido face ao *Alvo*, sempre que aplicável.
+]
 
-A validação combina testes de regras, contratos, integração multimédia e frontend. A execução de um teste focado comprova as respetivas asserções; não substitui a aceitação de um fluxo completo com autenticação, armazenamento, filas e interface. Os protocolos TST-ACC-{FUNC}-nn do capítulo 7 usam os critérios Dado/Quando/Então da ERS e permanecem por executar quando não existe resultado específico.
 
-A revisão de 23 de outubro de 2026 tomou o commit `2afaede` como referência. Usou as imagens Docker locais disponíveis, sem rebuild nem atualização dos serviços. O frontend não estava em execução nessa stack, pelo que não foi realizado ensaio manual integrado. O acesso documentado é `https://localhost:8080`, com certificado local autoassinado. Fixtures dos testes FFmpeg são geradas pelos próprios testes; não são ficheiros de utilizadores.
+== Estratégia e ambiente de testes
+
+A validação do MVP combina testes unitários, de contrato, de integração e de frontend, complementados pela verificação de tipos e pela compilação dos serviços. Os testes unitários verificam regras como limites por perfil, intervalos temporais, codecs aceites e transições de estado. Os testes de contrato verificam a comunicação entre o Projects Service, o API Gateway, o RabbitMQ e os workers, enquanto os testes de integração avaliam a interação entre componentes, incluindo o processamento multimédia com FFmpeg. Os testes de frontend abrangem a apresentação dos estados, a atualização da biblioteca e os controlos das operações. A aprovação destas verificações confirma apenas o comportamento abrangido, não garantindo, por si só, o funcionamento integral de todos os fluxos.
+
+A aplicação é executada localmente através do Docker Compose, com serviços como o frontend, o API Gateway, o Projects Service, o MongoDB, o RabbitMQ e o SeaweedFS. A interface está disponível em https://localhost:8080, utilizando o certificado de desenvolvimento autoassinado descrito no README. O contentor de projetos disponibiliza FFmpeg e FFprobe para o processamento multimédia. As suites automatizadas abrangem o Projects Service, o worker de áudio e o frontend, sendo complementadas pela verificação TypeScript e pela compilação das imagens Docker.
 
 == Testes e resultados registados
 
 #tab([Execuções de validação], tabela(
   colunas: (2.6cm, 1.7cm, 1fr, 3.3cm, 3.4cm), tamanho: 8pt,
-  [ID], [Tipo], [Cenário Dado/Quando/Então], [Requisitos / cobertura], [Resultado],
+  [ID], [Tipo], [Descrição (Dado… Quando… Então…)], [Requisitos / cobertura], [Resultado],
   [TST-VID-CORE-01], [Regras / contrato / integração], [Dadas as regras e contratos de vídeo, Quando os testes exercitam entradas válidas, inválidas e recomposição FFmpeg, Então verificam os resultados e erros previstos nas asserções.], [TRIM, FRM, CONV, FEX, AUD e COM; cobertura focada, não aceitação de todos os requisitos.], [49 testes passaram em 23-10-2026.],
   [TST-VID-FRONT-01], [Frontend], [Dadas respostas de estado e eventos de projeto, Quando chegam ao cliente, Então a cache e os controlos produzem os valores esperados nos testes.], [REQ-VID-SUB-015, COM-018, Q-002 e controlos de ferramentas; não cobre inspeção visual completa.], [20 testes passaram localmente em 23-10-2026.],
   [TST-GATEWAY-01], [Contrato do gateway], [Dado um pedido de concatenação, Quando é encaminhado ou rejeitado, Então preserva identidade, ordem e os erros previstos.], [REQ-VID-COM-001 a 003; MERGE-001.], [Três testes passaram em Docker em 23-10-2026.],
@@ -38,7 +45,7 @@ frontend/node_modules/.bin/tsc --noEmit --incremental false -p frontend/tsconfig
 docker compose exec -T projects sh -lc 'node --test test/videoMerge*.test.js'
 ```
 
-Os testes de frontend foram executados no ambiente local Node 16 através do adaptador temporário que regista e aguarda os callbacks de `node:test`, descrito em `docs/validacao/atualizacao-biblioteca.md`. Não se declara que o comando nativo tenha passado nessa versão de Node. Para a entrega, o contentor frontend disponibiliza Node com suporte ao runner; executar esse comando não depende do adaptador temporário.
+Os testes de frontend foram executados no ambiente local Node 16 através do adaptador temporário que regista e aguarda os callbacks de `node:test`, descrito em `docs/validacao/atualizacao-biblioteca.md`.
 
 == Limitações e aceitação ainda necessária
 

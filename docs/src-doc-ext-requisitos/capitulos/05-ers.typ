@@ -220,7 +220,7 @@ Este capítulo apresenta o catálogo consolidado de requisitos da extensão de v
   justificado; isso não obriga a introduzir funcionalidades alheias ao caso de uso.
 ]
 
-A tabela seguinte verifica se os principais aspetos operacionais surgem nos casos de uso e na ERS. Esta verificação delimita o âmbito especificado; a realização e a evidência de aceitação são distinguidas no capítulo 7.
+A tabela seguinte verifica se os principais aspetos operacionais surgem nos casos de uso e na ERS. Esta verificação delimita o âmbito MVP especificado e confirma cobertura documental. A realização e a evidência de aceitação são distinguidas no capítulo 7.
 
 #tab([Verificação da completude e limites de âmbito],
   tabela(

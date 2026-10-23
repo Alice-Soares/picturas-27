@@ -82,4 +82,4 @@ A tabela apresenta o impacto da extensão nos componentes e regras existentes. *
   ),
 )
 
-As ligações à baseline são sustentadas por `docs/especifica_o_de_requisitos.md`: UC04 (edição), UC07 (partilha), RF41 (colaboração), RNF44 (autorização/privacidade), RNF45 (armazenamento) e RNF48 (limite diário). Estender um componente não significa declarar satisfeita a meta de qualidade da baseline. A concatenação exige proprietário; uma partilha editável não concede esta operação.
+As ligações à baseline são sustentadas por `docs/especifica_o_de_requisitos.md`: UC04 (edição), UC07 (partilha), RF41 (colaboração), RNF44 (autorização/privacidade), RNF45 (armazenamento) e RNF48 (limite diário). Estender um componente não significa declarar satisfeita a meta de qualidade da baseline. 

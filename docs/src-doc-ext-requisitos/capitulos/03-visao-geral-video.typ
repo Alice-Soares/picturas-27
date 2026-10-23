@@ -61,11 +61,13 @@ As sete funcionalidades têm componentes implementados. Os testes focados compro
 ]
 
 #figure(
-  image("../images/diagrama_casos_uso_video.svg", width: 85%),
+  image("../images/diagrama_casos_uso.png", width: 85%),
   caption: [Diagrama de casos de uso atualizado (Fase 1 — vídeo)],
 )
 
-O diagrama destaca a azul os sete casos de uso de vídeo e inclui os seus IDs. Os perfis Registado e Premium acedem aos fluxos sujeitos à autorização do projeto. O contexto da baseline é mantido nos conceitos de utilizador e projeto. As imagens anteriores são preservadas em `images/`; os novos SVG tornam o delta editável e não substituem silenciosamente os artefactos de base. O Convidado por ligação não herda autorização irrestrita: o servidor valida a permissão, e a concatenação exige proprietário.
+O diagrama de casos de uso foi atualizado para refletir a extensão do sistema com as novas funcionalidades de processamento e manipulação de vídeo (incremento do MVP de Vídeo). Para facilitar a leitura e manter a coerência visual e contextual em relação ao sistema base, os casos de uso já existentes (relativos à edição de imagem e autenticação) foram mantidos a cinzento, enquanto os novos casos de uso de vídeo são destacados a azul. Todos os novos casos de uso estão associados aos perfis Registado e Premium, e não ao Utilizador Anónimo. As permissões de convidados por ligação partilhada mantêm-se como definidas na baseline. Como esta fase não altera esse modelo de partilha, os novos casos de uso são associados aos perfis Registado e Premium que os executam diretamente, sem redesenhar a participação dos convidados.
+
+Além de acrescentar os casos de uso de vídeo, corrigiu-se o diagrama base. Nele, os casos de uso "Criar filtro personalizado" e "Partilhar projeto" estavam associados ao Utilizador e, por herança, também ao Utilizador Anónimo, o que contraria as regras de negócio. Passaram a estar associados ao Utilizador Registado, ficando disponíveis apenas para este e para os atores que o herdam. O Utilizador Anónimo mantém o acesso a "Registo", "Login", "Carregar imagens" e "Aplicar encadeamento de ferramentas a conjunto de imagens".
 
 === Hierarquia de Atores e Regras de Acesso
 
@@ -104,7 +106,7 @@ relações que se mantêm, e a azul os que foram acrescentados ou alterados nest
 
 
 #figure(
-  image("../images/modelo_dominio_video.svg", width: 100%),
+  image("../images/modelo_dominio.png", width: 100%),
   caption: [Modelo de domínio atualizado (Fase 1 — vídeo)],
 )
 
