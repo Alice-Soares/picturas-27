@@ -61,7 +61,7 @@ implementação verificada da mera presença de componentes.
     [UC-VID-001 a UC-VID-007, estados], [Registo, eventos, limpeza e resultados], [REQ-VID-COM-009 a REQ-VID-COM-018, REQ-VID-Q-002, REQ-VID-Q-003, REQ-VID-Q-007, REQ-VID-Q-013 a REQ-VID-Q-015],
     [DQ-001], [Progresso observável em operações demoradas], [REQ-VID-COM-011, REQ-VID-COM-012, REQ-VID-COM-013, REQ-VID-Q-002, REQ-VID-Q-003, REQ-VID-Q-016],
     [DQ-002], [Isolamento do fluxo existente de imagens], [REQ-VID-FRM-001, REQ-VID-FRM-008, REQ-VID-Q-006],
-    [DQ-003], [Imutabilidade dos conteúdos originais], [REQ-VID-TRIM-011, REQ-VID-CONV-010, REQ-VID-MERGE-012, REQ-VID-AUD-012, REQ-VID-COM-017, REQ-VID-Q-004],
+    [DQ-003], [Imutabilidade dos conteúdos originais], [REQ-VID-TRIM-011, REQ-VID-CONV-010, REQ-VID-MERGE-012, REQ-VID-AUD-012, REQ-VID-AUD-015, REQ-VID-COM-017, REQ-VID-Q-004],
     [DQ-004], [Limpeza de temporários em falhas/cancelamento], [REQ-VID-COM-014, REQ-VID-COM-015, REQ-VID-COM-016, REQ-VID-Q-007, REQ-VID-Q-013 a REQ-VID-Q-015],
     [DQ-005], [Autorização em projetos, conteúdos e eventos], [REQ-VID-COM-001, REQ-VID-COM-002, REQ-VID-COM-003, REQ-VID-COM-013, REQ-VID-Q-005],
   ),
@@ -111,8 +111,6 @@ implementação verificada da mera presença de componentes.
   apagam: ficam com estado "Não implementado" e justificação. Os detalhes estão nos capítulos de Arquitetura e de Testes.
 ]
 
-*TODO*: REVER TABELA
-
 #tab([Realização e verificação dos requisitos],
   tabela(
     colunas: (3.0cm, 3.3cm, 2.5cm, 2.1cm, 1fr),
@@ -128,7 +126,7 @@ implementação verificada da mera presença de componentes.
     [REQ-VID-MERGE-010 e 011], [Worker FFmpeg e armazenamento], [Implementação e teste de integração registados], [TST-MERGE-03], [Concatenação FFmpeg incluída nos 65 testes aprovados.],
     [REQ-VID-MERGE-012 e 013], [Projects Service e storage], [Implementação e testes automatizados registados], [TST-MERGE-03/04], [Novo resultado e preservação das fontes cobertos nos testes registados.],
     [REQ-VID-MERGE-014 e 015], [Validação e pipeline], [Validações e erros testados], [TST-MERGE-01/04], [Verificação prévia e na pipeline, conforme erro.],
-    [REQ-VID-AUD-001 a REQ-VID-AUD-016], [Projects Service, gateway, worker de áudio e frontend], [Implementado; contratos e interface validados], [Testes focados de contrato e interface], [Execução registada do worker FFmpeg e decisão sobre destino da extração por consolidar.],
+    [REQ-VID-AUD-001 a REQ-VID-AUD-016], [Projects Service, gateway, worker de áudio e frontend], [Implementado; contratos e interface validados], [Testes focados de contrato e interface], [Execução registada do worker FFmpeg por consolidar; o destino da extração (transferência autenticada, sem persistência na biblioteca) está decidido e alinhado com o código.],
     [REQ-VID-COM-001 a 020], [Gateway, Projects Service, fila e UI], [Parcial / variável por UC], [TST-MERGE-02/04/05], [Autorização e estados de merge verificados. A concatenação não usa quota e o progresso WebSocket não está comprovado.],
     [REQ-VID-Q-001 a 016], [Infraestrutura e serviços transversais], [Sem medição global], [A definir por qualidade], [Não declarar metas não medidas como atingidas.],
   ),

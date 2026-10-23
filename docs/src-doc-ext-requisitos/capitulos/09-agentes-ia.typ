@@ -99,11 +99,8 @@ Os comandos do fluxo Spec Kit documentados no projeto são `/speckit-constitutio
 
 O apoio de IA acelerou a exploração do código, a elaboração de alterações e a preparação de testes. Também foram detetadas propostas incompletas durante a revisão. Na integração da concatenação, o modelo da operação e uma rota do gateway não ficaram inicialmente ligados ao contrato completo. A equipa encontrou a lacuna ao inspecionar os ficheiros alterados e executar os testes do esquema e do gateway. A correção completou a integração sem remover os campos usados pela operação de áudio.
 
-*TODO*: REVER ISTO 
-
-O apoio da IA permitiu acelerar a organização e a implementação incremental, mas produziu propostas que
-necessitaram de revisão. Um exemplo concreto ocorreu na integração da UC-VID-006 com a versão do grupo:
-o modelo `videoOperation.js` e uma rota do gateway não ficaram inicialmente integrados de modo completo.
+Esta experiência evidencia que os agentes podem acelerar a implementação, mas não substituem a revisão
+da equipa nem garantem, por si só, que o resultado observado corresponde ao contrato completo.
 A análise dos ficheiros alterados e dos testes de modelo/gateway permitiu detetar a omissão, corrigir os
 contratos e preservar em simultâneo a funcionalidade de áudio de outro elemento.
 
@@ -122,4 +119,3 @@ implementada de funcionalidade apenas especificada, e teste executado de teste s
 
 
 #preencher[Antes da entrega, completar as versões dos modelos utilizados, os comandos efetivamente executados, as evidências de revisão e os resultados de validação do código e dos testes.]
-

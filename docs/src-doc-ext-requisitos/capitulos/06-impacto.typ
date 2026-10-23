@@ -76,8 +76,8 @@ A tabela apresenta o impacto da extensão nos componentes e regras existentes. *
 
     [Regra de Imutabilidade do Ficheiro Original],
     [Manter],
-    [Mantém o princípio do PictuRAS em que o ativo original nunca é sobrescrito, garantindo que todas as transformações de vídeo (trim, conversão, merge, áudio) geram sempre um novo ficheiro independente na biblioteca.],
+    [Mantém o princípio do PictuRAS em que o ativo original nunca é sobrescrito, garantindo que todas as transformações de vídeo (trim, conversão, merge, áudio) geram sempre um novo ficheiro independente na biblioteca. A extração de áudio é a exceção: o ficheiro é transferido ao utilizador sem persistência na biblioteca.],
     [UC-VID-002, 004, 006, 007],
-    [REQ-VID-TRIM-011, REQ-VID-CONV-010, REQ-VID-MERGE-012, REQ-VID-MERGE-013, REQ-VID-AUD-012, REQ-VID-COM-017, REQ-VID-Q-004],
+    [REQ-VID-TRIM-011, REQ-VID-CONV-010, REQ-VID-MERGE-012, REQ-VID-MERGE-013, REQ-VID-AUD-012, REQ-VID-AUD-015, REQ-VID-COM-017, REQ-VID-Q-004],
   ),
 )

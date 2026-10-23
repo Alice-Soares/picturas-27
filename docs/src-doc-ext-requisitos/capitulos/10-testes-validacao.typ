@@ -43,9 +43,7 @@ Na validação Docker da concatenação foram aprovados 65 testes do Projects Se
 
 
 
-== Matriz de cobertura e evidências 
-
-*TODO*: REVER TABELA
+== Matriz de cobertura e evidências
 
 #tab([Estado da evidência de validação por caso de uso],
   tabela(
@@ -57,7 +55,7 @@ Na validação Docker da concatenação foram aprovados 65 testes do Projects Se
     [UC-VID-004], [Converter formato/resolução e validar limites da saída.], [Testes específicos presentes; E2E final não comprovado.],
     [UC-VID-005], [Extrair fotogramas, guardar resultados e limpar temporários.], [Testes de validação presentes; E2E final não comprovado.],
     [UC-VID-006], [Ordenar fontes, validar limites, concatenar, persistir e cancelar.], [68/68 testes Docker aprovados; E2E final a repetir.],
-    [UC-VID-007], [Remover/substituir/extrair áudio, validar fontes e cancelamento.], [Código integrado; evidência consolidada não disponibilizada.],
+    [UC-VID-007], [Remover/substituir/extrair áudio, validar fontes, cancelar e transferir o áudio extraído.], [Código integrado; testes de contrato e validação presentes; execução consolidada não disponibilizada.],
   ),
 )
 
@@ -65,11 +63,10 @@ Na validação Docker da concatenação foram aprovados 65 testes do Projects Se
 
 == Limitações e defeitos conhecidos
 
-
-
 *TODO*: REVER ISTO
 
- O seguimento da UC-VID-006 é realizado por consulta periódica da API; a entrega de percentagens em WebSocket,
+
+- O seguimento da UC-VID-006 é realizado por consulta periódica da API; a entrega de percentagens em WebSocket,
   prevista nos requisitos transversais, não está demonstrada para esta operação.
 - A seleção manual de formato e resolução de saída não faz parte do diálogo de concatenação entregue;
   o fluxo produz MP4 normalizado automaticamente.
@@ -83,7 +80,7 @@ Na validação Docker da concatenação foram aprovados 65 testes do Projects Se
 - O diálogo de concatenação não permite escolher manualmente o formato e a resolução. O worker produz MP4 normalizado e preserva a ordem pedida. A alteração destas opções requer uma decisão sobre perfis de saída e compatibilidade entre entradas.
 - O cenário manual de concatenação passou numa base anterior à integração final do módulo de áudio. A suite automatizada de backend e gateway passou, mas o cenário manual deve ser repetido sobre a versão final, com entradas com e sem áudio.
 - Para submissão, recorte, ferramenta em fotogramas, conversão e extração existem testes focados de validação, contratos e componentes. Os registos consultados não incluem uma execução ponta-a-ponta de cada operação através da stack Docker, com perfis reais, RabbitMQ, armazenamento e cancelamento.
-- Na gestão de áudio, o comportamento da extração diverge entre documentos. O caso de uso e a REQ-VID-AUD-015 descrevem guardar o M4A na biblioteca do projeto. O README e as tarefas da especificação descrevem uma descarga autenticada para o dispositivo sem criar um item no projeto. A decisão deve ser reconciliada na fonte de requisitos e nos artefactos dependentes antes da entrega.
+- Na gestão de áudio, o destino do resultado da extração foi reconciliado: o ficheiro M4A/AAC é transferido ao dispositivo do utilizador através de descarga autenticada e não é adicionado à biblioteca do projeto, em coerência com `REQ-VID-AUD-015`, com `UC-VID-007/RN6` e com o comportamento implementado no Projects Service. O caso de uso e a ERS foram corrigidos para descreverem este mesmo destino.
 - Há testes automatizados para o contrato e a validação de áudio, mas não consta um resultado da suite Python que executa FFmpeg para remoção, substituição e extração. O comando para a executar está indicado na estratégia de testes.
 - A especificação prevê progresso e atualização em tempo real de forma transversal. Os fluxos não usam todos o mesmo mecanismo. A concatenação usa consulta periódica e a cobertura de eventos WebSocket por perfil e operação deve ser consolidada.
 - As metas quantitativas de desempenho e capacidade da ISO/IEC 25010 não foram medidas com carga representativa. O MVP não fornece evidência sobre latência sob concorrência, volume máximo de operações simultâneas ou capacidade de recuperação após falhas distribuídas.

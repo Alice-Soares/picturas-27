@@ -80,9 +80,9 @@ Depois de guardar a operação em estado pendente, o serviço publica na fila de
 Esta separação permite devolver rapidamente a confirmação de aceitação, acompanhar e cancelar o trabalho sem manter uma ligação HTTP aberta e concentrar as tarefas pesadas num worker com FFmpeg. Se a publicação falhar, a operação não deve ficar silenciosamente aceite. Se o processamento ou a persistência falhar, o serviço regista o estado de falha, remove os temporários e, quando já carregado, elimina o objeto parcial. No cancelamento, o worker interrompe o processo e executa a mesma compensação antes de confirmar o estado cancelado. Os testes de integração exercitam estes caminhos para a concatenação, embora não cubram todas as falhas possíveis de uma instalação distribuída.
 
 
-
 *TODO*: VER SE FAZ SENTIDO TER ESTE TAMBÉM OU BASTA EXPLICAR O DO DIAGRAMA DE SEQUÊNCIA
-== Sequência de processamento — UC-VID-006
+
+=== Sequência de processamento — UC-VID-006
 
 O fluxo efetivamente implementado para a concatenação percorre os seguintes passos:
 

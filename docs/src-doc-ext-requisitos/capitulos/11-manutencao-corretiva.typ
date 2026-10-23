@@ -8,7 +8,22 @@
   recomendado; removam-no se não houver nada a registar.
 ]
 
-*TODO*: REVER E COMPLETAR ESTE CAPÍTULO
+A integração da extensão de vídeo com a solução de base expôs problemas que não diziam respeito à funcionalidade
+de vídeo em si, mas a defeitos preexistentes do PictuRAS ou a condições de execução do ambiente em
+Docker. Apenas se registam aqui os problemas que foram efetivamente observados pela equipa e que
+condicionaram a execução ou a validação do MVP; a lista não é exaustiva.
+
+Os três problemas registados tinham naturezas distintas. O primeiro resultava de alterações
+concorrentes ao esquema do projeto na remoção de ferramentas de imagem. O segundo era um problema de
+infraestrutura: o Nginx conservava endereços IP de contentores Docker já destruídos, continua a devolver
+`502` depois de um _rebuild_. O terceiro era uma incoerência funcional em que o preview disparado após a
+remoção de uma ferramenta podia apresentar a versão anterior devolvida pelo _render_.
+
+Os dois primeiros foram corrigidos durante esta fase e validados no ambiente Docker. O terceiro foi
+corrigido com uma alteração de código de aplicação. Nenhum destes problemas alterou requisitos do
+documento de enunciado: são correções de defeitos da baseline, e por isso estão registados aqui e não na
+ERS. Onde não foi possível atribuir um identificador de requisito da baseline, o campo correspondente
+indica-o de forma explícita, em vez de se recorrer a um identificador inventado.
 
 #tab([Tarefas de manutenção corretiva],
   tabela(
