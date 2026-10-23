@@ -90,8 +90,5 @@ A utilização desta arquitetura assíncrona constitui, assim, um elemento funda
 
 == Impacto na instalação e execução
 
+A integração das funcionalidades de edição de vídeo no PictuRAS exigiu a adição de novos contentores de processamento, mantendo a gestão dos serviços através do `docker compose`. Estes componentes recorrem ao RabbitMQ para a distribuição assíncrona de tarefas, ao volume partilhado `image_data` para o acesso aos ficheiros e às ferramentas FFmpeg e FFprobe para o processamento de vídeo e análise de metadados. A validação da solução incluiu a compilação, execução de testes e verificação da integração entre os serviços e o frontend. Os pré-requisitos e procedimentos de instalação, execução e validação encontram-se descritos no Anexo A.
 
-
-A solução usa `docker compose` para iniciar os serviços do PictuRAS e acrescenta contentores de processamento, incluindo `video_conversion_tool` e `video_audio_tool`. Os workers usam RabbitMQ e o volume partilhado `image_data`. FFmpeg e FFprobe são dependências do processamento de vídeo. A compilação e testes da UC-VID-006 foram efetuados nos contentores `projects` e
-`api_gateway`, com construção do frontend. A lista de pré-requisitos, comandos verificáveis e comportamento
-esperado encontram-se no Anexo A. Deve evitar-se reinicializar volumes de dados durante a validação.
