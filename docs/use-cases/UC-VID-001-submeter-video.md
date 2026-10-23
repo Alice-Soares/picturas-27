@@ -7,7 +7,7 @@
 | **Campo**               | **Valor**                                                                                                               |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | **Grupo / Equipa**      | Grupo 5 - PL3                                                                                                           |
-| **Autores**             | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Soares [pg63920], Samuel [pg65411] |
+| **Autores**             | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Soares [pg63920], Samuel [pg65441] |
 | **Data**                | 2026-10-14                                                                                                              |
 | **Versão do documento** | v1.0                                                                                                                    |
 | **Unidade Curricular**  | Requisitos e Arquiteturas de Software — MEI, Universidade do Minho                                                      |
@@ -44,7 +44,7 @@ pelo projeto e é usado como identidade do projeto nos serviços internos.
 | **ID do Caso de Uso**         | UC-VID-001                                                                                                                                                                                                                                                 |
 | **Nome**                      | Submeter Vídeo para Processamento                                                                                                                                                                                                                          |
 | **Versão**                    | v1.0                                                                                                                                                                                                                                                       |
-| **Autor**                     | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Soares [pg63920], Samuel [pg65411]                                                                                                                                                              |
+| **Autor**                     | João Azevedo [pg63981], Francisco Barros [pg65409], Alice Soares [pg63920], Samuel [pg65441]                                                                                                                                                              |
 | **Data**                      | 2026-10-14                                                                                                                                                                                                                                                 |
 | **Objetivo**                  | Permitir ao utilizador carregar um vídeo válido para o projeto e torná-lo disponível para processamento posterior.                                                                                                                                         |
 | **Âmbito**                    | Extensão do módulo de projetos e conteúdos multimédia do PictuRAS, integrada com o serviço de armazenamento de objetos e pipeline de processamento de vídeo                                                                                                |

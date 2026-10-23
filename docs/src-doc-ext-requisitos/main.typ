@@ -19,7 +19,7 @@
     (name: "Alice Soares", number: "pg63920"),
     (name: "João Azevedo", number: "pg63981"),
     (name: "Francisco Barros", number: "pg65409"),
-    (name: "Samuel Ferreira", number: "pg65411"),
+    (name: "Samuel Ferreira", number: "pg65441"),
   ),
   "Outubro, 2026",
 )
