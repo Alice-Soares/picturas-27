@@ -2,6 +2,10 @@
 
 == UC-VID-005 — Extrair Sequência de Fotogramas de um Vídeo
 
+*Estado de realização:* A extração está implementada para o projeto atual ou outro projeto existente. FA3 (criação de um projeto novo durante a operação) não está implementado; REQ-VID-FEX-010 tem realização parcial.
+
+*Acompanhamento no MVP:* o servidor publica eventos de operação no projeto autorizado; o diálogo consulta o estado pela API. A apresentação percentual diretamente por WebSocket, prevista no contrato transversal, não é declarada como integralmente verificada.
+
 === Cabeçalho
 
 #tab([Caso de uso UC-VID-005 — Extrair Sequência de Fotogramas de um Vídeo],

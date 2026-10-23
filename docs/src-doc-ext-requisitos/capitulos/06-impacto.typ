@@ -20,33 +20,33 @@ A tabela apresenta o impacto da extensão nos componentes e regras existentes. *
     tamanho: 8.5pt,
     [Elemento existente afetado], [Impacto], [Descrição do impacto], [Caso(s) de uso], [Requisitos],
 
-    [Mecanismo de Autenticação JWT e Perfis],
+    [Mecanismo de Autenticação JWT e Perfis (RNF44)],
     [Alterar],
     [Reutiliza a verificação de tokens JWT existente, mas altera a política de acessos ao introduzir a restrição que impede utilizadores anónimos de submeter ou processar vídeos, reservando o pipeline de vídeo para os perfis Registado e Premium.],
     [UC-VID-001 a 007],
     [REQ-VID-SUB-001, REQ-VID-SUB-002, REQ-VID-COM-001],
 
-    [Limite Diário  de Operações Avançadas],
+    [Limite Diário de Operações Avançadas (RNF48; UC04)],
     [Alterar],
     [A política de quota da baseline mantém-se para ferramentas classificadas como avançadas. O perfil Premium mantém-se sem limite diário para estas ferramentas.],
     [UC-VID-003],
     [REQ-VID-COM-004 a 008],
 
-    [Projects Service e Modelo de Dados de Projetos],
+    [Projects Service e Modelo de Dados de Projetos (RNF45)],
     [Estender],
-    [Amplia o modelo de dados de projeto para suportar novas entidades de referência de vídeo, metadados técnicos (codec, resolução, FPS, duração), registo de tarefas assíncronas e associação de ativos de áudio, sem alterar o esquema de projetos de imagem.],
+    [Amplia o modelo de dados de projeto para suportar novas entidades de referência de vídeo, metadados técnicos (codec, resolução, FPS, duração), registo de tarefas assíncronas e associação de resultados de vídeo e imagem. A extração de áudio usa um temporário para transferência, sem ativo na biblioteca.],
     [UC-VID-001 a 007],
     [REQ-VID-SUB-010 a 015, REQ-VID-SUB-026 a 029, REQ-VID-COM-009],
 
-    [API Gateway],
+    [API Gateway (RNF44)],
     [Estender],
     [Adiciona novos endpoints REST para submissão, consulta de metadados, disparo de operações de vídeo, pedido de cancelamento e download de ficheiros de vídeo e áudio, aplicando autorização prévia por projeto em todas as rotas.],
     [UC-VID-001 a 007],
     [REQ-VID-SUB-001, REQ-VID-TRIM-012, REQ-VID-COM-001 a 003, REQ-VID-Q-005],
 
-    [Serviço de Armazenamento / SeaweedFS (S3)],
+    [Armazenamento / SeaweedFS (RNF45)],
     [Estender],
-    [Reutiliza a fachada de armazenamento existente para persistir vídeos e resultados de áudio, com referências aos objetos associadas aos projetos. A limpeza de ficheiros temporários é responsabilidade do fluxo de processamento e não uma garantia geral do SeaweedFS.],
+    [Reutiliza a fachada de armazenamento existente para persistir vídeos e imagens derivados, com referências associadas aos projetos. O áudio extraído é temporário e transferido autenticadamente. A limpeza de ficheiros temporários é responsabilidade do fluxo de processamento e não uma garantia geral do SeaweedFS.],
     [UC-VID-001, 003, 005, 007],
     [REQ-VID-SUB-015, REQ-VID-SUB-024, REQ-VID-FEX-011, REQ-VID-COM-014 a 016, REQ-VID-Q-007],
 
@@ -56,19 +56,19 @@ A tabela apresenta o impacto da extensão nos componentes e regras existentes. *
     [UC-VID-002 a 007],
     [REQ-VID-TRIM-010, REQ-VID-FRM-008, REQ-VID-CONV-009, REQ-VID-FEX-009, REQ-VID-MERGE-009, REQ-VID-Q-006],
 
-    [WebSocket Gateway e Notificações],
+    [WebSocket Gateway e Notificações (RF41; UC07)],
     [Estender],
-    [O gateway WebSocket existente continua a distribuir eventos associados ao projeto. As operações de recorte, conversão e processamento de fotogramas publicam progresso quando o worker o disponibiliza. A concatenação apresenta o estado consultando a API periodicamente, porque o seu diálogo não subscreve eventos percentuais. Esta escolha mantém o acompanhamento funcional sem acrescentar um contrato WebSocket específico para uma operação cujo estado persistido já pode ser consultado. O requisito de progresso uniforme fica como evolução de consistência entre operações.],
+    [O gateway WebSocket existente continua a distribuir eventos associados ao projeto. Os workers publicam eventos de operação. Os diálogos de recorte, conversão, fotogramas, extração, concatenação e áudio apresentam o estado obtido por consulta periódica REST. Os eventos também desencadeiam reconciliação da biblioteca. Esta escolha mantém o acompanhamento funcional sem acrescentar um contrato WebSocket específico para uma operação cujo estado persistido já pode ser consultado. O requisito de progresso uniforme fica como evolução de consistência entre operações.],
     [UC-VID-001 a 007],
     [REQ-VID-TRIM-001, REQ-VID-CONV-011, REQ-VID-COM-011 a 013, REQ-VID-COM-020, REQ-VID-Q-002, REQ-VID-Q-003],
 
-    [Workers de Ferramentas de Imagem],
+    [Workers de Ferramentas de Imagem (UC04)],
     [Manter / Estender],
     [Os workers de imagem mantêm o seu contrato de processamento individual intacto. O caso de uso `UC-VID-003` estende o pipeline entregando os fotogramas extraídos do vídeo a estes workers como se fossem imagens isoladas.],
     [UC-VID-003],
     [REQ-VID-FRM-001, REQ-VID-FRM-008, REQ-VID-FRM-011, REQ-VID-Q-006],
 
-    [Biblioteca de Projetos e frontend],
+    [Biblioteca de Projetos e frontend (UC04; UC07)],
     [Estender],
     [Acrescenta apresentação e submissão de vídeos, diálogos para operações e acesso aos resultados. O acompanhamento e as opções variam por funcionalidade],
     [UC-VID-001 a 007],
@@ -81,3 +81,5 @@ A tabela apresenta o impacto da extensão nos componentes e regras existentes. *
     [REQ-VID-TRIM-011, REQ-VID-CONV-010, REQ-VID-MERGE-012, REQ-VID-MERGE-013, REQ-VID-AUD-012, REQ-VID-AUD-015, REQ-VID-COM-017, REQ-VID-Q-004],
   ),
 )
+
+As ligações à baseline são sustentadas por `docs/especifica_o_de_requisitos.md`: UC04 (edição), UC07 (partilha), RF41 (colaboração), RNF44 (autorização/privacidade), RNF45 (armazenamento) e RNF48 (limite diário). Estender um componente não significa declarar satisfeita a meta de qualidade da baseline. A concatenação exige proprietário; uma partilha editável não concede esta operação.

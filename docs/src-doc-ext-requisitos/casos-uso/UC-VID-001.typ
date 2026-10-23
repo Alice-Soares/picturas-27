@@ -2,6 +2,8 @@
 
 == UC-VID-001 — Submeter Vídeo para Processamento
 
+*Estado de realização:* O fluxo individual está implementado. FA2 mantém o requisito de lote, mas o seletor atual aceita apenas um ficheiro por submissão; a alternativa está parcialmente implementada.
+
 === Cabeçalho
 
 #tab([Caso de uso UC-VID-001 — Submeter Vídeo para Processamento],
@@ -98,6 +100,8 @@
   [RN6], [Uma submissão rejeitada, cancelada ou falhada não consome quota nem deixa objetos parciais associados ao projeto.],
   [RN7], [A submissão não pode deixar o projeto apontar para um objeto inexistente, parcial ou corrompido.],
   [RN8], [A referência persistida deve identificar o utilizador, o projeto, o estágio do conteúdo e o objeto armazenado sem depender do nome original do ficheiro.],
+  [RN9], [Os limites usam unidades decimais: 1 MB corresponde a 1 000 000 bytes e 1 GB a 1 000 000 000 bytes.],
+  [RN10], [A submissão deve receber o ficheiro num temporário em disco, sem manter o vídeo completo em memória.],
 )
 
 

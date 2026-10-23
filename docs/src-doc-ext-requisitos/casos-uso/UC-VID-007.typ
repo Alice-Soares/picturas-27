@@ -2,6 +2,8 @@
 
 == UC-VID-007 — Gerir Áudio do Vídeo (Remover, Substituir ou Extrair)
 
+*Acompanhamento no MVP:* o servidor publica eventos de operação no projeto autorizado; o diálogo consulta o estado pela API. A apresentação percentual diretamente por WebSocket, prevista no contrato transversal, não é declarada como integralmente verificada.
+
 === Cabeçalho
 
 #tab([Caso de uso UC-VID-007 — Gerir Áudio do Vídeo],
@@ -39,9 +41,9 @@
     [4], [—], [O sistema notifica o utilizador que o processamento está em curso.],
     [5], [O utilizador acompanha o estado.], [O sistema atualiza o progresso em tempo real via WebSocket.],
     [6], [—], [O sistema, com FFmpeg, remove a faixa de áudio, extrai-a para M4A/AAC ou substitui-a pela faixa escolhida pelo utilizador.],
-    [7], [—], [O sistema guarda o novo vídeo MP4 no armazenamento do projeto; na extração, guarda também o ficheiro M4A com áudio AAC.],
-    [8], [—], [O sistema regista o novo item na base de dados, associa-o ao projeto.],
-    [9], [—], [O sistema notifica a conclusão com sucesso e disponibiliza o novo ficheiro na biblioteca do projeto.],
+    [7], [—], [Para remoção ou substituição, o sistema guarda o novo vídeo MP4 no projeto. Para extração, prepara um M4A/AAC temporário para transferência autenticada.],
+    [8], [—], [O sistema regista a conclusão. Os vídeos derivados são associados ao projeto; o áudio extraído não é adicionado à biblioteca.],
+    [9], [—], [O sistema disponibiliza o vídeo derivado na biblioteca ou, na extração, a transferência do áudio para o dispositivo do utilizador.],
   ),
 )
 
@@ -73,7 +75,7 @@
 #tabela(
   colunas: (4cm, 1fr),
   [Tipo], [Resultado],
-  [Garantia de Sucesso], [O novo ficheiro (vídeo silenciado, vídeo com novo som ou áudio extraído) está guardado na biblioteca; o vídeo original permanece intacto.],
+  [Garantia de Sucesso], [O vídeo silenciado ou com áudio substituído fica na biblioteca; o áudio extraído é transferido para o dispositivo do utilizador sem ser adicionado à biblioteca. O original permanece intacto.],
   [Garantia Mínima], [O vídeo original permanece inalterado, os temporários são limpos, a operação fica marcada como falhado/cancelado e a operação não deixa resultados parciais.],
 )
 
@@ -84,9 +86,10 @@
   [ID], [Regra],
   [RN1], [Utilizadores anónimos não têm acesso a esta funcionalidade.],
   [RN2], [As operações de gestão de áudio usam FFmpeg e não consomem quota diária. Estão disponíveis sem limite diário para utilizadores autenticados.],
-  [RN3], [O vídeo original nunca é substituído pelo resultado; cada resultado é guardado como novo conteúdo.],
+  [RN3], [O vídeo original nunca é substituído. Cada vídeo derivado é novo conteúdo; o áudio extraído é disponibilizado apenas para transferência.],
   [RN4], [Operações canceladas ou falhadas, e operações terminadas sem efeito por falta de áudio, não consomem quota.],
   [RN5], [O áudio de substituição pode ser MP3, M4A/AAC ou vídeo com faixa sonora; de um vídeo usa-se apenas a primeira faixa de áudio, convertida para AAC no resultado MP4.],
+  [RN6], [Na extração, o destino é o dispositivo do utilizador através de transferência autenticada; a associação à biblioteca de REQ-VID-COM-018 tem esta exceção explícita.],
 )
 
 === Assunções
@@ -95,7 +98,7 @@
   colunas: (1.4cm, 1fr),
   [ID], [Assunção],
   [A1], [O FFprobe consegue detetar previamente se o vídeo contém streams de áudio ativos.],
-  [A2], [O SeaweedFS suporta o armazenamento de novos vídeos e ficheiros M4A no mesmo projeto, através da camada de armazenamento existente.],
+  [A2], [O armazenamento suporta novos vídeos; Projects Service e gateway transmitem o M4A/AAC temporário ao cliente autorizado, com limpeza após transferência ou expiração.],
 )
 
 === Questões em Aberto

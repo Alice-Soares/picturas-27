@@ -2,34 +2,12 @@
 
 = Conclusão
 
-#orientacao[
-  Sintetizem os contributos (não repitam o conteúdo): o que o MVP de vídeo valida, o que ficou por fazer e
-  porquê, e que lições tiram do processo. Terminem com a ligação à Fase 2: que requisitos não funcionais
-  consideram prioritários para melhoria por _refactoring_.
-]
+A extensão acrescenta ao PictuRAS referências de vídeo, validação de metadados, operações assíncronas e integração FFmpeg, reutilizando projetos, armazenamento, autenticação e mensageria da baseline. Os sete casos de uso estabelecem um âmbito coerente que liga submissão, transformações visuais e temporais, extração, concatenação e áudio.
 
-*todo*: rever e completar este capítulo
+A revisão de 23 de outubro de 2026 distingue especificação, realização e aceitação: há implementação dos fluxos individuais e resultados focados de 49 testes gerais, 20 de frontend, três do gateway e cinco do worker de áudio, além da verificação TypeScript. Estas execuções não constituem uma demonstração ponta-a-ponta de toda a stack. A reexecução integral da suite de concatenação foi interrompida sem resumo final; a sua aprovação histórica não é reapresentada como validação atual.
 
-A Fase 1 permitiu estender a arquitetura de processamento de imagens do PictuRAS com suporte a vídeo,
-contemplando submissão de conteúdos audiovisuais e várias operações de transformação. Os sete casos de
-uso foram especificados e existem módulos de implementação associados ao incremento. A UC-VID-006 foi
-integrada na base do grupo e validada com 65 testes do Projects Service e três do API Gateway em Docker,
-incluindo a execução real de FFmpeg, mantendo os originais inalterados.
+Os lotes de submissão e conversão e a criação de um projeto novo durante a extração permanecem parcialmente realizados. O progresso dos diálogos usa consulta REST, embora os workers publiquem eventos WebSocket. A extração de áudio termina numa transferência autenticada temporária, sem persistência na biblioteca. Estas diferenças estão identificadas junto das UCs e dos requisitos correspondentes, preservando o contrato especificado e a rastreabilidade das limitações.
 
-A fase teve como principal contributo a validação técnica do processamento assíncrono, da articulação entre
-camadas de frontend e backend e do registo de novas operações e resultados em projetos existentes. O uso
-de ferramentas de IA agilizou tarefas de desenvolvimento e organização, mas tornou explícita a necessidade
-de revisão dos contratos, dos conflitos de integração e da qualidade dos testes.
+O apoio de IA facilitou exploração do código, implementação, testes e revisão documental. A comparação entre UCs, requisitos, contratos e resultados mostrou que compilar ou encontrar um módulo não comprova a aceitação de uma funcionalidade. A revisão humana e o registo dos ensaios na instalação final continuam necessários antes da entrega.
 
-A validação global da versão final deve ainda consolidar demonstrações ponta-a-ponta das funcionalidades
-partilhadas, registar as evidências de aceitação por requisito e confirmar as metas de qualidade. A UC-VID-006
-apresenta limitações conhecidas em relação à especificação inicial, nomeadamente consulta REST do estado
-em vez de progresso percentual por WebSocket, ausência de escolha manual de formato e resolução e falta
-de repetição documentada do ensaio E2E após a integração com áudio. Estas limitações não impedem a avaliação
-do MVP, mas devem ser claramente comunicadas e não ocultadas como requisitos concluídos.
-
-Numa fase seguinte, recomendam-se dois eixos prioritários para refactoring: (1) robustez e consistência das
-operações assíncronas, com recuperação após falhas, cancelamento e gestão de artefactos temporários;
-e (2) observabilidade, segurança e fiabilidade dos contratos entre serviços, incluindo autorização e
-comunicação de estados ao utilizador. A melhoria destes aspetos deve ser precedida por medições e testes
-de regressão, sem confundir refactoring não funcional com a criação de funcionalidades adicionais.
+Para a Fase 2, os eixos prioritários são a consistência e recuperação das operações assíncronas e a observabilidade/fiabilidade dos contratos entre serviços. Devem ser abordados por refactoring, com medições antes e depois e testes de regressão. A introdução de funcionalidades novas é distinguida dessas melhorias não funcionais.

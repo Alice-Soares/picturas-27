@@ -2,6 +2,8 @@
 
 == UC-VID-003 — Aplicar Ferramenta Existente aos Fotogramas de um Vídeo
 
+*Acompanhamento no MVP:* o servidor publica eventos de operação no projeto autorizado; o diálogo consulta o estado pela API. A apresentação percentual diretamente por WebSocket, prevista no contrato transversal, não é declarada como integralmente verificada.
+
 === Cabeçalho
 
 #tab([Caso de uso UC-VID-003 — Aplicar Ferramenta Existente aos Fotogramas de um Vídeo],

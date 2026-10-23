@@ -11,7 +11,7 @@
 
 A equipa utilizou ferramentas de IA em atividades diferentes do ciclo de desenvolvimento. O GitHub Copilot e o GitHub Spec Kit apoiaram a organização dos artefactos de especificação e implementação por funcionalidade. O ChatGPT Codex, com o modelo GPT-6, foi utilizado em apoio à implementação, depuração, resolução de conflitos de integração, organização de testes e preparação da documentação. A IA foi tratada como apoio à equipa e não como autoridade para decidir requisitos ou aceitar resultados.
 
-As instruções gerais encontram-se em `AGENTS.md`. As skills do Spec Kit e a respetiva configuração estão em `.github/skills/` e `.specify/`. Estes recursos indicam a ordem de precedência das fontes, orientam a preservação dos identificadores e pedem que requisitos, assunções e questões em aberto sejam distinguidos. 
+As instruções gerais encontram-se em `AGENTS.md`. As skills do Spec Kit e a respetiva configuração estão em `.github/skills/` e `.specify/`. Estes recursos indicam a ordem de precedência das fontes, orientam a preservação dos identificadores e pedem que requisitos, assunções e questões em aberto sejam distinguidos.
 
 
 
@@ -93,7 +93,7 @@ Em conjunto, estes ficheiros procuram assegurar que os agentes preservam os iden
   ),
 )
 
-Os comandos do fluxo Spec Kit documentados no projeto são `/speckit-constitution`, `/speckit-specify`, `/speckit-clarify`, `/speckit-plan`, `/speckit-tasks`, `/speckit-analyze`, `/speckit-checklist` e `/speckit-implement`. Os artefactos comprovam a utilização do fluxo de especificação e análise. A revisão humana incidiu sobre os requisitos, os contratos entre serviços, os resultados dos testes e os conflitos de integração. 
+Os comandos do fluxo Spec Kit documentados no projeto são `/speckit-constitution`, `/speckit-specify`, `/speckit-clarify`, `/speckit-plan`, `/speckit-tasks`, `/speckit-analyze`, `/speckit-checklist` e `/speckit-implement`. Os artefactos comprovam a utilização do fluxo de especificação e análise. A revisão humana incidiu sobre os requisitos, os contratos entre serviços, os resultados dos testes e os conflitos de integração.
 
 == Análise crítica
 
@@ -114,8 +114,15 @@ testes antes da entrega. A validação humana permanece necessária para disting
 implementada de funcionalidade apenas especificada, e teste executado de teste simplesmente existente.
 
 
-#preencher[Acrescentar exemplos concretos de propostas úteis dos agentes, erros ou omissões identificados, métodos utilizados para os detetar e correções efetuadas. Sempre que possível, associar estes exemplos a commits, ficheiros ou resultados de testes.]
 
 
 
-#preencher[Antes da entrega, completar as versões dos modelos utilizados, os comandos efetivamente executados, as evidências de revisão e os resultados de validação do código e dos testes.]
+
+
+== Validação e limites da evidência
+
+Na revisão de 23 de outubro de 2026 foram executados 49 testes gerais de Projects, 20 testes de frontend, três testes do gateway e cinco testes do worker de áudio. A verificação TypeScript passou. A suite completa de concatenação foi interrompida com código 137 em duas execuções, incluindo uma sequencial; não se atribui esse resultado a um defeito funcional sem diagnóstico adicional. O frontend não estava em execução na stack consultada, pelo que não foi efetuada aceitação manual integrada.
+
+Foi corrigida uma proposta anterior do agente que confundia a presença de código e testes com validação integral: o resumo e a rastreabilidade passam a distinguir implementação, testes focados e aceitação pendente. A revisão detetou também a divergência entre a UC Typst de áudio e a decisão de transferência sem biblioteca, bem como a referência incorreta a três repetições por fotograma; ambas foram alinhadas com as fontes aprovadas. As alterações documentais são verificadas por compilação e por conferência dos IDs e referências. A equipa mantém a responsabilidade de rever o PDF e realizar a aceitação funcional.
+
+Não foram registadas versões exatas de todos os modelos usados no trabalho histórico. Apenas se identifica GPT-6 nas intervenções Codex cuja sessão o documenta; não se atribuem retroativamente versões ou validações sem evidência.

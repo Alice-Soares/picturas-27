@@ -68,3 +68,19 @@ segredos ou dados pessoais neste documento.
   [Quota], [Limite de operações permitido para um perfil de utilizador.],
   [Rastreabilidade], [Ligação entre o caso de uso, requisito, componente e teste que verifica o comportamento.],
 )
+
+= Artefactos da entrega e distinção da baseline
+
+O relatório de vídeo é `docs/entrega/doc-ext-requisitos.pdf`; as fontes editáveis são disponibilizadas em `docs/entrega/src-doc-ext-requisitos.zip`. O ficheiro `docs/doc-ext-requisitos.pdf` é a baseline de 2025/2026 e não deve ser confundido com o relatório atual. As figuras PNG anteriores foram preservadas; os SVG de vídeo são o delta atualizado.
+
+O grupo atual tem os quatro elementos da capa. Por decisão da equipa, `docs/grupo.csv`, pertencente ao ano anterior, permanece intacto. Não é apresentado como declaração de desempenho individual do grupo atual. A declaração atual, com valores aprovados pela equipa, deve acompanhar os restantes entregáveis quando for preparada; não foram inferidas avaliações individuais.
+
+Para recompilar com Typst 0.14.0 ou compatível, executar na raiz do repositório:
+
+```bash
+typst compile --root docs/src-doc-ext-requisitos \
+  --font-path docs/src-doc-ext-requisitos/fonts \
+  docs/src-doc-ext-requisitos/main.typ docs/entrega/doc-ext-requisitos.pdf
+```
+
+A revisão documental corrige coerência e apresentação, mas não substitui os protocolos de aceitação ainda assinalados no capítulo 7. A solução MVP deve ser empacotada com instruções de execução e sem dependências locais, caches, dados de utilizadores ou ficheiros de segredos.

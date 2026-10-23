@@ -2,6 +2,10 @@
 
 == UC-VID-004 — Converter Formato e Resolução de Vídeo
 
+*Estado de realização:* A conversão individual está implementada. FA1 (conversão em lote) mantém-se especificado, sem interface para configurar e submeter o lote.
+
+*Acompanhamento no MVP:* o servidor publica eventos de operação no projeto autorizado; o diálogo consulta o estado pela API. A apresentação percentual diretamente por WebSocket, prevista no contrato transversal, não é declarada como integralmente verificada.
+
 === Cabeçalho
 
 #tab([Caso de uso UC-VID-004 — Converter Formato e Resolução de Vídeo],

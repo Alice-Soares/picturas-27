@@ -147,6 +147,7 @@ Os requisitos específicos de cada caso de uso estão identificados pelo prefixo
 | REQ-VID-MERGE-006 | O sistema deve rejeitar uma duração total superior a 5 minutos para utilizadores registados. | F | Deve ter | NOVO | UC-VID-006, RN2 | Testar no limite e acima dele. |
 | REQ-VID-MERGE-007 | O sistema deve rejeitar uma duração total superior a 30 minutos para utilizadores premium. | F | Deve ter | NOVO | UC-VID-006, RN2 | Testar no limite e acima dele. |
 | REQ-VID-MERGE-008 | O sistema deve rejeitar um vídeo de entrada inacessível antes de criar a operação. | F | Deve ter | NOVO | UC-VID-006, exceção | Tornar uma entrada indisponível e confirmar rejeição. |
+| REQ-VID-MERGE-009 | O sistema deve registar uma operação de concatenação e encaminhá-la para processamento assíncrono, sem bloquear a resposta HTTP. | F | Deve ter | NOVO | UC-VID-006, passos 4-6 | Confirmar registo e resposta antes da conclusão do worker. |
 | REQ-VID-MERGE-010 | O sistema deve concatenar os vídeos pela ordem confirmada pelo utilizador. | F | Deve ter | NOVO | UC-VID-006, passos 3, 8 | Usar vídeos identificáveis e verificar a sequência. |
 | REQ-VID-MERGE-011 | O sistema deve preservar as faixas de áudio quando forem compatíveis com a concatenação. | F | Deve ter | NOVO | UC-VID-006, passo 8, Q2 | Concatenar vídeos com áudio compatível. |
 | REQ-VID-MERGE-012 | O sistema deve guardar a concatenação como novo vídeo. | F | Deve ter | NOVO | UC-VID-006, RN3, pós-condição | Verificar a criação do novo vídeo. |

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="700" viewBox="0 0 920 700"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10" fill="none" stroke="#334155"/></marker></defs><rect width="100%" height="100%" fill="white"/>
+<text x="460" y="30" font-family="Arial,sans-serif" font-size="22" text-anchor="middle" fill="#0f172a">Casos de uso — delta de vídeo</text>
+<rect x="310" y="55" width="580" height="580" rx="6" fill="none" stroke="#64748b"/>
+<text x="600" y="80" font-family="Arial,sans-serif" font-size="17" text-anchor="middle" fill="#0f172a">PictuRAS</text>
+<rect x="20" y="190" width="220" height="69" rx="5" fill="#f1f5f9" stroke="#334155"/>
+<text x="130.0" y="215" font-family="Arial,sans-serif" font-size="16" text-anchor="middle" fill="#0f172a">«ator» Registado</text>
+<line x1="20" y1="226" x2="240" y2="226" stroke="#334155" stroke-width="1.5"/>
+<text x="30" y="246" font-family="Arial,sans-serif" font-size="13" text-anchor="start" fill="#0f172a">autenticado</text>
+<rect x="20" y="345" width="220" height="69" rx="5" fill="#f1f5f9" stroke="#334155"/>
+<text x="130.0" y="370" font-family="Arial,sans-serif" font-size="16" text-anchor="middle" fill="#0f172a">«ator» Premium</text>
+<line x1="20" y1="381" x2="240" y2="381" stroke="#334155" stroke-width="1.5"/>
+<text x="30" y="401" font-family="Arial,sans-serif" font-size="13" text-anchor="start" fill="#0f172a">especializa Registado</text>
+<line x1="130" y1="345" x2="130" y2="260" stroke="#334155" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="130.0" y="295.5" font-family="Arial,sans-serif" font-size="12" text-anchor="middle" fill="#0f172a">é</text>
+<ellipse cx="610" cy="125" rx="245" ry="28" fill="#dbeafe" stroke="#2563eb"/>
+<text x="610" y="122" font-family="Arial,sans-serif" font-size="14" text-anchor="middle" fill="#0f172a">UC-VID-001</text>
+<text x="610" y="141" font-family="Arial,sans-serif" font-size="14" text-anchor="middle" fill="#0f172a">Submeter vídeo</text>
+<line x1="240" y1="230" x2="365" y2="125" stroke="#334155" stroke-width="1.5"/>
+<ellipse cx="610" cy="195" rx="245" ry="28" fill="#dbeafe" stroke="#2563eb"/>
+<text x="610" y="192" font-family="Arial,sans-serif" font-size="14" text-anchor="middle" fill="#0f172a">UC-VID-002</text>
+<text x="610" y="211" font-family="Arial,sans-serif" font-size="14" text-anchor="middle" fill="#0f172a">Recortar temporalmente</text>
+<line x1="240" y1="230" x2="365" y2="195" stroke="#334155" stroke-width="1.5"/>
+<ellipse cx="610" cy="265" rx="245" ry="28" fill="#dbeafe" stroke="#2563eb"/>
+<text x="610" y="262" font-family="Arial,sans-serif" font-size="14" text-anchor="middle" fill="#0f172a">UC-VID-003</text>
+<text x="610" y="281" font-family="Arial,sans-serif" font-size="14" text-anchor="middle" fill="#0f172a">Aplicar ferramentas a fotogramas</text>
+<line x1="240" y1="230" x2="365" y2="265" stroke="#334155" stroke-width="1.5"/>
+<ellipse cx="610" cy="335" rx="245" ry="28" fill="#dbeafe" stroke="#2563eb"/>
+<text x="610" y="332" font-family="Arial,sans-serif" font-size="14" text-anchor="middle" fill="#0f172a">UC-VID-004</text>
+<text x="610" y="351" font-family="Arial,sans-serif" font-size="14" text-anchor="middle" fill="#0f172a">Converter formato / resolução</text>
+<line x1="240" y1="230" x2="365" y2="335" stroke="#334155" stroke-width="1.5"/>
+<ellipse cx="610" cy="405" rx="245" ry="28" fill="#dbeafe" stroke="#2563eb"/>
+<text x="610" y="402" font-family="Arial,sans-serif" font-size="14" text-anchor="middle" fill="#0f172a">UC-VID-005</text>
+<text x="610" y="421" font-family="Arial,sans-serif" font-size="14" text-anchor="middle" fill="#0f172a">Extrair fotogramas</text>
+<line x1="240" y1="230" x2="365" y2="405" stroke="#334155" stroke-width="1.5"/>
+<ellipse cx="610" cy="475" rx="245" ry="28" fill="#dbeafe" stroke="#2563eb"/>
+<text x="610" y="472" font-family="Arial,sans-serif" font-size="14" text-anchor="middle" fill="#0f172a">UC-VID-006</text>
+<text x="610" y="491" font-family="Arial,sans-serif" font-size="14" text-anchor="middle" fill="#0f172a">Concatenar vídeos</text>
+<line x1="240" y1="230" x2="365" y2="475" stroke="#334155" stroke-width="1.5"/>
+<ellipse cx="610" cy="545" rx="245" ry="28" fill="#dbeafe" stroke="#2563eb"/>
+<text x="610" y="542" font-family="Arial,sans-serif" font-size="14" text-anchor="middle" fill="#0f172a">UC-VID-007</text>
+<text x="610" y="561" font-family="Arial,sans-serif" font-size="14" text-anchor="middle" fill="#0f172a">Gerir áudio</text>
+<line x1="240" y1="230" x2="365" y2="545" stroke="#334155" stroke-width="1.5"/>
+<rect x="20" y="520" width="245" height="69" rx="5" fill="#f1f5f9" stroke="#334155"/>
+<text x="142.5" y="545" font-family="Arial,sans-serif" font-size="16" text-anchor="middle" fill="#0f172a">«ator» Convidado</text>
+<line x1="20" y1="556" x2="265" y2="556" stroke="#334155" stroke-width="1.5"/>
+<text x="30" y="576" font-family="Arial,sans-serif" font-size="13" text-anchor="start" fill="#0f172a">autorização ver / editar</text>
+<text x="600" y="660" font-family="Arial,sans-serif" font-size="14" text-anchor="middle" fill="#0f172a">Vídeo: anónimo sem acesso. Concatenação: apenas proprietário.</text>
+<text x="600" y="679" font-family="Arial,sans-serif" font-size="14" text-anchor="middle" fill="#0f172a">Partilhas não herdam acesso irrestrito aos sete casos de uso.</text>
+</svg>

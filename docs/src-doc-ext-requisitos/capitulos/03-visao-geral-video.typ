@@ -15,7 +15,7 @@
 
 A extensão de vídeo nesta fase compreende sete funcionalidades, escolhidas de forma a equilibrar utilidade para os utilizadores, complexidade adequada e possibilidade de especificação e validação no âmbito do MVP. A tabela seguinte apresenta o catálogo de funcionalidades e os respetivos estados de implementação.
 
-As sete funcionalidades foram implementadas e validadas no âmbito do MVP, por testes focados das respetivas regras e contratos, testes de integração e verificações da interface. O estado assinala validação funcional dos componentes da operação. 
+As sete funcionalidades têm componentes implementados. Os testes focados comprovam apenas os cenários executados; não equivalem à aceitação integral de todos os fluxos. As alternativas ainda não disponíveis são identificadas nesta tabela e no capítulo 7.
 
 
 
@@ -23,13 +23,13 @@ As sete funcionalidades foram implementadas e validadas no âmbito do MVP, por t
   tabela(
     colunas: (1fr, 2.1cm, 2.4cm, 2cm, 2.3cm, 2.6cm),
     [Funcionalidade], [Caso de uso], [Prefixo(s) REQ], [Perfis], [Dependências], [Estado de implementação],
-    [Submeter Vídeo para Processamento], [UC-VID-001], [REQ-VID-SUB], [Registado, Premium], [Nenhuma], [Implementado e validado],
-    [Recorte Temporal de Vídeo (_Trim_)], [UC-VID-002], [REQ-VID-TRIM], [Registado, Premium], [UC-VID-001], [Implementado e validado],
-    [Aplicar Ferramenta Existente aos Fotogramas de um Vídeo], [UC-VID-003], [REQ-VID-FRM], [Registado, Premium], [UC-VID-001], [Implementado e validado],
-    [Converter Formato e Resolução de Vídeo], [UC-VID-004], [REQ-VID-CONV], [Registado, Premium], [UC-VID-001], [Implementado e validado],
-    [Extrair Sequência de Fotogramas de um Vídeo], [UC-VID-005], [REQ-VID-FEX], [Registado, Premium], [UC-VID-001], [Implementado e validado],
-    [Concatenar Múltiplos Vídeos (_Merge_)], [UC-VID-006], [REQ-VID-MERGE], [Registado, Premium], [UC-VID-001], [Implementado e validado],
-    [Gerir Áudio do Vídeo (Remover, Substituir, Extrair)], [UC-VID-007], [REQ-VID-AUD], [Registado, Premium], [UC-VID-001], [Implementado e validado],
+    [Submeter Vídeo para Processamento], [UC-VID-001], [REQ-VID-SUB], [Registado, Premium], [Nenhuma], [Parcial: upload individual; lote não ligado à interface],
+    [Recorte Temporal de Vídeo (_Trim_)], [UC-VID-002], [REQ-VID-TRIM], [Registado, Premium], [UC-VID-001], [Implementado; testes focados; aceitação integrada pendente],
+    [Aplicar Ferramenta Existente aos Fotogramas de um Vídeo], [UC-VID-003], [REQ-VID-FRM], [Registado, Premium], [UC-VID-001], [Implementado; testes focados; aceitação integrada pendente],
+    [Converter Formato e Resolução de Vídeo], [UC-VID-004], [REQ-VID-CONV], [Registado, Premium], [UC-VID-001], [Parcial: conversão individual; lote sem interface],
+    [Extrair Sequência de Fotogramas de um Vídeo], [UC-VID-005], [REQ-VID-FEX], [Registado, Premium], [UC-VID-001], [Parcial: extração para projeto existente; criação de destino não implementada],
+    [Concatenar Múltiplos Vídeos (_Merge_)], [UC-VID-006], [REQ-VID-MERGE], [Registado, Premium], [UC-VID-001], [Implementado; testes focados; aceitação integrada pendente],
+    [Gerir Áudio do Vídeo (Remover, Substituir, Extrair)], [UC-VID-007], [REQ-VID-AUD], [Registado, Premium], [UC-VID-001], [Implementado; testes focados; aceitação integrada pendente],
   ),
 )
 
@@ -61,13 +61,11 @@ As sete funcionalidades foram implementadas e validadas no âmbito do MVP, por t
 ]
 
 #figure(
-  image("../images/diagrama_casos_uso.png", width: 85%),
+  image("../images/diagrama_casos_uso_video.svg", width: 85%),
   caption: [Diagrama de casos de uso atualizado (Fase 1 — vídeo)],
 )
 
-O diagrama de casos de uso foi atualizado para refletir a extensão do sistema com as novas funcionalidades de processamento e manipulação de vídeo (incremento do MVP de Vídeo). Para facilitar a leitura e manter a coerência visual e contextual em relação ao sistema base, os casos de uso já existentes (relativos à edição de imagem e autenticação) foram mantidos a cinzento, enquanto os novos casos de uso de vídeo são destacados a azul. Todos os novos casos de uso estão associados aos perfis Registado e Premium, e não ao Utilizador Anónimo. As permissões de convidados por ligação partilhada mantêm-se como definidas na baseline. Como esta fase não altera esse modelo de partilha, os novos casos de uso são associados aos perfis Registado e Premium que os executam diretamente, sem redesenhar a participação dos convidados.
-
-Além de acrescentar os casos de uso de vídeo, corrigiu-se o diagrama base. Nele, os casos de uso "Criar filtro personalizado" e "Partilhar projeto" estavam associados ao Utilizador e, por herança, também ao Utilizador Anónimo, o que contraria as regras de negócio. Passaram a estar associados ao Utilizador Registado, ficando disponíveis apenas para este e para os atores que o herdam. O Utilizador Anónimo mantém o acesso a "Registo", "Login", "Carregar imagens" e "Aplicar encadeamento de ferramentas a conjunto de imagens".
+O diagrama destaca a azul os sete casos de uso de vídeo e inclui os seus IDs. Os perfis Registado e Premium acedem aos fluxos sujeitos à autorização do projeto. O contexto da baseline é mantido nos conceitos de utilizador e projeto. As imagens anteriores são preservadas em `images/`; os novos SVG tornam o delta editável e não substituem silenciosamente os artefactos de base. O Convidado por ligação não herda autorização irrestrita: o servidor valida a permissão, e a concatenação exige proprietário.
 
 === Hierarquia de Atores e Regras de Acesso
 
@@ -76,7 +74,7 @@ A modelação da hierarquia de atores foi reformulada para garantir o cumpriment
 - *Utilizador:* Representa a entidade base de interação com o sistema. Agrupa a funcionalidade de Login e o conjunto de ferramentas essenciais de manipulação de imagem.
 - *Utilizador Anónimo:* Herda diretamente do *Utilizador*, tendo acesso às operações base de imagem, e estende-o ao adicionar o caso de uso Registo. Esta estruturação garante que o caso de uso *Registo* permanece exclusivo de utilizadores não autenticados.
 - *Utilizador Registado:* Herda do *Utilizador* (mantendo acesso às funcionalidades de imagem e autenticação) e adiciona os casos de uso "Criar filtro personalizado" e "Partilhar projeto", bem como o acesso exclusivo ao processamento de vídeo. É o ponto de entrada modelado para `UC-VID-001` a `UC-VID-007`;
-- *Utilizador Convidado:* As permissões de partilha da baseline mantêm-se inalteradas. A Fase 1 não revê nem altera o acesso do convidado aos projetos partilhados.
+- *Utilizador Convidado:* As permissões de partilha da baseline mantêm-se inalteradas. O acesso depende da permissão da ligação e da autorização de cada operação; concatenação não é permitida por partilha.
 - *Utilizador Premium:* Especialização do *Utilizador Registado* que herda todas as capacidades de imagem e vídeo, acrescentando o acesso a ferramentas avançadas como o *Assistente IA na edição*.
 
 Os novos casos de uso cobrem o ciclo de vida de vídeo. As permissões concretas são validadas no servidor e podem ser mais restritivas do que a generalização de atores ilustrada no diagrama.
@@ -106,7 +104,7 @@ relações que se mantêm, e a azul os que foram acrescentados ou alterados nest
 
 
 #figure(
-  image("../images/modelo_dominio.png", width: 100%),
+  image("../images/modelo_dominio_video.svg", width: 100%),
   caption: [Modelo de domínio atualizado (Fase 1 — vídeo)],
 )
 
